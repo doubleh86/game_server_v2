@@ -1,0 +1,27 @@
+@default_url = http://127.0.0.1:1200
+
+### Send Auth Loop
+
+< {%
+    request.variables.set("testUser",[
+        {"LoginId": "ccccc"},
+        {"LoginId": "ddddd"}
+    ])
+%}
+
+POST {{default_url}}/auth/get-account-info
+Content-Type: application/json
+
+{
+    "LoginId": "{{$.testUser..LoginId}}"
+}
+
+> {%
+    let current = request.variables.get("testUser")[request.iteration()]
+    client.test(`Client Send ${current.LoginId}`, () => {
+        let responseBody = JSON.parse(response.body.toString())
+        client.log(responseBody)
+    })
+%}
+
+

@@ -1,0 +1,27 @@
+using BlazorBootstrap;
+using ServerFramework.CommonUtils.Helper;
+
+namespace AdminWeb.Services.Utils;
+
+public static class ToastMessageCreator
+{
+    public static ToastMessage CreateToastWithTitle(ToastType type, string title, string message)
+    {
+        return new ToastMessage()
+        {
+            Type = type,
+            Title = title,
+            HelpText = $"{DateTime.UtcNow.ToServerTime()}",
+            Message = message,
+        };
+    }
+
+    public static ToastMessage CreateToastWithoutTitle(ToastType type, string message)
+    {
+        return new ToastMessage()
+        {
+            Type = type,
+            Message = message,
+        };
+    }
+}

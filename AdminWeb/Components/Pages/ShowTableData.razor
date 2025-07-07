@@ -1,0 +1,25 @@
+@page "/ShowTableData"
+<h3>ShowTableData</h3>
+
+<Grid TItem="TableDataInfo"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="GetTableNameProvider"
+      FixedHeader="true"
+      AllowPaging="true"
+      Responsive="true"
+      PageSize="10"
+      Unit="Unit.Px">
+    <GridColumns>
+        <GridColumn TItem="TableDataInfo" HeaderText="TableName">@context.TableName</GridColumn>
+    </GridColumns>
+</Grid>
+
+@code {
+    private async Task<GridDataProviderResult<TableDataInfo>> GetTableNameProvider(GridDataProviderRequest<TableDataInfo> request)
+    {
+        if (_tableDataList is null)
+            _tableDataList = _GetTableDataList();
+        
+        return await Task.FromResult(request.ApplyTo(_tableDataList));
+    }   
+}

@@ -1,0 +1,34 @@
+{
+    "RedisSettings":
+    {
+        "ConnectionInfos":
+        {
+            "SessionRedisService":
+            [
+                {
+                    "Host": "127.0.0.1",
+                    "Port": 6379,
+                    "Channel": "session_1"    
+                },
+                {
+                    "Host": "127.0.0.1",
+                    "Port": 6379,
+                    "Channel": "session_2"
+                }
+            ]
+        }
+    },
+    "RedLockConnections":
+    [
+        {
+            "Host": "localhost",
+            "Port": 6379
+        }
+    ],
+    
+    "LockExpiryTime": 30,
+    "LockWaitTime" : 10,
+    "LockRetryTime" : 1,
+    "SessionExpiry": true,
+    "SessionExpirySeconds": 3600
+}

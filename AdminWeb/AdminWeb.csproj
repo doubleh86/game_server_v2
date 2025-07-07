@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>warnings</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Blazor.Bootstrap" Version="3.3.1" />
+      <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot\lib\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DataTableLoader\DataTableLoader.csproj" />
+      <ProjectReference Include="..\ServerFramework\ServerFramework.csproj" />
+    </ItemGroup>
+
+</Project>

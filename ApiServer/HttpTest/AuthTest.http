@@ -1,0 +1,55 @@
+
+
+@default_url = http://127.0.0.1:1200
+
+### Send Auth
+
+POST {{default_url}}/auth/get-account-info
+Content-Type: application/json
+
+> {%
+
+    client.global.set("sequence", 0)
+    client.global.set("subSequence", 0)
+
+    let requestPacket = {
+        LoginId: "ccccc",
+        Sequence: client.global.get("sequence"),
+        SubSequence: client.global.get("subSequence")
+    }
+
+    let body = JSON.stringify(requestPacket);
+    
+    client.test(`auth test ${requestPacket.LoginId}}`, () =>{
+        let responseBody = JSON.parse(response.body.toString())
+        client.global.set("accountId", responseBody.AccountId)
+        client.global.set("token", responseBody.Token)
+        client.log(responseBody)
+    })
+%}
+
+### Send User Info
+
+POST {{default_url}}/user/get-user-info
+Content-Type: application/json
+
+> {%
+    let sequence = client.global.get("sequence")
+    let subSequence = client.global.get("subSequence")
+    
+    const requestPacket = {
+        Token: client.global.get("token"),
+        Sequence: sequence + 1,
+        SubSequence : subSequence = 0,
+        AccountId: client.global.get("accountId")
+    }
+    
+    client.test(`get user info ${requestPacket.AccountId}`, () =>{
+        let responseBody = JSON.parse(response.body.toString())
+        client.global.set("sequence", sequence)
+        client.global.set("subSequence", subSequence)
+        
+        client.log(responseBody)
+    })
+ %}
+

@@ -1,0 +1,76 @@
+﻿@using AdminWeb.Services
+@using AdminWeb.Services.Utils
+@inherits LayoutComponentBase
+@inject AdminToolServerService ServerService
+@inject AdminUserService AdminService
+@inject LanguageService LanguageService
+
+<BlazorBootstrapLayout StickyHeader="true">
+    <HeaderSection>
+        <HeaderComponent/>
+    </HeaderSection>
+
+    <SidebarSection>
+        <Sidebar2 Href="/"
+                  Title="AdminTool"
+                  BadgeText=@_serverEnv
+                  DataProvider="Sidebar2DataProvider"
+                  WidthUnit="Unit.Px" />
+    </SidebarSection>
+
+    <ContentSection>
+        @Body
+    </ContentSection>
+
+    @* <FooterSection> *@
+    @*     Footer links... *@
+    @* </FooterSection> *@
+    
+</BlazorBootstrapLayout>
+<Toasts class="p-3" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
+@code {
+    private IEnumerable<NavItem> _navItems;
+    private string _serverEnv = string.Empty;
+    private string _language = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender == true)
+        {
+            await AdminService.InitializeAsync();
+            await AdminService.CallRequestRefresh();
+        }
+        
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _language = LanguageService.GetAcceptLanguage();
+        _serverEnv = $"[{ServerService.ServerExtraOption.ServerEnv}]";
+        
+        await base.OnInitializedAsync();
+    }
+
+    private async Task<Sidebar2DataProviderResult> Sidebar2DataProvider(Sidebar2DataProviderRequest request)
+    {
+        _navItems ??= GetNavItems();
+        return await Task.FromResult(request.ApplyTo(_navItems));
+    }
+
+    private IEnumerable<NavItem> GetNavItems()
+    {
+        _navItems = new List<NavItem>
+        {
+            new() { Id = "1", Href = "/", IconName = IconName.HouseDoorFill, Text = "Home", Match=NavLinkMatch.All},
+            
+            new() { Id = "2", Href = "/EventManagePage", IconName = IconName.CalendarEvent, Text = "Event Manage"},
+            new() { Id = "10", Href = "/ShowTableData", IconName = IconName.People, Text = "Show Table Data"},
+            
+            new() { Id = "11", IconName = IconName.People, Text="Admin User"},
+            new() { Id = "1101", Href = "/admin-user-list", IconName = IconName.People, Text = "Admin List", ParentId = "11"},
+        };
+
+        return _navItems;
+    }
+}
