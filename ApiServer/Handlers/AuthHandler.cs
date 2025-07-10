@@ -6,7 +6,7 @@ using ServerFramework.SqlServerServices.Models;
 
 namespace ApiServer.Handlers;
 
-public class AuthHandler(ApiServerService serverService) : BaseHandler(serverService)
+public class AuthHandler(ApiServerService serverService) : BaseHandler(0, serverService)
 {
     public override Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo) => Task.CompletedTask;
     

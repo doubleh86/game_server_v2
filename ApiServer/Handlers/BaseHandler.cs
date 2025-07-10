@@ -10,14 +10,16 @@ namespace ApiServer.Handlers;
 
 public abstract class BaseHandler : IDisposable
 {
+    protected readonly long _accountId;
     protected LoggerService _loggerService;
     private SharedDbContext _sharedDbContext;
 
     private readonly Dictionary<string, IGameModule> _modules = [];
     public abstract Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo);
 
-    protected BaseHandler(ApiServerService serverService)
+    protected BaseHandler(long accountId, ApiServerService serverService)
     {
+        _accountId = accountId;
         _loggerService = serverService.LoggerService;
     }
 

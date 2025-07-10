@@ -5,15 +5,9 @@ using ServerFramework.SqlServerServices.Models;
 
 namespace ApiServer.Handlers;
 
-public class UserHandler : BaseHandler
+public class UserHandler(long accountId, ApiServerService service) : BaseHandler(accountId, service)
 {
-    private readonly long _accountId;
     
-    public UserHandler(long accountId, ApiServerService service) : base(service)
-    {
-        _accountId = accountId;
-    }
-
     public override Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
     {
         var gameUserModule = new GameUserModule(_accountId, masterDbInfo, slaveDbInfo);

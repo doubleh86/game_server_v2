@@ -4,7 +4,6 @@ using ApiServer.Utils;
 using Microsoft.AspNetCore.Mvc;
 using NetworkProtocols.WebApi;
 using NetworkProtocols.WebApi.Commands.Shop;
-using NetworkProtocols.WebApi.Commands.User;
 
 namespace ApiServer.Controllers;
 

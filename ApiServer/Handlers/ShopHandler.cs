@@ -7,14 +7,8 @@ using ServerFramework.SqlServerServices.Models;
 
 namespace ApiServer.Handlers;
 
-public class ShopHandler : BaseHandler
+public class ShopHandler(long accountId, ApiServerService serverService) : BaseHandler(accountId, serverService)
 {
-    private long _accountId;
-    public ShopHandler(long accountId, ApiServerService serverService) : base(serverService)
-    {
-        _accountId = accountId;
-    }
-    
     public override Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
     {
         var inventoryModule = new InventoryModule(_accountId, masterDbInfo, slaveDbInfo);
