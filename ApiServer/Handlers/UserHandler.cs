@@ -16,10 +16,10 @@ public class UserHandler : BaseHandler
 
     public override Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
     {
-        var gameUserModule = new GameUserModule(masterDbInfo, slaveDbInfo);
+        var gameUserModule = new GameUserModule(_accountId, masterDbInfo, slaveDbInfo);
         _AddModule(nameof(GameUserModule), gameUserModule);
         
-        var inventoryModule = new InventoryModule(masterDbInfo, slaveDbInfo);
+        var inventoryModule = new InventoryModule(_accountId, masterDbInfo, slaveDbInfo);
         _AddModule(nameof(InventoryModule), inventoryModule);
         
         return Task.CompletedTask;
@@ -28,10 +28,10 @@ public class UserHandler : BaseHandler
     public async Task<GameUserDbModel> GetUserInfoAsync()
     {
         var module = GetModule<GameUserModule>();
-        var result = await module.GetGameUserDbModel(_accountId);
+        var result = await module.GetGameUserDbModel();
         
         var inventoryModule = GetModule<InventoryModule>();
-        var list = await inventoryModule.GetInventoryListAsync(_accountId);
+        var list = await inventoryModule.GetInventoryListAsync();
         
         return result;
     }

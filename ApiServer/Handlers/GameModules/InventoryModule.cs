@@ -8,21 +8,23 @@ namespace ApiServer.Handlers.GameModules;
 
 public sealed class InventoryModule : BaseModule<InventoryDbContext>, IGameModule
 {
+    public long AccountId { get; set; }
     private List<InventoryDbResult> _inventoryList;
-    public InventoryModule(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo) : base(masterDbInfo, slaveDbInfo)
+    public InventoryModule(long accountId, SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo) : base(masterDbInfo, slaveDbInfo)
     {
-        
+        AccountId = accountId;
     }
     
-    public async Task<List<InventoryDbResult>> GetInventoryListAsync(long accountId)
+    public async Task<List<InventoryDbResult>> GetInventoryListAsync()
     {
         if (_inventoryList != null)
             return _inventoryList;
         
         var dbContext = GetDbContext(true);
-        _inventoryList = await dbContext.GetInventoryDbResult(accountId);
+        _inventoryList = await dbContext.GetInventoryDbResult(AccountId);
         
         return _inventoryList;
     }
 
+    
 }
