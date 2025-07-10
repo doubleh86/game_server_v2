@@ -23,7 +23,7 @@ Thumbs.db
 .env
 
 # setting Files
-redisSettings.json
-sqlsettings.json
-appsettings.json
-appsettings.Development.json
+**/redisSettings.json
+**/sqlsettings.json
+**/appsettings.json
+**/appsettings.Development.json
