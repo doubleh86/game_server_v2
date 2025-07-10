@@ -6,3 +6,8 @@ public enum ResultCode
     GameError = 1,
     SystemError = 2,
 }
+
+public enum DbContextResultCode
+{
+    NotRegisteredFactory = 1
+}

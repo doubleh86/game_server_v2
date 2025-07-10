@@ -28,10 +28,10 @@ public class UserHandler : BaseHandler
     public async Task<GameUserDbModel> GetUserInfoAsync()
     {
         var module = GetModule<GameUserModule>();
-        var result = await module.GetGameUserDbModel();
+        var result = await module.GetGameUserDbModelAsync();
         
         var inventoryModule = GetModule<InventoryModule>();
-        var list = await inventoryModule.GetInventoryListAsync();
+        await inventoryModule.GetInventoryListAsync();
         
         return result;
     }

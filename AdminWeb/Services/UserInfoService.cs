@@ -1,6 +1,7 @@
 using DbContext.MainDbContext;
 using DbContext.MainDbContext.DbResultModel;
 using DbContext.MainDbContext.DbResultModel.AdminTool;
+using DbContext.MainDbContext.SubContexts;
 using DbContext.SharedContext.DbResultModel;
 using ServerFramework.CommonUtils.Helper;
 
@@ -26,7 +27,7 @@ public class UserInfoService
         _accountDbResult = selected;
         var gameDbInfo = _accountDbResult.GetMainDbInfo();
         
-        using var dbContext = new MainDbContext(gameDbInfo);
+        using var dbContext = new GameUserDbContext(gameDbInfo);
         var dbResult = await dbContext.GetUserInfoAsync(_accountDbResult.AccountId);
         if (dbResult == null)
             return null;

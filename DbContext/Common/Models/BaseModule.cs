@@ -1,4 +1,6 @@
+using DbContext.MainDbContext;
 using DbContext.MainDbContext.SubContexts;
+using NetworkProtocols.WebApi;
 using ServerFramework.SqlServerServices.DapperUtils;
 using ServerFramework.SqlServerServices.Models;
 
@@ -11,7 +13,8 @@ public static class SubDbContextFactory
         return key switch
         {
             nameof(InventoryDbContext) => new InventoryDbContext(connectionInfo),
-            _ => null,
+            nameof(GameUserDbContext) => new GameUserDbContext(connectionInfo), 
+            _ => throw new DbContextException(DbContextResultCode.NotRegisteredFactory, $"[{key}] is not registered."),
         };
     }
 }

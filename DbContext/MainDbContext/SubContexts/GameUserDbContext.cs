@@ -3,11 +3,11 @@ using DbContext.MainDbContext.ProcedureCommands;
 using ServerFramework.SqlServerServices.DapperUtils;
 using ServerFramework.SqlServerServices.Models;
 
-namespace DbContext.MainDbContext;
+namespace DbContext.MainDbContext.SubContexts;
 
-public class MainDbContext : DapperServiceBase
+public class GameUserDbContext : DapperServiceBase
 {
-    public MainDbContext(SqlServerDbInfo serverInfo) : base(serverInfo)
+    public GameUserDbContext(SqlServerDbInfo serverInfo) : base(serverInfo)
     {
     }
 

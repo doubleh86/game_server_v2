@@ -103,6 +103,7 @@ public abstract class ApiControllerBase: ControllerBase, IDisposable, IAsyncDisp
 
     protected string _ErrorResponse(ResponseBase response, ResultCode resultCode, string errorMessage)
     {
+        _service.LoggerService.Warning($"[Message : {errorMessage}][ResultCode: {(int)resultCode}]");
         response ??= new ResponseBase();
         
         response.DebugMessage = errorMessage;

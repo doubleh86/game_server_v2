@@ -19,6 +19,7 @@ public class DataTableDbService : SqlServerServiceBase
     private readonly ConcurrentDictionary<Type, object> _tableMapping = new();
     private DbSet<TestTableData> TestTableData { get; set; }
     private DbSet<EventStoryTable> EventStoryTable { get; set; }
+    private DbSet<ItemInfoTable> ItemInfoTable { get; set; }
     
     public DataTableDbService(SqlServerDbInfo settings, bool isLazyLoading = false, LoggerService logger = null) : base(settings)
     {
@@ -32,12 +33,14 @@ public class DataTableDbService : SqlServerServiceBase
     {
         _tableMapping.TryAdd(typeof(TestTableData), TestTableData);
         _tableMapping.TryAdd(typeof(EventStoryTable), EventStoryTable);
+        _tableMapping.TryAdd(typeof(ItemInfoTable), ItemInfoTable);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<TestTableData>(entity => entity.HasKey(data => data.index_no));
         modelBuilder.Entity<EventStoryTable>(entity => entity.HasKey(data => data.index_no));
+        modelBuilder.Entity<ItemInfoTable>(entity => entity.HasKey(data => data.item_index));
     }
 
     public List<T> LoadData<T>() where T : BaseData
@@ -50,7 +53,6 @@ public class DataTableDbService : SqlServerServiceBase
                 return null; 
             }
                 
-
             return data is not DbSet<T> dbSet ? null : dbSet.ToList();
         }
         catch (Exception e)
