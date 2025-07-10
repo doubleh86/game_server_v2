@@ -1,6 +1,7 @@
 using ApiServer.Handlers.GameModules;
 using ApiServer.Handlers.Models;
 using ApiServer.Services;
+using DbContext.Common.Models;
 using DbContext.MainDbContext;
 using DbContext.MainDbContext.DbResultModel;
 using ServerFramework.SqlServerServices.Models;

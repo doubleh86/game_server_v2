@@ -7,7 +7,7 @@ namespace ApiServer.Handlers.GameModules;
 
 public sealed class InventoryModule : BaseModule<InventoryDbContext>, IGameModule
 {
-    private List<InventoryDbResult> _inventoryList = null;
+    private List<InventoryDbResult> _inventoryList;
     public InventoryModule(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo) : base(masterDbInfo, slaveDbInfo)
     {
         

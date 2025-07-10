@@ -1,7 +1,7 @@
 using ServerFramework.SqlServerServices.DapperUtils;
 using ServerFramework.SqlServerServices.Models;
 
-namespace ApiServer.Handlers.Models;
+namespace DbContext.Common.Models;
 
 public interface IUseSlaveDbContext<T> where T : DapperServiceBase
 {

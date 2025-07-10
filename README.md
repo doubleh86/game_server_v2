@@ -1,4 +1,9 @@
 ## GameServer Framework
------
- -> Used SuperSocket
- -> ASP.NET
+```aiignore
+소켓은 SuperSocket 사용
+ASP.NET
+Blazor
+
+Dapper
+MSSQL
+```
