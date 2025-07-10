@@ -6,15 +6,13 @@ namespace ApiServer.Handlers;
 
 public abstract class BaseHandler : IDisposable
 {
-    private readonly ApiServerService _serverService;
     protected LoggerService _loggerService;
     
     private SharedDbContext _sharedDbContext;
 
     protected BaseHandler(ApiServerService serverService)
     {
-        _serverService = serverService;
-        _loggerService = _serverService.LoggerService;
+        _loggerService = serverService.LoggerService;
     }
 
     protected SharedDbContext _GetSharedDbContext()

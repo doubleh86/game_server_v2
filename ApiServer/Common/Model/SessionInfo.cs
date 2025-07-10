@@ -14,6 +14,7 @@ public class SessionInfo
     public byte SubSequence { get; set; }
         
     public SqlServerDbInfo MainDbInfo { get; set; }
+    public SqlServerDbInfo SlaveMainDbInfo { get; set; }
     public string GetKey() => $"{_Prefix}_{AccountId}";
     
     

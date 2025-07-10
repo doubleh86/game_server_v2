@@ -39,7 +39,7 @@ public class SessionHandler
         return Convert.ToBase64String(hashedBytes);
     }
     
-    public SessionInfo CreateSessionInfo(string loginId, long accountId, byte sequence, byte subSequence, SqlServerDbInfo dbInfo)
+    public SessionInfo CreateSessionInfo(string loginId, long accountId, byte sequence, byte subSequence, SqlServerDbInfo dbInfo, SqlServerDbInfo slaveDbInfo)
     {
         if(_sessionInfo != null)
             throw new ApiServerException(ResultCode.SystemError, "Session already exists");
@@ -54,7 +54,8 @@ public class SessionHandler
             AccessToken = accessToken,
             Sequence = sequence,
             SubSequence = subSequence,
-            MainDbInfo = dbInfo
+            MainDbInfo = dbInfo,
+            SlaveMainDbInfo = slaveDbInfo,
         };
 
         return _sessionInfo;

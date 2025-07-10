@@ -1,3 +1,4 @@
+using ApiServer.Handlers.Models;
 using ApiServer.Services;
 using DbContext.MainDbContext;
 using DbContext.MainDbContext.DbResultModel;
@@ -5,19 +6,40 @@ using ServerFramework.SqlServerServices.Models;
 
 namespace ApiServer.Handlers;
 
-public class UserHandler : BaseHandler
+public class UserHandler : BaseHandler, IUseSlaveDbContext<MainDbContext>
 {
-    private readonly MainDbContext _mainDbContext;
-    public UserHandler(ApiServerService service, SqlServerDbInfo serverDbInfo) : base(service)
+    public List<MainDbContext> DBContextList { get; set; }
+    
+    public MainDbContext MasterDbInfo { get; set; }
+    public MainDbContext SlaveDbInfo { get; set; }
+    
+    public UserHandler(ApiServerService service, SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo) : base(service)
     {
-        _mainDbContext = new MainDbContext(serverDbInfo);
+        InitializedDbContexts(masterDbInfo, slaveDbInfo);
+    }
+
+    public void InitializedDbContexts(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
+    {
+        MasterDbInfo = new MainDbContext(masterDbInfo);
+        if (slaveDbInfo != null)
+        {
+            SlaveDbInfo = new MainDbContext(slaveDbInfo);
+        }
+    }
+
+    public MainDbContext GetDbContext(bool isSlave)
+    {
+        if (isSlave == true && SlaveDbInfo != null)
+            return SlaveDbInfo;
+        
+        return MasterDbInfo;
     }
     
     public async Task<GameUserDbModel> GetUserInfoAsync(long accountId)
     {
-        var result = await _mainDbContext.GetUserInfoAsync(accountId);
+        var result = await GetDbContext(true).GetUserInfoAsync(accountId);
         if(result == null)
-            return await _mainDbContext.CreateNewGameUser(accountId);
+            return await GetDbContext(false).CreateNewGameUser(accountId);
         
         return result;
     }

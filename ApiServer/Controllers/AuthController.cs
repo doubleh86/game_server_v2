@@ -36,7 +36,8 @@ public class AuthController(ApiServerService service) : ApiControllerBase(servic
                                                                result.AccountId, 
                                                                request.Sequence, 
                                                                request.SubSequence, 
-                                                               result.GetMainDbInfo());
+                                                               result.GetMainDbInfo(),
+                                                               result.GetMainDbInfo(isSlave: true));
             
             if(sessionInfo == null)
                 throw new ApiServerException(ResultCode.SystemError, "Create session failed");

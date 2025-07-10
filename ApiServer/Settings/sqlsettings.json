@@ -9,7 +9,7 @@
                 "Port": 1433,
                 "DatabaseName": "shared_db",
                 "UserId": "sa",
-                "Password": "",
+                "Password": "Fkdnsem1!",
                 "MaxPoolSize": 200
             },
             "DataTableDbService":
@@ -18,7 +18,7 @@
                 "Port": 1433,
                 "DatabaseName": "data_db",
                 "UserId": "sa",
-                "Password": "",
+                "Password": "Fkdnsem1!",
                 "modelAssembly": "DataTableLoader.Models, DataTableLoader"
             }
         }

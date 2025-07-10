@@ -18,8 +18,8 @@ public class UserController(ApiServerService service) : ApiControllerBase(servic
         var response = new GetUserCommand.Response();
         try
         {
-            var dbInfo = await _Initialize(request);
-            var handler = new UserHandler(_service, dbInfo);
+            var (dbInfo, slaveDbInfo) = await _Initialize(request);
+            var handler = new UserHandler(_service, dbInfo, slaveDbInfo);
             var result = await handler.GetUserInfoAsync(request.AccountId);
             response.UserLevel = result.user_level;
             

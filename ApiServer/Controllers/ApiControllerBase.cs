@@ -41,7 +41,7 @@ public abstract class ApiControllerBase: ControllerBase, IDisposable, IAsyncDisp
         return _sessionHandler;
     }
 
-    protected async Task<SqlServerDbInfo> _Initialize(RequestBase request)
+    protected async Task<(SqlServerDbInfo, SqlServerDbInfo)> _Initialize(RequestBase request)
     {
         var sessionHandler = _GetSessionHandler(request.AccountId);
         if(sessionHandler == null)
@@ -51,7 +51,7 @@ public abstract class ApiControllerBase: ControllerBase, IDisposable, IAsyncDisp
         if(_InitializeDistributeLock(request.AccountId) == false)
             throw new ApiServerException(ResultCode.SystemError, "Distribute lock create failed");
         
-        return sessionInfo.MainDbInfo;
+        return (sessionInfo.MainDbInfo, sessionInfo.SlaveMainDbInfo);
     }
 
     private async Task <SessionInfo> _CheckSession(string token, long accountId, byte sequence, byte subSequence)
