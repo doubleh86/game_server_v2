@@ -1,6 +1,8 @@
 using ApiServer.Handlers.Models;
 using ApiServer.Services;
+using ApiServer.Utils;
 using DbContext.SharedContext;
+using NetworkProtocols.WebApi;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
 
@@ -12,6 +14,7 @@ public abstract class BaseHandler : IDisposable
     private SharedDbContext _sharedDbContext;
 
     private readonly Dictionary<string, IGameModule> _modules = [];
+    public abstract Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo);
 
     protected BaseHandler(ApiServerService serverService)
     {
@@ -25,16 +28,6 @@ public abstract class BaseHandler : IDisposable
         
         return _sharedDbContext;
     }
-    
-    public virtual Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
-    {
-        return Task.CompletedTask;
-    }
-
-    public virtual void InitializeModules(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
-    {
-        
-    }
 
     protected void _AddModule(string moduleName, IGameModule newModule)
     {
@@ -47,7 +40,7 @@ public abstract class BaseHandler : IDisposable
     protected T GetModule<T>() where T : class, IGameModule
     {
         if (_modules.TryGetValue(typeof(T).Name, out _) == false)
-            return null;
+            throw new ApiServerException(ResultCode.SystemError, $"[{typeof(T).Name}] module not found]");
 
         return _modules[typeof(T).Name] as T;
     }

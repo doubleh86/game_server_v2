@@ -2,11 +2,14 @@ using ApiServer.Services;
 using ApiServer.Utils;
 using DbContext.SharedContext.DbResultModel;
 using NetworkProtocols.WebApi;
+using ServerFramework.SqlServerServices.Models;
 
 namespace ApiServer.Handlers;
 
 public class AuthHandler(ApiServerService serverService) : BaseHandler(serverService)
 {
+    public override Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo) => Task.CompletedTask;
+    
     public async Task<GetAccountDbResult> GetAccountInfoAsync(string loginId)
     {
         var dbContext = _GetSharedDbContext();
@@ -27,4 +30,5 @@ public class AuthHandler(ApiServerService serverService) : BaseHandler(serverSer
         return await dbContext.GetAccountInfoAsync(loginId);
     }
 
+    
 }

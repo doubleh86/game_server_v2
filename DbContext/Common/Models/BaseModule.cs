@@ -1,10 +1,8 @@
-using ApiServer.Handlers.Models;
-using DbContext.Common.Models;
 using DbContext.MainDbContext.SubContexts;
 using ServerFramework.SqlServerServices.DapperUtils;
 using ServerFramework.SqlServerServices.Models;
 
-namespace ApiServer.Handlers.GameModules;
+namespace DbContext.Common.Models;
 
 public static class SubDbContextFactory
 {
