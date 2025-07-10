@@ -21,3 +21,9 @@ Thumbs.db
 
 # 도커/컨테이너 환경 변수 파일
 .env
+
+# setting Files
+redisSettings.json
+sqlsettings.json
+appsettings.json
+appsettings.Development.json
