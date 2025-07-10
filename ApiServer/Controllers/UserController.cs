@@ -19,8 +19,10 @@ public class UserController(ApiServerService service) : ApiControllerBase(servic
         try
         {
             var (dbInfo, slaveDbInfo) = await _Initialize(request);
-            var handler = new UserHandler(_service, dbInfo, slaveDbInfo);
-            var result = await handler.GetUserInfoAsync(request.AccountId);
+            using var handler = new UserHandler(request.AccountId, _service, dbInfo, slaveDbInfo);
+            handler.InitializeModules(dbInfo, slaveDbInfo);
+            
+            var result = await handler.GetUserInfoAsync();
             response.UserLevel = result.user_level;
             
             return _OkResponse(ResultCode.Ok, response);

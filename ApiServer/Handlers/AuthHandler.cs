@@ -26,4 +26,5 @@ public class AuthHandler(ApiServerService serverService) : BaseHandler(serverSer
         
         return await dbContext.GetAccountInfoAsync(loginId);
     }
+
 }

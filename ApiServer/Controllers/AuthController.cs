@@ -26,9 +26,9 @@ public class AuthController(ApiServerService service) : ApiControllerBase(servic
     public async Task<ActionResult<string>> GetAccountInfoAsync([FromBody] AuthCommand.Request request)
     {
         var response = new AuthCommand.Response();
-        var handler = new AuthHandler(_service);
         try
         {
+            using var handler = new AuthHandler(_service);
             var result = await handler.GetAccountInfoAsync(request.LoginId);
             
             var sessionHandler = _GetSessionHandler(result.AccountId);
