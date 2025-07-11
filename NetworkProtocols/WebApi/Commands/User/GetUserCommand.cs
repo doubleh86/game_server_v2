@@ -1,3 +1,5 @@
+using NetworkProtocols.WebApi.ToClientModels;
+
 namespace NetworkProtocols.WebApi.Commands.User;
 
 public class GetUserCommand
@@ -12,7 +14,8 @@ public class GetUserCommand
 
     public class Response : ResponseBase
     {
-        public int UserLevel { get; set; }
-        
+        public GameUserInfo UserInfo { get; set; }
+        public List<AssetInfo> Assets { get; set; }
+        public List<InventoryItemInfo> InventoryItems { get; set; }
     }
 }

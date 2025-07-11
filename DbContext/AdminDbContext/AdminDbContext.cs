@@ -30,7 +30,10 @@ public class AdminDbContext : DapperServiceBase
     {
         await using var connection = _GetConnection();
         var command = new GetAdminUserInfoAsync(this);
-        command.SetParameters(userId);
+        command.SetParameters(new GetAdminUserInfoAsync.InParameters
+        {
+            UserId = userId
+        });
 
         return await command.ExecuteProcedureAsync();
     }
@@ -39,7 +42,12 @@ public class AdminDbContext : DapperServiceBase
     {
         await using var connection = _GetConnection();
         var command = new CreateNewAdminUserAsync(this);
-        command.SetParameters(userId, password, adminType);
+        command.SetParameters(new CreateNewAdminUserAsync.InParameters()
+        {
+            UserId = userId,
+            Password = password,
+            AdminType = adminType
+        });
         
         return await command.ExecuteProcedureAsync();
     }

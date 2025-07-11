@@ -5,7 +5,7 @@ namespace DbContext.Common;
 
 public static class CustomTableDataHelper
 {
-    public static SqlMapper.ICustomQueryParameter CreateCustomQueryParameter<TDbModel>(List<TDbModel> tableData) where TDbModel : IHasCustomTableData<TDbModel>
+    public static SqlMapper.ICustomQueryParameter CreateCustomQueryParameter<TDbModel>(List<TDbModel> tableData) where TDbModel : IHasCustomTableData
     {
         var result = TDbModel.GetDataTable();
         foreach (var value in tableData)

@@ -53,6 +53,8 @@ public class AuthTest
             Console.WriteLine($"Error Message : {response.DebugMessage}");
             return;
         }
+        
+        Console.WriteLine(JsonSerializer.Serialize(response));
     }
 
     private async Task<TResponse> _SendPacket<T, TResponse>(T request) where T : RequestBase

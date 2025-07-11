@@ -1,4 +1,4 @@
-using ApiServer.Handlers;
+using ApiServer.GameService.Handlers.GameHandlers;
 using ApiServer.Services;
 using ApiServer.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +22,9 @@ public class ShopController(ApiServerService service) : ApiControllerBase(servic
             using var handler = new ShopHandler(request.AccountId, _service);
             await handler.InitializeModulesAsync(dbInfo, slaveDbInfo);
             
-            response.Items = await handler.BuyShopItemAsync(request.ItemIndex);
+            var(inventoryInfo, assetInfo) = await handler.BuyShopItemAsync(request.ItemIndex, request.Amount);
+            response.Items = inventoryInfo;
+            response.Asset = assetInfo;
             
             return _OkResponse(ResultCode.Ok, response);
         }

@@ -1,4 +1,4 @@
-using ApiServer.Handlers;
+using ApiServer.GameService.Handlers.GameHandlers;
 using ApiServer.Services;
 using ApiServer.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -44,8 +44,6 @@ public class AuthController(ApiServerService service) : ApiControllerBase(servic
             
             if(await sessionHandler.SetRedisSessionInfo() == false)
                 throw new ApiServerException(ResultCode.SystemError, "Save session failed");
-            
-            _service.LoggerService.Information("get-account-info completed");
             
             response.AccountId = result.AccountId;
             response.AccountType = result.AccountType;

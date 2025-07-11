@@ -106,4 +106,9 @@ public static partial class DataHelper
         var dictionary = _GetDataDictionary<T>();
         return dictionary?.GetDataValue(key);
     }
+    
+    public static T GetData<T>(int key) where T : BaseData
+    {
+        return GetData<T>(key.ToString());
+    }
 }

@@ -1,6 +1,6 @@
 using System.Text.Json;
 using ApiServer.Common.Model;
-using ApiServer.Handlers.SubHandlers;
+using ApiServer.GameService.Handlers;
 using ApiServer.Services;
 using ApiServer.Utils;
 using Microsoft.AspNetCore.Mvc;

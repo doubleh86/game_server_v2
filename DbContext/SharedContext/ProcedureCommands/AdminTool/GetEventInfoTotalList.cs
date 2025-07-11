@@ -12,6 +12,11 @@ public class GetEventInfoTotalList : ProcBaseModelAsync<List<EventDbResult>, Eve
         : base(dbContext, _ProcedureName, transaction)
     {
     }
+    
+    public override void SetParameters(IDbInParameters inParameters)
+    {
+        // No Parameters
+    }
 
     public override async Task<List<EventDbResult>> ExecuteProcedureAsync()
     {
@@ -20,4 +25,6 @@ public class GetEventInfoTotalList : ProcBaseModelAsync<List<EventDbResult>, Eve
         
         return result.ToList();
     }
+
+    
 }

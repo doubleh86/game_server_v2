@@ -36,6 +36,9 @@ public class ShopTest
             Sequence = _loginInfo.Sequence,
             SubSequence = _loginInfo.SubSequence,
             Token = _loginInfo.Token,
+            
+            ItemIndex = 1,
+            Amount = 1,
         };
         
         var response = await ApiTestHelper.SendPacket<ShopBuyCommand.Request, ShopBuyCommand.Response>(request, LoginInfo.ServerUrl);

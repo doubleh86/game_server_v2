@@ -4,7 +4,7 @@ using DbContext.SharedContext.DbResultModel;
 using NetworkProtocols.WebApi;
 using ServerFramework.SqlServerServices.Models;
 
-namespace ApiServer.Handlers;
+namespace ApiServer.GameService.Handlers.GameHandlers;
 
 public class AuthHandler(ApiServerService serverService) : BaseHandler(0, serverService)
 {

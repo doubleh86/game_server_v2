@@ -1,4 +1,5 @@
-using ApiServer.Handlers.Models;
+using ApiServer.GameService.GameModules;
+using ApiServer.GameService.Models;
 using ApiServer.Services;
 using ApiServer.Utils;
 using DbContext.SharedContext;
@@ -6,7 +7,7 @@ using NetworkProtocols.WebApi;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
 
-namespace ApiServer.Handlers;
+namespace ApiServer.GameService.Handlers.GameHandlers;
 
 public abstract class BaseHandler : IDisposable
 {
@@ -15,12 +16,20 @@ public abstract class BaseHandler : IDisposable
     private SharedDbContext _sharedDbContext;
 
     private readonly Dictionary<string, IGameModule> _modules = [];
-    public abstract Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo);
+    // public abstract Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo);
 
     protected BaseHandler(long accountId, ApiServerService serverService)
     {
         _accountId = accountId;
         _loggerService = serverService.LoggerService;
+    }
+
+    public virtual Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
+    {
+        var gameUserModule = new GameUserModule(_accountId, masterDbInfo, slaveDbInfo);
+        _AddModule(nameof(GameUserModule), gameUserModule);
+        
+        return Task.CompletedTask;
     }
 
     protected SharedDbContext _GetSharedDbContext()

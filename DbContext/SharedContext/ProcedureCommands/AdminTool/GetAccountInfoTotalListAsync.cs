@@ -12,6 +12,11 @@ public class GetAccountInfoTotalListAsync : ProcBaseModelAsync<List<GetAccountDb
         : base(dbContext, _ProcedureName, transaction)
     {
     }
+    
+    public override void SetParameters(IDbInParameters inParameters)
+    {
+        // No Parameters
+    }
 
     public override async Task<List<GetAccountDbResult>> ExecuteProcedureAsync()
     {
@@ -20,4 +25,6 @@ public class GetAccountInfoTotalListAsync : ProcBaseModelAsync<List<GetAccountDb
         
         return result.ToList();
     }
+
+    
 }

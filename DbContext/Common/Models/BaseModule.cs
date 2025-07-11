@@ -14,7 +14,7 @@ public static class SubDbContextFactory
         {
             nameof(InventoryDbContext) => new InventoryDbContext(connectionInfo),
             nameof(GameUserDbContext) => new GameUserDbContext(connectionInfo), 
-            _ => throw new DbContextException(DbContextResultCode.NotRegisteredFactory, $"[{key}] is not registered."),
+            _ => throw new DbContextException(DbErrorCode.NotRegisteredFactory, $"[{key}] is not registered."),
         };
     }
 }
@@ -38,7 +38,7 @@ public abstract class BaseModule<TDbContext> : IUseSlaveDbContext<TDbContext>, I
         }
     }
 
-    public TDbContext GetDbContext(bool isSlave)
+    public TDbContext GetDbContext(bool isSlave = false)
     {
         if (isSlave == true && SlaveDbInfo != null)
             return SlaveDbInfo;

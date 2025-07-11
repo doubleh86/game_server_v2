@@ -1,4 +1,4 @@
-namespace ApiServer.Handlers.Models;
+namespace ApiServer.GameService.Models;
 
 public interface IGameModule : IDisposable
 {

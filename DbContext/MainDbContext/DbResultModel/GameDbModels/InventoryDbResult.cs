@@ -4,7 +4,7 @@ using NetworkProtocols.WebApi.ToClientModels;
 
 namespace DbContext.MainDbContext.DbResultModel.GameDbModels;
 
-public class InventoryDbResult : IHasCustomTableData<InventoryDbResult>, IHasClientModel<InventoryItemInfo>
+public class InventoryDbResult : IHasCustomTableData, IHasClientModel<InventoryItemInfo>
 {
     public int item_index { get; set; }
     public int item_amount { get; set; }
@@ -12,7 +12,9 @@ public class InventoryDbResult : IHasCustomTableData<InventoryDbResult>, IHasCli
     public int is_remove { get; set; }
     
     public bool IsRemoved => is_remove == 1;
-
+    
+    public static string GetCustomTableName() => "TVP_ItemInfo";
+    
     public static InventoryDbResult Create(int itemIndex, int amount)
     {
         return new InventoryDbResult()
@@ -22,31 +24,13 @@ public class InventoryDbResult : IHasCustomTableData<InventoryDbResult>, IHasCli
         };
     }
 
-    public void SetTvpData(DataRow row)
+    public void UseItem(int amount)
     {
-        row[nameof(item_index)] = item_index;
-        row[nameof(item_amount)] = item_amount;
+        item_amount = Math.Max(item_amount - amount, 0);
     }
-
-    public static DataTable ToDatabaseTable()
+    public void AddItemAmount(int amount)
     {
-        var result = new DataTable();
-        result.Columns.Add(nameof(item_index), typeof(int));
-        result.Columns.Add(nameof(item_amount), typeof(int));
-
-        return result;
-    }
-
-    public static DataTable CreateTvpDataTable(List<InventoryDbResult> values)
-    {
-        var tvpResult = ToDatabaseTable();
-        foreach (var value in values)
-        {
-            var newRow = tvpResult.NewRow();
-            value.SetTvpData(newRow);
-            tvpResult.Rows.Add(newRow);
-        }
-        return tvpResult;
+        item_amount += amount;
     }
 
     public void SetCustomTableData(DataRow row)
@@ -62,11 +46,6 @@ public class InventoryDbResult : IHasCustomTableData<InventoryDbResult>, IHasCli
         result.Columns.Add(nameof(item_amount), typeof(int));
 
         return result;
-    }
-
-    public static string GetCustomTableName()
-    {
-        return "TVP_ItemInfo";
     }
 
     public InventoryItemInfo ToClient()

@@ -7,7 +7,10 @@ public enum ResultCode
     SystemError = 2,
 }
 
-public enum DbContextResultCode
+public enum DbErrorCode
 {
-    NotRegisteredFactory = 1
+    NotRegisteredFactory = 1,
+    ProcedureError = 2,
+    TransactionError = 3,
+    InParameterWrongType = 4,
 }

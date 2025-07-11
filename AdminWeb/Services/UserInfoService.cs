@@ -1,6 +1,7 @@
 using DbContext.MainDbContext;
 using DbContext.MainDbContext.DbResultModel;
 using DbContext.MainDbContext.DbResultModel.AdminTool;
+using DbContext.MainDbContext.DbResultModel.GameDbModels;
 using DbContext.MainDbContext.SubContexts;
 using DbContext.SharedContext.DbResultModel;
 using ServerFramework.CommonUtils.Helper;

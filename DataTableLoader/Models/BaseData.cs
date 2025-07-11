@@ -2,6 +2,10 @@ namespace DataTableLoader.Models;
 
 public abstract class BaseData
 {
-    public abstract int GetKey();
-    public abstract string GetKeyString();
+    protected abstract int GetKey();
+
+    public virtual string GetKeyString()
+    {
+        return GetKey().ToString();
+    }
 }

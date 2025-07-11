@@ -13,6 +13,11 @@ public class GetAllAdminUserListAsync : ProcBaseModelAsync<List<AdminUserDbModel
     {
     }
     
+    public override void SetParameters(IDbInParameters inParameters)
+    {
+        // No Parameters
+    }
+    
     public override async Task<List<AdminUserDbModel>> ExecuteProcedureAsync()
     {
         var result = await _RunDbProcedureReturnModelAsync();
@@ -20,4 +25,5 @@ public class GetAllAdminUserListAsync : ProcBaseModelAsync<List<AdminUserDbModel
         
         return result.ToList();
     }
+
 }

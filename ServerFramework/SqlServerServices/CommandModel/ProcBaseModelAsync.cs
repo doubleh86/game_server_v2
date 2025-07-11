@@ -8,17 +8,15 @@ namespace ServerFramework.SqlServerServices.CommandModel;
 
 public abstract class ProcBaseModelAsync<TResult, TDbModel>
 {
-    protected const int _ResultOk = 0;
     private const int _ProcedureError = -1;
 
     private readonly DapperServiceBase _dbContext;
     private readonly string _procedureName;
     protected readonly DynamicParameters _parameters;
     private readonly SqlTransaction _transaction;
-    
     public abstract Task<TResult> ExecuteProcedureAsync();
-    
-    
+    public abstract void SetParameters(IDbInParameters inParameters);
+
     protected ProcBaseModelAsync(DapperServiceBase dbContext, string procedureName, SqlTransaction transaction = null)
     {
         _procedureName = procedureName;

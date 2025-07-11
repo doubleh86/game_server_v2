@@ -1,11 +1,10 @@
-using ApiServer.Handlers.Models;
+using ApiServer.GameService.Models;
 using DbContext.Common.Models;
 using DbContext.MainDbContext.DbResultModel.GameDbModels;
 using DbContext.MainDbContext.SubContexts;
-using Microsoft.Extensions.Logging.Abstractions;
 using ServerFramework.SqlServerServices.Models;
 
-namespace ApiServer.Handlers.GameModules;
+namespace ApiServer.GameService.GameModules;
 
 public sealed class InventoryModule : BaseModule<InventoryDbContext>, IGameModule
 {
@@ -22,27 +21,37 @@ public sealed class InventoryModule : BaseModule<InventoryDbContext>, IGameModul
             return _inventoryList;
         
         var dbContext = GetDbContext(true);
-        _inventoryList = await dbContext.GetInventoryDbResult(AccountId);
+        _inventoryList = await dbContext.GetInventoryDbResultAsync(AccountId);
         
         return _inventoryList;
     }
     
     public async Task<bool> AddInventoryItemAsync(int itemIndex, int amount)
     {
-        var dbContext = GetDbContext(false);
-        var dbInfo = await _GetInventoryOneItem(itemIndex) ?? InventoryDbResult.Create(itemIndex, 0);
+        var dbContext = GetDbContext();
+        var dbInfo = await GetInventoryOneItemAsync(itemIndex) ?? InventoryDbResult.Create(itemIndex, 0);
         dbInfo.item_amount += amount;
 
-        return await dbContext.InsertInventoryItem(AccountId, [dbInfo]);
+        return await dbContext.InsertInventoryItemAsync(AccountId, [dbInfo]);
     }
 
-    private async Task<InventoryDbResult> _GetInventoryOneItem(int itemIndex)
+    public async Task<bool> BuyInventoryItemAsync(InventoryDbResult itemInfo, AssetDbResult assetInfo)
+    {
+        var dbContext = GetDbContext();
+        return await dbContext.ShopBuyItemAsync(AccountId, [itemInfo], [assetInfo]);
+    }
+
+    public async Task<InventoryDbResult> GetInventoryOneItemAsync(int itemIndex)
     {
         var list = await GetInventoryListAsync();
-        if (list == null || list.Count == 0)
-            return null;
+        var item = list.FirstOrDefault(x => x.item_index == itemIndex);
+        if(item != null)
+            return item;
         
-        return list.FirstOrDefault(x => x.item_index == itemIndex);
+        item = InventoryDbResult.Create(itemIndex, 0);
+        list.Add(item);
+        return item;
+        
     }
-
+    
 }

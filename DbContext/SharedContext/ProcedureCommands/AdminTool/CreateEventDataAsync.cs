@@ -1,5 +1,7 @@
+using DbContext.Common;
 using DbContext.SharedContext.DbResultModel;
 using Microsoft.Data.SqlClient;
+using NetworkProtocols.WebApi;
 using ServerFramework.SqlServerServices.CommandModel;
 using ServerFramework.SqlServerServices.DapperUtils;
 
@@ -13,15 +15,18 @@ public class CreateEventDataAsync : ProcBaseModelAsync<int, int>
         : base(dbContext, _ProcedureName, transaction)
     {
     }
-
-    public void SetParameters(EventDbResult dbResult)
+    
+    public override void SetParameters(IDbInParameters inParameters)
     {
-        _parameters.Add("@eventId", dbResult.event_id);
-        _parameters.Add("@eventType", dbResult.event_type);
-        _parameters.Add("@tableIndex", dbResult.event_table_index);
-        _parameters.Add("@startDate", dbResult.event_start_date);
-        _parameters.Add("@endDate", dbResult.event_end_date);
-        _parameters.Add("@expiryDate", dbResult.event_expiry_date);
+        if(inParameters is not EventDbResult inParams)
+            throw new DbContextException(DbErrorCode.InParameterWrongType, $"[{GetType().Name}] Parameter Type is wrong");
+        
+        _parameters.Add("@eventId", inParams.event_id);
+        _parameters.Add("@eventType", inParams.event_type);
+        _parameters.Add("@tableIndex", inParams.event_table_index);
+        _parameters.Add("@startDate", inParams.event_start_date);
+        _parameters.Add("@endDate", inParams.event_end_date);
+        _parameters.Add("@expiryDate", inParams.event_expiry_date);
     }
 
     public override async Task<int> ExecuteProcedureAsync()
@@ -31,4 +36,5 @@ public class CreateEventDataAsync : ProcBaseModelAsync<int, int>
 
         return _GetResultCode();
     }
+
 }

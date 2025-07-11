@@ -31,7 +31,10 @@ public partial class SharedDbContext : DapperServiceBase
     {
         await using var connections = _GetConnection();
         var command = new GetAccountInfoByIdAsync(this);
-        command.SetParameters(loginId);
+        command.SetParameters(new GetAccountInfoByIdAsync.InParameters
+        {
+            LoginId = loginId
+        });
 
         return await command.ExecuteProcedureAsync();
     }
@@ -40,7 +43,10 @@ public partial class SharedDbContext : DapperServiceBase
     {
         await using var connections = _GetConnection();
         var command = new CreateAccountInfoAsync(this);
-        command.SetParameters(loginId);
+        command.SetParameters(new CreateAccountInfoAsync.InParameters
+        {
+            LoginId = loginId,
+        });
         
         return await command.ExecuteProcedureAsync();
     }

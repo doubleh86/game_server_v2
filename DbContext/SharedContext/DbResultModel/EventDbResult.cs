@@ -1,6 +1,8 @@
+using ServerFramework.SqlServerServices.CommandModel;
+
 namespace DbContext.SharedContext.DbResultModel;
 
-public class EventDbResult 
+public class EventDbResult : IDbInParameters
 {
     public long event_id { get; set; }
     public int event_type { get; set; }

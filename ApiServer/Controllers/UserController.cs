@@ -1,4 +1,4 @@
-using ApiServer.Handlers;
+using ApiServer.GameService.Handlers.GameHandlers;
 using ApiServer.Services;
 using ApiServer.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -22,8 +22,10 @@ public class UserController(ApiServerService service) : ApiControllerBase(servic
             using var handler = new UserHandler(request.AccountId, _service);
             await handler.InitializeModulesAsync(dbInfo, slaveDbInfo);
             
-            var result = await handler.GetUserInfoAsync();
-            response.UserLevel = result.user_level;
+            var (gameUserInfo, inventoryInfo, assetInfo) = await handler.GetUserInfoAsync();
+            response.UserInfo = gameUserInfo;
+            response.Assets = assetInfo;
+            response.InventoryItems = inventoryInfo;
             
             return _OkResponse(ResultCode.Ok, response);
         }

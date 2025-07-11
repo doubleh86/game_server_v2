@@ -10,7 +10,11 @@ public partial class SharedDbContext
         await using var connection = _GetConnection();
         var command = new GetAccountInfoListAsync(this);
         
-        command.SetParameters(loginId);
+        command.SetParameters(new GetAccountInfoListAsync.InParameters
+        {
+            SearchValue = loginId
+        });
+        
         return await command.ExecuteProcedureAsync();
     }
 

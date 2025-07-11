@@ -7,7 +7,7 @@ using NotifyServer.Services.RedisService;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
 
-namespace ApiServer.Handlers.SubHandlers;
+namespace ApiServer.GameService.Handlers;
 
 public class SessionHandler
 {
