@@ -19,7 +19,7 @@ public class DataTableDbService : SqlServerServiceBase
     private readonly ConcurrentDictionary<Type, object> _tableMapping = new();
     private DbSet<TestTableData> TestTableData { get; set; }
     private DbSet<EventStoryTable> EventStoryTable { get; set; }
-    private DbSet<ItemInfoTable> ItemInfoTable { get; set; }
+    public DbSet<ItemInfoTable> ItemInfoTable { get; set; }
     private DbSet<AssetInfoTable> AssetInfoTable { get; set; }
     
     public DataTableDbService(SqlServerDbInfo settings, bool isLazyLoading = false, LoggerService logger = null) : base(settings)

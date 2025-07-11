@@ -1,6 +1,8 @@
 @page "/ShowTableData"
 <h3>ShowTableData</h3>
 
+<InputFile @ref="_fileInputRef" id="fileUploader" OnChange="@_HandleFile" style="display:none" />
+
 <Grid TItem="TableDataInfo"
       Class="table table-hover table-bordered table-striped"
       DataProvider="GetTableNameProvider"
@@ -14,7 +16,12 @@
     </GridColumns>
     <GridColumns>
         <GridColumn TItem="TableDataInfo" HeaderText="Download">
-            <Button Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="() => DownloadCsv(context)">Download</Button>
+            <Button Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="() => _DownloadCsv(context)">Download</Button>
+        </GridColumn>
+    </GridColumns>
+    <GridColumns>
+        <GridColumn TItem="TableDataInfo" HeaderText="Upload">
+            <Button Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="() => _DataTableUpload(context)">Upload</Button>
         </GridColumn>
     </GridColumns>
 </Grid>

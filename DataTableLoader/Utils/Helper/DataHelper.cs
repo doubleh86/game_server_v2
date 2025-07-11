@@ -20,6 +20,11 @@ public static partial class DataHelper
         _loggerService = logger;
     }
 
+    public static void ReloadTableData()
+    {
+        LoadAllTableData();
+    }
+
     public static void LoadAllTableData()
     {
         _dataDictionary.Clear();

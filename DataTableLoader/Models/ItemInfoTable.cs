@@ -10,7 +10,7 @@ public class ItemInfoTable : BaseData
     {
         return item_index;
     }
-
+    
     public int GetPrice(int count)
     {
         return item_price * count; 

@@ -1,7 +1,5 @@
 using DbContext.Common;
-using DbContext.MainDbContext.DbResultModel;
 using DbContext.MainDbContext.DbResultModel.GameDbModels;
-using DbContext.MainDbContext.ProcedureCommands;
 using DbContext.MainDbContext.ProcedureCommands.GameUserCommands;
 using Microsoft.Data.SqlClient;
 using NetworkProtocols.WebApi;
