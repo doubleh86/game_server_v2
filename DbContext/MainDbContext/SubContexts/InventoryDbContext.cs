@@ -1,11 +1,10 @@
 using DbContext.MainDbContext.DbResultModel.GameDbModels;
 using DbContext.MainDbContext.ProcedureCommands.InventoryCommands;
-using ServerFramework.SqlServerServices.DapperUtils;
 using ServerFramework.SqlServerServices.Models;
 
 namespace DbContext.MainDbContext.SubContexts;
 
-public class InventoryDbContext : DapperServiceBase
+public sealed class InventoryDbContext : BaseMainDbContext
 {
     public InventoryDbContext(SqlServerDbInfo serverInfo) : base(serverInfo)
     {

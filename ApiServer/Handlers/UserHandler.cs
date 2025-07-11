@@ -29,7 +29,5 @@ public class UserHandler(long accountId, ApiServerService service) : BaseHandler
         
         return result;
     }
-
-
     
 }

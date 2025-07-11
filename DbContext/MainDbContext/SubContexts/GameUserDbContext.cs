@@ -5,7 +5,7 @@ using ServerFramework.SqlServerServices.Models;
 
 namespace DbContext.MainDbContext.SubContexts;
 
-public class GameUserDbContext : DapperServiceBase
+public sealed class GameUserDbContext : BaseMainDbContext
 {
     public GameUserDbContext(SqlServerDbInfo serverInfo) : base(serverInfo)
     {
