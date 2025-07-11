@@ -56,7 +56,7 @@ public partial class ShowTableData : ComponentBase
         var toDataTableMethod = extType.GetMethod("ToDataTable", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
         var genericMethod = toDataTableMethod!.MakeGenericMethod(tableType);
         
-        var dataTable = genericMethod.Invoke(null, new[] { tableListObj }) as DataTable;
+        var dataTable = genericMethod.Invoke(null, [tableListObj]) as DataTable;
         if (dataTable == null)
             return;
         
