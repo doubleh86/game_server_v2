@@ -1,6 +1,7 @@
 using ApiServer.GameService.Handlers.GameHandlers;
 using ApiServer.Services;
 using ApiServer.Utils;
+using DbContext.Common;
 using Microsoft.AspNetCore.Mvc;
 using NetworkProtocols.WebApi;
 using NetworkProtocols.WebApi.Commands.Shop;
@@ -21,16 +22,20 @@ public class ShopController(ApiServerService service) : ApiControllerBase(servic
             var (dbInfo, slaveDbInfo) = await _Initialize(request);
             using var handler = new ShopHandler(request.AccountId, _service);
             await handler.InitializeModulesAsync(dbInfo, slaveDbInfo);
-            
-            var(inventoryInfo, assetInfo) = await handler.BuyShopItemAsync(request.ItemIndex, request.Amount);
-            response.Items = inventoryInfo;
+
+            var (inventoryInfo, assetInfo) = await handler.BuyShopItemAsync(request.ItemIndex, request.Amount);
+            response.Item = inventoryInfo;
             response.Asset = assetInfo;
-            
+
             return _OkResponse(ResultCode.Ok, response);
         }
         catch (ApiServerException e)
         {
             return _ErrorResponse(response, e.ResultCode, e.Message);
+        }
+        catch (DbContextException e)
+        {
+            return _ErrorResponse(response, ResultCode.DbError, $"[{e.ResultCode}][{e.Message}]");
         }
         catch (Exception e)
         {

@@ -1,9 +1,10 @@
 @using AdminWeb.Services
+@using AdminWeb.Services.GameUserService
 @using AdminWeb.Services.Utils
 @using DbContext.SharedContext.DbResultModel
 
 @inject AdminUserService AdminUserService
-@inject UserInfoService UserInfoService
+@inject GameUserInfoService GameUserInfoService
 @inject CachedService CachedService
 
 <style>
@@ -121,7 +122,7 @@
         if (accountInfo == null)
             return;
 
-        var userDbInfo = await UserInfoService.SetAccountDbResult(accountInfo);
+        var userDbInfo = await GameUserInfoService.SetAccountDbResult(accountInfo);
         if (userDbInfo == null)
         {
             _toastMessages.Add(ToastMessageCreator.CreateToastWithTitle(ToastType.Danger, "System Information", "Game User does not exist!"));
@@ -137,7 +138,7 @@
     private async Task _SignOut()
     {
         await AdminUserService.SignOutAsync();
-        UserInfoService.ResetUserDbInfo();
+        GameUserInfoService.ResetUserDbInfo();
         await AdminUserService.CallRequestRefresh();
         
         _toastMessages.Add(ToastMessageCreator.CreateToastWithTitle(ToastType.Danger, "System Information", "Sign Out"));
@@ -185,7 +186,7 @@
     private async Task _RefreshAsync()
     {
         _isSigned = await AdminUserService.IsSignedAsync();
-        _isSelectedUser = UserInfoService.IsSelectedUser();
+        _isSelectedUser = await GameUserInfoService.IsSelectedUser();
         _adminUserId = AdminUserService.GetUserId;
         await InvokeAsync(StateHasChanged);
     }

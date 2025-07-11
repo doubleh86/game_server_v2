@@ -23,7 +23,7 @@ public class ShopHandler(long accountId, ApiServerService serverService) : BaseH
         return Task.CompletedTask;
     }
 
-    public async Task<(List<InventoryItemInfo>, AssetInfo)> BuyShopItemAsync(int itemIndex, int amount)
+    public async Task<(InventoryItemInfo, AssetInfo)> BuyShopItemAsync(int itemIndex, int amount)
     {
         var tableData = DataHelper.GetData<ItemInfoTable>(itemIndex);
         if (tableData == null)
@@ -41,8 +41,7 @@ public class ShopHandler(long accountId, ApiServerService serverService) : BaseH
         
         await inventoryModule.BuyInventoryItemAsync(itemInfo, assetInfo);
         
-        var list = await inventoryModule.GetInventoryListAsync();
-        return (list.Select(x => x.ToClient()).ToList(), assetInfo.ToClient());
+        return (itemInfo.ToClient(), assetInfo.ToClient());
     }
 
     private async Task<(bool, AssetDbResult)> _IsPossiblePayment(int assetType, int price)

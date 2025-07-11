@@ -17,7 +17,7 @@ public class ShopBuyCommand
 
     public class Response : ResponseBase
     {
-        public List<InventoryItemInfo> Items { get; set; }
+        public InventoryItemInfo Item { get; set; }
         public AssetInfo Asset { get; set; }
     }    
 }

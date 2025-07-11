@@ -12,6 +12,11 @@
     <GridColumns>
         <GridColumn TItem="TableDataInfo" HeaderText="TableName">@context.TableName</GridColumn>
     </GridColumns>
+    <GridColumns>
+        <GridColumn TItem="TableDataInfo" HeaderText="Download">
+            <Button Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="() => DownloadCsv(context)">Download</Button>
+        </GridColumn>
+    </GridColumns>
 </Grid>
 
 @code {

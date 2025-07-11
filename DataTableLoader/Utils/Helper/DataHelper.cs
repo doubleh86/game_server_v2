@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using DataTableLoader.Models;
-using JetBrains.Annotations;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
 
@@ -70,6 +69,12 @@ public static partial class DataHelper
         return true;
     }
 
+    public static Type GetInheritedClassForAdmin(string modelAssembly, string tableName, Type baseType)
+    {
+        var list = _GetInheritedClasses(modelAssembly, baseType);
+        return list.FirstOrDefault(x => x.Name == tableName);
+    }
+
     private static List<Type> _GetInheritedClasses(string modelAssembly, Type baseType)
     {
         var splitInfo = modelAssembly.Split(',');
@@ -94,7 +99,7 @@ public static partial class DataHelper
         
         return _dataDictionary[typeof(T).Name] as DataDictionary<T>;
     }
-
+    
     public static List<T> GetDataList<T>() where T : BaseData
     {
         var dictionary = _GetDataDictionary<T>();

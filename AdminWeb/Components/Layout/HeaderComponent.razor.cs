@@ -22,7 +22,7 @@ public partial class HeaderComponent : ComponentBase
         if (_isSelectedUser == false)
             return;
 
-        var userDbInfo = UserInfoService.GetUserDbModel();
+        var userDbInfo = GameUserInfoService.GetUserDbModel();
         if (userDbInfo.account_id < 1)
             return;
         

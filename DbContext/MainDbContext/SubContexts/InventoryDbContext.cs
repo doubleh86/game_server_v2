@@ -51,19 +51,24 @@ public sealed class InventoryDbContext : BaseMainDbContext
         await connection.OpenAsync();
         if (await connection.BeginTransactionAsync(IsolationLevel.ReadUncommitted) is not SqlTransaction transaction)
             throw new DbContextException(DbErrorCode.TransactionError, "ShopBuyItemAsync transaction is not open");
-        
+
         try
         {
             var result = await _InsertInventoryItemAsync(accountId, itemList, transaction);
             if (result == false)
                 throw new DbContextException(DbErrorCode.ProcedureError, "_InsertInventoryItemAsync error");
-            
+
             var result2 = await _UpdateAssetInfoAsync(accountId, assetList, transaction);
-            if(result2 == false)
+            if (result2 == false)
                 throw new DbContextException(DbErrorCode.ProcedureError, "_UpdateAssetInfoAsync error");
-            
+
             transaction.Commit();
             return true;
+        }
+        catch (DbContextException)
+        {
+            transaction.Rollback();
+            throw;
         }
         catch (Exception e)
         {

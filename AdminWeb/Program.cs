@@ -1,5 +1,7 @@
 using AdminWeb.Components;
 using AdminWeb.Services;
+using AdminWeb.Services.GameUserService;
+using BlazorDownloadFile;
 using Blazored.SessionStorage;
 using DataTableLoader.Utils;
 using DataTableLoader.Utils.Helper;
@@ -39,12 +41,13 @@ void AddCustomServices(IServiceCollection services)
 {
     services.AddBlazorBootstrap();
     services.AddBlazoredSessionStorage();
+    services.AddBlazorDownloadFile();
     
     services.AddSingleton<AdminToolServerService>();
     services.AddSingleton<CachedService>();
     services.AddSingleton<EventInfoService>();
     services.AddScoped<AdminUserService>();
-    services.AddScoped<UserInfoService>();
+    services.AddScoped<GameUserInfoService>();
     
     services.AddHttpContextAccessor();
     services.AddScoped<LanguageService>();

@@ -64,8 +64,11 @@
         {
             new() { Id = "1", Href = "/", IconName = IconName.HouseDoorFill, Text = "Home", Match=NavLinkMatch.All},
             
-            new() { Id = "2", Href = "/EventManagePage", IconName = IconName.CalendarEvent, Text = "Event Manage"},
-            new() { Id = "10", Href = "/ShowTableData", IconName = IconName.People, Text = "Show Table Data"},
+            new() { Id = "2", IconName = IconName.PersonRolodex, Text = "User Info"},
+            new() { Id = "201", Href = "/default-game-user-info", IconName = IconName.Person, Text = "Default Info", ParentId = "2"},
+            
+            new() { Id = "3", Href = "/EventManagePage", IconName = IconName.CalendarEvent, Text = "Event Manage"},
+            new() { Id = "4", Href = "/ShowTableData", IconName = IconName.People, Text = "Show Table Data"},
             
             new() { Id = "11", IconName = IconName.People, Text="Admin User"},
             new() { Id = "1101", Href = "/admin-user-list", IconName = IconName.People, Text = "Admin List", ParentId = "11"},
