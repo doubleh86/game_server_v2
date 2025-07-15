@@ -11,7 +11,7 @@ public static class ToastMessageCreator
         {
             Type = type,
             Title = title,
-            HelpText = $"{DateTime.UtcNow.ToServerTime()}",
+            HelpText = $"{TimeZoneHelper.UtcNow.ToServerTime()}",
             Message = message,
         };
     }

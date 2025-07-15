@@ -18,4 +18,17 @@ public static class CommonHelper
         var rnd = new Random();
         return listData.OrderBy(a => rnd.Next()).ToList();
     }
+
+    public static (int, int, int) ParseStringTimeToInt(string timeString)
+    {
+        var timeInt = int.Parse(timeString);
+        if(timeInt <= 2359)
+            timeInt *= 100;
+        
+        var hours = timeInt / 10000;
+        var minutes = (timeInt / 100) % 100;
+        var seconds = timeInt % 100;
+        
+        return (hours, minutes, seconds);
+    }
 }

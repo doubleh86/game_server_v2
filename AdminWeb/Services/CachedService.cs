@@ -1,5 +1,6 @@
 using DbContext.SharedContext;
 using DbContext.SharedContext.DbResultModel;
+using ServerFramework.CommonUtils.Helper;
 
 namespace AdminWeb.Services;
 
@@ -27,22 +28,23 @@ public class CachedService
 
     public async Task LoadAccountTotalListAsync(bool forceReload = false)
     {
+        var currentUtcTime = TimeZoneHelper.UtcNow;
         if (forceReload == true)
         {
             using var dbContext = SharedDbContext.Create();
             _accountList = await dbContext.GetAccountInfoTotalListAsync();
             
-            _lastReloadTime = DateTime.UtcNow;
+            _lastReloadTime = currentUtcTime;
             return;
         }
         
-        var timeDiff = DateTime.UtcNow - _lastReloadTime;
+        var timeDiff = currentUtcTime - _lastReloadTime;
         if (timeDiff.TotalSeconds > (60 * 5))
         {
             using var dbContext = SharedDbContext.Create();
             _accountList = await dbContext.GetAccountInfoTotalListAsync();
             
-            _lastReloadTime = DateTime.UtcNow;
+            _lastReloadTime = currentUtcTime;
         }
     }
 }

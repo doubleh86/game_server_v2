@@ -11,9 +11,12 @@ public class ConfigurationHelper
         var configurationBuilder = new ConfigurationBuilder();
         foreach (var configFile in configFiles)
         {
-            if(File.Exists(configFile) == false)
+            if (File.Exists(configFile) == false)
+            {
+                Console.WriteLine($"File {configFile} does not exist");
                 continue;
-            
+            }
+                
             configurationBuilder.AddJsonFile(configFile);    
         }
         

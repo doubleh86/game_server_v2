@@ -9,7 +9,7 @@ namespace DbContext.SharedContext.ProcedureCommands.AdminTool;
 
 public class CreateEventDataAsync : ProcBaseModelAsync<int, int>
 {
-    private const string _ProcedureName = "dbo.update_event_data";
+    private const string _ProcedureName = "dbo.gsp_update_event_data";
     
     public CreateEventDataAsync(DapperServiceBase dbContext, SqlTransaction transaction = null) 
         : base(dbContext, _ProcedureName, transaction)
@@ -22,11 +22,13 @@ public class CreateEventDataAsync : ProcBaseModelAsync<int, int>
             throw new DbContextException(DbErrorCode.InParameterWrongType, $"[{GetType().Name}] Parameter Type is wrong");
         
         _parameters.Add("@eventId", inParams.event_id);
-        _parameters.Add("@eventType", inParams.event_type);
+        _parameters.Add("@eventTypeId", inParams.event_type_id);
         _parameters.Add("@tableIndex", inParams.event_table_index);
         _parameters.Add("@startDate", inParams.event_start_date);
         _parameters.Add("@endDate", inParams.event_end_date);
         _parameters.Add("@expiryDate", inParams.event_expiry_date);
+        _parameters.Add("@extraValue", inParams.event_extra_value);
+        _parameters.Add("@eventPeriodType", inParams.event_period_type);
     }
 
     public override async Task<int> ExecuteProcedureAsync()

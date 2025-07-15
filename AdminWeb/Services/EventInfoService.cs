@@ -37,7 +37,7 @@ public class EventInfoService : IDisposable
     {
         var newEvent = new EventDbResult
         {
-            event_type = eventType,
+            event_type_id = eventType,
             event_table_index = eventTableIndex,
             event_start_date = startDate,
             event_end_date = endDate,

@@ -13,7 +13,7 @@
       Unit="Unit.Px">
     <GridColumns>
         <GridColumn TItem="EventDbResult" HeaderText="Id" PropertyName="event_id">@context.event_id</GridColumn>
-        <GridColumn TItem="EventDbResult" HeaderText="Type" PropertyName="event_type">@context.event_type</GridColumn>
+        <GridColumn TItem="EventDbResult" HeaderText="Type" PropertyName="event_type">@context.event_type_id</GridColumn>
         <GridColumn TItem="EventDbResult" HeaderText=@_startDateHeader PropertyName="event_start_date">@context.event_start_date.ToServerTime()</GridColumn>
         <GridColumn TItem="EventDbResult" HeaderText=@_endDateHeader PropertyName="event_end_date">@context.event_end_date.ToServerTime()</GridColumn>
         <GridColumn TItem="EventDbResult" HeaderText=@_expiryDateHeader PropertyName="event_expiry_date">@context.event_expiry_date.ToServerTime()</GridColumn>

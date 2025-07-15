@@ -1,6 +1,7 @@
 using System.Data;
 using DbContext.Common.Models;
 using NetworkProtocols.WebApi.Commands.User;
+using ServerFramework.CommonUtils.Helper;
 
 namespace DbContext.MainDbContext.DbResultModel.GameDbModels;
 
@@ -28,7 +29,7 @@ public class AssetDbResult : IHasCustomTableData, IHasClientModel<AssetInfo>
         {
             asset_type = assetType,
             amount = amount,
-            update_date = DateTime.UtcNow
+            update_date = TimeZoneHelper.UtcNow
         };
     }
     

@@ -9,7 +9,7 @@ namespace ApiServerTest.ApiTest;
 
 public class AuthTest
 {
-    private string _serverUrl = "http://127.0.0.1:1200";
+    private string _serverUrl = "http://127.0.0.1:18888";
     private string _loginId = "ccccc";
     private byte _sequence = 0;
     private byte _subSequence = 0;

@@ -1,0 +1,26 @@
+{
+    "SqlServerDbSettings":
+    {
+        "ConnectionInfos":
+        {
+            "SharedDbContext":
+            {
+                "Ip" : "127.0.0.1",
+                "Port": 1433,
+                "DatabaseName": "shared_db",
+                "UserId": "sa",
+                "Password": "",
+                "MaxPoolSize": 200
+            },
+            "DataTableDbService":
+            {
+                "Ip" : "127.0.0.1",
+                "Port": 1433,
+                "DatabaseName": "data_db",
+                "UserId": "sa",
+                "Password": "",
+                "modelAssembly": "DataTableLoader.Models, DataTableLoader"
+            }
+        }
+    }
+}
