@@ -129,7 +129,7 @@ public class EventDbResult : IDbInParameters
     // 서버의 TimeZone 정보 값을 입력한다.
     private (DateTime, DateTime) _GetOpenCloseTimeRangeTypeUTC(EventExtraValue extraValue)
     {
-        var serverTimeNow = TimeZoneHelper.UtcNow.ToServerTime();
+        var serverTimeNow = TimeZoneHelper.ServerTimeNow;
         var (todayOpenDate, todayCloseDate) = extraValue.GetOpenCloseServerTime(serverTimeNow);
         if (todayCloseDate < serverTimeNow)
         {
@@ -145,7 +145,7 @@ public class EventDbResult : IDbInParameters
     // EventPeriodType의 WeekDay
     private (DateTime, DateTime) _GetOpenCloseWeekDayTypeUTC(EventExtraValue extraValue)
     {
-        var serverTimeNow = TimeZoneHelper.UtcNow.ToServerTime();
+        var serverTimeNow = TimeZoneHelper.ServerTimeNow;
         var todayDayOfWeek = serverTimeNow.DayOfWeek;
         
         var openDayOfWeeks =  extraValue.OpenDayOfWeekList();
@@ -166,7 +166,7 @@ public class EventDbResult : IDbInParameters
 
     private (DateTime, DateTime) _GetOpenCloseWeekDayAndTimeRangeTypeUTC(EventExtraValue extraValue)
     {
-        var serverTimeNow = TimeZoneHelper.UtcNow.ToServerTime();
+        var serverTimeNow = TimeZoneHelper.ServerTimeNow;
         var todayDayOfWeek = serverTimeNow.DayOfWeek;
         
         var openDayOfWeeks =  extraValue.OpenDayOfWeekList();

@@ -10,6 +10,7 @@ public static class TimeZoneHelper
     public static TimeZoneInfo CurrentTimeZone => _timeZoneInfo ??= TimeZoneInfo.Local;
     public static int DiffUtcHours => _diffUtcHours;
     public static DateTime UtcNow => _dateTimeProvider.UtcNow;
+    public static DateTime ServerTimeNow => _dateTimeProvider.UtcNow.ToServerTime();
      
     public static void Initialize(string timeZoneId, string defaultDateTimeVisible = "yyyy-MM-dd HH:mm:ss", IDateTimeProvider dateTimeProvider = null)
     {

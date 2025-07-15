@@ -49,7 +49,7 @@ bool InitializeServices(IServiceProvider provider)
         $"\n" +
         $"=============Server initialized successfully=====================\n" +
         $"= [TimeZoneInfo : {serviceTimeZone}]\n" +
-        $"= [Start Server Time : {TimeZoneHelper.UtcNow.ToServerTime()}]\n" +
+        $"= [Start Server Time : {TimeZoneHelper.ServerTimeNow}]\n" +
         $"=================================================================";
     
     serverService.LoggerService.Information("Service initialized Complete");
