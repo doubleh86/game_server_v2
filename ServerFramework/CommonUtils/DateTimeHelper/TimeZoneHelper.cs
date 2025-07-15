@@ -1,4 +1,4 @@
-namespace ServerFramework.CommonUtils.Helper;
+namespace ServerFramework.CommonUtils.DateTimeHelper;
 
 public static class TimeZoneHelper
 {

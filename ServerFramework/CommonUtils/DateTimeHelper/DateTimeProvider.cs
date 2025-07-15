@@ -1,4 +1,4 @@
-namespace ServerFramework.CommonUtils;
+namespace ServerFramework.CommonUtils.DateTimeHelper;
 
 public interface IDateTimeProvider
 {
