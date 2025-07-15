@@ -6,8 +6,9 @@ using ServerFramework.SqlServerServices.Models;
 
 namespace ApiServer.Services;
 
-public class ApiServerService : IDisposable, IAsyncDisposable
+public partial class ApiServerService : IDisposable, IAsyncDisposable
 {
+    
     private readonly ConfigurationHelper _customConfiguration = new();
     private readonly LoggerService _loggerService = new();
     private readonly RedisServiceManager _redisServiceManager = new();
@@ -16,6 +17,8 @@ public class ApiServerService : IDisposable, IAsyncDisposable
     public LoggerService LoggerService => _loggerService;
     public ConfigurationHelper CustomConfiguration => _customConfiguration;
     public RedLockManager LockManager => _lockManager;
+
+    
 
     public void Initialize()
     {
@@ -84,4 +87,5 @@ public class ApiServerService : IDisposable, IAsyncDisposable
         if (_lockManager != null) 
             await _lockManager.DisposeAsync();
     }
+    
 }

@@ -9,8 +9,14 @@ namespace ApiServer.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UserController(ApiServerService service) : ApiControllerBase(service)
+public class UserController : ApiControllerBase
 {
+    private readonly EventService _eventService;
+    public UserController(ApiServerService service, EventService eventService) : base(service)
+    {
+        _eventService = eventService;
+    }
+    
     [HttpPost]
     [Route("get-user-info")]
     public async Task<ActionResult<string>> GetUserInfo([FromBody] GetUserCommand.Request request)
@@ -26,6 +32,8 @@ public class UserController(ApiServerService service) : ApiControllerBase(servic
             response.UserInfo = gameUserInfo;
             response.Assets = assetInfo;
             response.InventoryItems = inventoryInfo;
+
+            response.GameEventData = _eventService.GetEvents(48);
             
             return _OkResponse(ResultCode.Ok, response);
         }

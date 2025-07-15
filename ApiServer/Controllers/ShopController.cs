@@ -10,8 +10,14 @@ namespace ApiServer.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ShopController(ApiServerService service) : ApiControllerBase(service)
+public class ShopController : ApiControllerBase
 {
+    private readonly EventService _eventService;
+    public ShopController(ApiServerService service, EventService eventService) : base(service)
+    {
+        _eventService = eventService;
+    }
+    
     [HttpPost]
     [Route("shop-buy")]
     public async Task<ActionResult<string>> ShopBuyItem([FromBody] ShopBuyCommand.Request request)
@@ -20,7 +26,7 @@ public class ShopController(ApiServerService service) : ApiControllerBase(servic
         try
         {
             var (dbInfo, slaveDbInfo) = await _Initialize(request);
-            using var handler = new ShopHandler(request.AccountId, _service);
+            using var handler = new ShopHandler(request.AccountId, _service, _eventService);
             await handler.InitializeModulesAsync(dbInfo, slaveDbInfo);
 
             var (inventoryInfo, assetInfo) = await handler.BuyShopItemAsync(request.ItemIndex, request.Amount);

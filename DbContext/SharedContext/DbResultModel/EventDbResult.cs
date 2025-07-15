@@ -1,53 +1,14 @@
-using System.Text.Json;
+using DbContext.Common.Models;
 using NetworkProtocols.Shared.Enums;
+using NetworkProtocols.WebApi.ToClientModels;
 using ServerFramework.CommonUtils.DateTimeHelper;
-using ServerFramework.CommonUtils.Helper;
+using ServerFramework.CommonUtils.EventHelper;
 using ServerFramework.SqlServerServices.CommandModel;
 
 namespace DbContext.SharedContext.DbResultModel;
 
-public class EventDbResult : IDbInParameters
+public class EventDbResult : EventBaseData, IDbInParameters, IHasClientModel<GameEventInfo>
 {
-    internal class EventExtraValue
-    {
-        public string OpenTime { get; set; }
-        public string CloseTime { get; set; }
-        
-        public string OpenDayOfWeek { get; set; }
-        private List<DayOfWeek> _openDayOfWeekList;
-
-        public List<DayOfWeek> OpenDayOfWeekList()
-        {
-            if(_openDayOfWeekList != null)
-                return _openDayOfWeekList;
-            
-            if (string.IsNullOrEmpty(OpenDayOfWeek) == true)
-                return [];
-            
-            _openDayOfWeekList = OpenDayOfWeek.Split(',').Select(Enum.Parse<DayOfWeek>).ToList();
-            return _openDayOfWeekList;
-        }
-
-        public (DateTime, DateTime) GetOpenCloseServerTime(DateTime toServerTime)
-        {
-            return (GetOpenServerTime(toServerTime), GetCloseServerTime(toServerTime));
-        }
-
-        public DateTime GetOpenServerTime(DateTime toServerTime)
-        {
-            var (hour, minute, seconds) = CommonHelper.ParseStringTimeToInt(OpenTime);
-            return TimeZoneHelper.CreateDateTimeToServerTime(toServerTime.Year, toServerTime.Month, toServerTime.Day, 
-                                                             hour, minute, seconds);
-        }
-
-        public DateTime GetCloseServerTime(DateTime toServerTime)
-        {
-            
-            var (hour, minute, seconds) = CommonHelper.ParseStringTimeToInt(CloseTime);
-            return TimeZoneHelper.CreateDateTimeToServerTime(toServerTime.Year, toServerTime.Month, toServerTime.Day, 
-                                                             hour, minute, seconds);
-        }
-    } 
     public long event_id { get; set; }
     public int event_type_id { get; set; }
     public int event_period_type { get; set; } // EventPeriodType enum
@@ -56,51 +17,43 @@ public class EventDbResult : IDbInParameters
     public DateTime event_start_date { get; set; }
     public DateTime event_end_date { get; set; }
     public DateTime event_expiry_date { get; set; }
+    
+    public override DateTime StartDateUtc {
+        get => event_start_date;
+        set => event_start_date = value;
+    }
 
-    private EventExtraValue _extraValue = null;
+    public override DateTime EndDateUtc
+    {
+        get => event_end_date;
+        set => event_end_date = value;
+    }
+
+    public override DateTime ExpireDateUtc
+    {
+        get => event_expiry_date;
+        set => event_expiry_date = value;
+    }
 
     public void SetEventExtraValue(string openTime, string closeTime, List<DayOfWeek> openDayOfWeekList)
     {
-        var extraValue = _GetExtraValue();
-        if(extraValue == null)
-            extraValue = new EventExtraValue();
-        
-        extraValue.OpenTime = openTime;
-        extraValue.CloseTime = closeTime;
-
-        extraValue.OpenDayOfWeek = string.Join(',', openDayOfWeekList.Select(x => (int)x));
-        event_extra_value = JsonSerializer.Serialize(extraValue);
+        _SetEventExtraValue(openTime, closeTime, openDayOfWeekList, out var jsonString);
+        event_extra_value = jsonString;
     }
     
-    private EventExtraValue _GetExtraValue()
+    public override EventExtraValue GetExtraValue()
     {
-        if (_extraValue != null)
-            return _extraValue;
-
-        if (string.IsNullOrEmpty(event_extra_value) == true)
-            return null;
-
-        try
-        {
-            _extraValue = JsonSerializer.Deserialize<EventExtraValue>(event_extra_value);
-            return _extraValue;
-        }
-        catch (Exception)
-        {
-            return null;
-        }
+        return _GetExtraValue(event_extra_value);
     }
 
-    public (DateTime, DateTime) GetOpenCloseDateTimeUTC(out EventStatus status)
+    public override (DateTime, DateTime) GetStartEndDateTimeUTC()
     {
-        status = EventStatus.Expired;
         if (event_period_type == (int)EventPeriodType.Default)
         {
-            status = EventStatus.Active;
-            return (event_start_date,  event_end_date);
+            return (StartDateUtc,  EndDateUtc);
         }
 
-        var extraValue = _GetExtraValue();
+        var extraValue = GetExtraValue();
         if(extraValue == null)
             return (DateTime.MinValue, DateTime.MinValue);
 
@@ -121,9 +74,23 @@ public class EventDbResult : IDbInParameters
                 return (DateTime.MinValue, DateTime.MinValue);
         }
 
+        _GetRealStartEndDateTimeUTC(ref openTimeUtc, ref closeTimeUtc);
         return (openTimeUtc, closeTimeUtc);
     }
 
+    private void _GetRealStartEndDateTimeUTC(ref DateTime openTimeUtc, ref DateTime closeTimeUtc)
+    {
+        if (openTimeUtc < StartDateUtc)
+        {
+            openTimeUtc = StartDateUtc;
+        }
+
+        if (closeTimeUtc > EndDateUtc)
+        {
+            closeTimeUtc = EndDateUtc;
+        }
+    }
+    
     // 특정 시간 대 오픈
     // OpenTime, CloseTime 사용
     // 서버의 TimeZone 정보 값을 입력한다.
@@ -181,5 +148,29 @@ public class EventDbResult : IDbInParameters
         var (openTime, closeTime) = extraValue.GetOpenCloseServerTime(nextOpenDays);
         
         return (openTime.ToUtcTime(), closeTime.ToUtcTime());
+    }
+
+    public GameEventInfo ToClient(EventStatus status)
+    {
+        var toClient = ToClient();
+        toClient.EventStatus = status;
+        
+        return toClient;
+    }
+
+    public GameEventInfo ToClient()
+    {
+        var (startDateUtc, endDateUtc) = GetStartEndDateTimeUTC();
+        
+        return new GameEventInfo()
+        {
+            EventId = event_id,
+            EventIndex = event_table_index,
+            EventTypeId = event_type_id,
+            
+            StartDateTime = startDateUtc,
+            EndDateTime = endDateUtc,
+            ExpireDateTime = ExpireDateUtc
+        };
     }
 }

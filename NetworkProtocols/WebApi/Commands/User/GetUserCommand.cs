@@ -17,5 +17,7 @@ public class GetUserCommand
         public GameUserInfo UserInfo { get; set; }
         public List<AssetInfo> Assets { get; set; }
         public List<InventoryItemInfo> InventoryItems { get; set; }
+        
+        public GameEventData GameEventData { get; set; }
     }
 }

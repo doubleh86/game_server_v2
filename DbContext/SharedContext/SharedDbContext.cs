@@ -51,6 +51,7 @@ public partial class SharedDbContext : DapperServiceBase
         return await command.ExecuteProcedureAsync();
     }
     
+
     public async Task<List<EventDbResult>> GetEventInfoListAsync()
     {
         await using var connection = _GetConnection();

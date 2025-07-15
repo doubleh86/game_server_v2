@@ -14,7 +14,7 @@ public static class TimeZoneHelper
      
     public static void Initialize(string timeZoneId, string defaultDateTimeVisible = "yyyy-MM-dd HH:mm:ss", IDateTimeProvider dateTimeProvider = null)
     {
-        _dateTimeProvider = dateTimeProvider ?? new DefaultDateTimeProvider();
+        SetDateTimeProvider(dateTimeProvider);
         
         _timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
         _diffUtcHours = (int)_timeZoneInfo.GetUtcOffset(UtcNow).TotalHours;
@@ -31,6 +31,10 @@ public static class TimeZoneHelper
         return from.Date.AddDays(daysToAdd);
     }
 
+    public static DateTime CreateDateTimeToServerTime(DateTime dateTime)
+    {
+        return CreateDateTimeToServerTime(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, dateTime.Minute, dateTime.Second);
+    }
     public static DateTime CreateDateTimeToServerTime(int year, int month, int day, int hour, int min, int sec)
     {
         var newDateTime = new DateTime(year, month, day, hour, min, sec, DateTimeKind.Unspecified);
@@ -52,6 +56,12 @@ public static class TimeZoneHelper
         
         fakeDateTimeProvider.SetUtcNow(fixedTime);
     }
+
+    public static void SetDateTimeProvider(IDateTimeProvider dateTimeProvider)
+    {
+        dateTimeProvider ??= new DefaultDateTimeProvider();
+        _dateTimeProvider = dateTimeProvider;
+    }
     
     
 #region DateTime Extension Methods
@@ -69,9 +79,12 @@ public static class TimeZoneHelper
         return TimeZoneInfo.ConvertTimeToUtc(from, _timeZoneInfo);
     }
 
-    public static string ToServerTimeString(this DateTime from)
+    public static string ToTimeString(this DateTime from)
     {
-        return from.ToServerTime().ToString(_defaultDateTimeVisible) + $"({_timeZoneInfo.DisplayName})";
+        if (from.Kind == DateTimeKind.Unspecified)
+            return from.ToString(_defaultDateTimeVisible) + $"({_timeZoneInfo.DisplayName})"; 
+        
+        return from.ToString(_defaultDateTimeVisible) + $"({from.Kind})";
     }
 
 #endregion DateTime Extension Methods

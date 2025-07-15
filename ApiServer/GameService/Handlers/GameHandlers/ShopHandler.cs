@@ -11,7 +11,7 @@ using ServerFramework.SqlServerServices.Models;
 
 namespace ApiServer.GameService.Handlers.GameHandlers;
 
-public class ShopHandler(long accountId, ApiServerService serverService) : BaseHandler(accountId, serverService)
+public class ShopHandler(long accountId, ApiServerService serverService, EventService eventService) : BaseHandler(accountId, serverService, eventService)
 {
     public override Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
     {

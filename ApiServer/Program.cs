@@ -1,9 +1,12 @@
 using ApiServer.Services;
 using DataTableLoader.Utils;
 using DataTableLoader.Utils.Helper;
+using DbContext.SharedContext;
+using DbContext.SharedContext.DbResultModel;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Serilog;
 using ServerFramework.CommonUtils.DateTimeHelper;
+using ServerFramework.CommonUtils.EventHelper;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
 
@@ -17,7 +20,13 @@ builder.WebHost.ConfigureKestrel((_, options) =>
     options.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(30);
 });
 
+#region Add Services
+
 builder.Services.AddSingleton<ApiServerService>();
+builder.Services.AddSingleton<EventService>();
+
+#endregion
+
 
 var app = builder.Build();
 
@@ -27,6 +36,12 @@ app.MapControllers();
 if (InitializeServices(app.Services) == false)
 {
     Console.WriteLine("Initialize service failed");
+    return;
+}
+
+if (await InitializeEventService(app.Services) == false)
+{
+    Console.WriteLine("Initialize event service failed");
     return;
 }
 
@@ -58,6 +73,22 @@ bool InitializeServices(IServiceProvider provider)
     var sqlInfo = serverService.GetSqlServerDbInfo(nameof(DataTableDbService));
     DataHelper.Initialize(sqlInfo, serverService.LoggerService);
     DataHelper.LoadAllTableData();
+
+    return true;
+}
+
+async Task<bool> InitializeEventService(IServiceProvider provider)
+{
+    var serverService = provider.GetService<EventService>();
+    if (serverService == null)
+    {
+        return false;
+    }
+
+    using var dbContext = SharedDbContext.Create();
+
+    var eventList = await dbContext.GetEventInfoListAsync();
+    serverService.Initialize(eventList ?? []);
 
     return true;
 }

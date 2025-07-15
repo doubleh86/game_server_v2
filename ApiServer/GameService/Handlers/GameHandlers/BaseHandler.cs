@@ -3,7 +3,9 @@ using ApiServer.GameService.Models;
 using ApiServer.Services;
 using ApiServer.Utils;
 using DbContext.SharedContext;
+using DbContext.SharedContext.DbResultModel;
 using NetworkProtocols.WebApi;
+using ServerFramework.CommonUtils.EventHelper;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
 
@@ -13,15 +15,17 @@ public abstract class BaseHandler : IDisposable
 {
     protected readonly long _accountId;
     protected LoggerService _loggerService;
+    protected EventService _eventService;
     private SharedDbContext _sharedDbContext;
-
+    
     private readonly Dictionary<string, IGameModule> _modules = [];
     // public abstract Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo);
 
-    protected BaseHandler(long accountId, ApiServerService serverService)
+    protected BaseHandler(long accountId, ApiServerService serverService, EventService eventService = null)
     {
         _accountId = accountId;
         _loggerService = serverService.LoggerService;
+        _eventService = eventService;
     }
 
     public virtual Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
