@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using DataTableLoader.Models;
+using ServerFramework.CommonUtils.EventHelper;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
 
@@ -22,15 +23,15 @@ public static partial class DataHelper
 
     public static void ReloadTableData()
     {
-        LoadAllTableData();
+        _dataDictionary.Clear();
+        _LoadTableData(typeof(BaseData));
     }
 
-    public static void LoadAllTableData()
+    private static void _LoadTableData(Type tableType)
     {
-        _dataDictionary.Clear();
         using var dbService = new DataTableDbService(_settings, logger:_loggerService);
 
-        var classTypes = _GetInheritedClasses(dbService.ModelAssembly, typeof(BaseData));
+        var classTypes = _GetInheritedClasses(dbService.ModelAssembly, tableType);
         if (classTypes == null || classTypes.Count < 1)
             return;
         
@@ -89,7 +90,7 @@ public static partial class DataHelper
         
         var assembly = Assembly.Load(assemblyName);
         var types = assembly.GetTypes().Where(t => t is { IsClass: true, IsAbstract: false } 
-                                                             && t.Namespace == namespaceName 
+                                                             && t.Namespace != null && t.Namespace.StartsWith(namespaceName)  
                                                              && baseType.IsAssignableFrom(t));
         
         return types.ToList();

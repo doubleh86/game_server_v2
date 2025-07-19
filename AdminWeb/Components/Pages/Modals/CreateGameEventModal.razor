@@ -1,0 +1,55 @@
+@using BlazorBootstrap.Components.Form.SelectInput
+@using DataTableLoader.Models.EventModels
+@using ServerFramework.CommonUtils.EventHelper
+@implements IDisposable
+
+<Modal @ref="_modal" Title="Create Admin">
+    <BodyTemplate>
+        <div class="form-group row mb-3 g-2">
+            <label class="col-md-10 col-form-label">Event Category: <span class="text-danger">*</span></label>
+            <div class="col-md-7">
+                <TextInput @bind-Value="@_eventId" Placeholder="Enter Event Type"/>
+            </div>
+            <div class="col-md-5">
+                <Dropdown Color="DropdownColor.Primary">
+                    <DropdownToggleButton>Category</DropdownToggleButton>
+                    <DropdownMenu>
+                        @foreach (EventTableBase.EventCategory category in Enum.GetValues<EventTableBase.EventCategory>())
+                        {
+                            <DropdownItem To="#" Type="DropdownItemType.Button">@category.ToString()</DropdownItem> 
+                        }
+                    </DropdownMenu>
+                </Dropdown>
+                
+            </div>
+        </div>
+    </BodyTemplate>
+</Modal>
+@code {
+    private Modal _modal;
+    private string _eventId;
+    private EventTableBase.EventCategory _selectCategory = EventTableBase.EventCategory.GameEvent; 
+    
+    [Parameter] public EventCallback<bool> OnCreateResult { get; set; }
+    
+    public async Task ShowModalAsync()
+    {
+        await _modal.ShowAsync();
+    }
+
+    private void _SelectCategory()
+    {
+        // _selectCategory = category;
+    }
+    
+    private async Task OnHideModalClick()
+    {
+        await _modal.HideAsync();
+    }
+
+    public void Dispose()
+    {
+        // TODO release managed resources here
+    }
+}
+

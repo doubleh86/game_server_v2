@@ -72,7 +72,7 @@ bool InitializeServices(IServiceProvider provider)
 
     var sqlInfo = serverService.GetSqlServerDbInfo(nameof(DataTableDbService));
     DataHelper.Initialize(sqlInfo, serverService.LoggerService);
-    DataHelper.LoadAllTableData();
+    DataHelper.ReloadTableData();
 
     return true;
 }

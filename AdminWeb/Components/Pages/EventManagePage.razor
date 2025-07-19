@@ -1,13 +1,14 @@
 @page "/EventManagePage"
+@using AdminWeb.Components.Pages.Modals
 @using AdminWeb.Services
 @using DbContext.SharedContext.DbResultModel
 @using ServerFramework.CommonUtils.DateTimeHelper
-@using ServerFramework.CommonUtils.Helper
 @inject EventInfoService EventInfoService
+
 <Grid TItem="EventDbResult"
+      @ref="_grid"
       Class="table table-hover table-bordered table-striped"
       DataProvider="EventDbDataProvider"
-      FixedHeader="true"
       AllowPaging="true"
       Responsive="true"
       PageSize="20"
@@ -20,6 +21,12 @@
         <GridColumn TItem="EventDbResult" HeaderText=@_expiryDateHeader PropertyName="event_expiry_date">@context.ExpireDateUtc.ToServerTime()</GridColumn>
     </GridColumns>
 </Grid>
+
+<div class="d-grid gap-2 d-md-block mt-2">
+    <Button Class="btn btn-primary" Size="ButtonSize.Small" @onclick="_OnClickButton">Create Event</Button>
+</div>
+
+<CreateGameEventModal @ref="_modal" OnCreateResult="OnCreateResult"></CreateGameEventModal>
 
 @code {
     private string _timeZone;

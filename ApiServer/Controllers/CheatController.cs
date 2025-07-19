@@ -12,6 +12,11 @@ public class CheatController : ApiControllerBase
     {
     }
 
+    /// <summary>
+    /// URL : /set-cheat-server?isEnable=true
+    /// </summary>
+    /// <param name="isEnable"></param>
+    /// <returns></returns>
     [HttpGet]
     [Route("set-cheat-server")]
     public async Task<ActionResult<string>> SetCheatServer(bool isEnable)
@@ -20,10 +25,16 @@ public class CheatController : ApiControllerBase
         return await Task.FromResult($"Cheat: [{_service.CheatEnable}]");
     }
 
+    /// <summary>
+    /// URL /change-server-time?changeTime=2025-07-20 17:00:00
+    /// </summary>
+    /// <param name="changeTime"></param>
+    /// <returns></returns>
     [HttpGet]
     [Route("change-server-time")]
     public async Task<ActionResult<string>> ChangeServerTime(DateTime changeTime)
     {
+        
         var serverTime = TimeZoneHelper.CreateDateTimeToServerTime(changeTime);
         TimeZoneHelper.SetFakeDateTime(serverTime.ToUtcTime());
         return await Task.FromResult($"CurrentServerTime: [{TimeZoneHelper.ServerTimeNow.ToTimeString()}][{TimeZoneHelper.UtcNow.ToTimeString()}]");

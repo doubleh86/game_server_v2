@@ -1,10 +1,11 @@
 using System.Collections.Concurrent;
 using DbContext.SharedContext;
 using DbContext.SharedContext.DbResultModel;
+using ServerFramework.CommonUtils.EventHelper;
 
 namespace AdminWeb.Services;
 
-public class EventInfoService : IDisposable
+public class EventInfoService : EventServiceBase<EventDbResult>, IDisposable
 {
     private ConcurrentBag<EventDbResult> _registeredEvents;
     private AdminToolServerService _serverService;

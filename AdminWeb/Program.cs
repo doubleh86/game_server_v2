@@ -67,7 +67,7 @@ async Task InitializeService(IServiceProvider provider)
 
     var sqlInfo = serverService.GetSqlServerDbInfo(nameof(DataTableDbService));
     DataHelper.Initialize(sqlInfo, serverService.LoggerService);
-    DataHelper.LoadAllTableData();
+    DataHelper.ReloadTableData();
     
     var cacheService = provider.GetService<CachedService>();
     if (cacheService == null)

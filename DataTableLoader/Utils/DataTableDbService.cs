@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using DataTableLoader.Models;
+using DataTableLoader.Models.EventModels;
 using Microsoft.EntityFrameworkCore;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices;
@@ -21,6 +22,7 @@ public class DataTableDbService : SqlServerServiceBase
     private DbSet<EventStoryTable> EventStoryTable { get; set; }
     public DbSet<ItemInfoTable> ItemInfoTable { get; set; }
     private DbSet<AssetInfoTable> AssetInfoTable { get; set; }
+    private DbSet<GameEventTable> GameEventTable { get; set; }
     
     public DataTableDbService(SqlServerDbInfo settings, bool isLazyLoading = false, LoggerService logger = null) : base(settings)
     {
@@ -36,6 +38,7 @@ public class DataTableDbService : SqlServerServiceBase
         _tableMapping.TryAdd(typeof(EventStoryTable), EventStoryTable);
         _tableMapping.TryAdd(typeof(ItemInfoTable), ItemInfoTable);
         _tableMapping.TryAdd(typeof(AssetInfoTable), AssetInfoTable);
+        _tableMapping.TryAdd(typeof(GameEventTable), GameEventTable);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -44,6 +47,7 @@ public class DataTableDbService : SqlServerServiceBase
         modelBuilder.Entity<EventStoryTable>(entity => entity.HasKey(data => data.index_no));
         modelBuilder.Entity<ItemInfoTable>(entity => entity.HasKey(data => data.item_index));
         modelBuilder.Entity<AssetInfoTable>(entity => entity.HasKey(data => data.asset_type));
+        modelBuilder.Entity<GameEventTable>(entity => entity.HasKey(data => data.index_no));
     }
 
     public List<T> LoadData<T>() where T : BaseData
