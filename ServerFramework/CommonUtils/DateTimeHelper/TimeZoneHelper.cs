@@ -43,6 +43,11 @@ public static class TimeZoneHelper
         return toServerTime;
     }
 
+    public static DateTime CreateDateTimeToServerTime(DateOnly dateOnly, int hour, int minute, int sec)
+    {
+        return CreateDateTimeToServerTime(dateOnly.Year, dateOnly.Month, dateOnly.Day, hour, minute, sec);
+    }
+
     public static DateTime CreateDateTimeToUtc(int year, int month, int day, int hour, int min, int sec)
     {
         var newDateTime = new DateTime(year, month, day, hour, min, sec, DateTimeKind.Utc);

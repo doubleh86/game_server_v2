@@ -3,6 +3,7 @@
 @using AdminWeb.Services
 @using DbContext.SharedContext.DbResultModel
 @using ServerFramework.CommonUtils.DateTimeHelper
+@using ServerFramework.CommonUtils.EventHelper
 @inject EventInfoService EventInfoService
 
 <Grid TItem="EventDbResult"
@@ -10,16 +11,35 @@
       Class="table table-hover table-bordered table-striped"
       DataProvider="EventDbDataProvider"
       AllowPaging="true"
+      AllowSorting="false"
       Responsive="true"
       PageSize="20"
-      Unit="Unit.Px">
+      Unit="Unit.Px"
+      AllowDetailView="true">
     <GridColumns>
         <GridColumn TItem="EventDbResult" HeaderText="Id" PropertyName="event_id">@context.event_id</GridColumn>
-        <GridColumn TItem="EventDbResult" HeaderText="Type" PropertyName="event_type">@context.event_type_id</GridColumn>
+        <GridColumn TItem="EventDbResult" HeaderText="Type" PropertyName="event_type_id">@_GetEventTypeToString(context)</GridColumn>
+        <GridColumn TItem="EventDbResult" HeaderText="Period" PropertyName="PeriodType">@_GetEventPeriodTypeToString(context)</GridColumn>
         <GridColumn TItem="EventDbResult" HeaderText=@_startDateHeader PropertyName="event_start_date">@context.StartDateUtc.ToServerTime()</GridColumn>
         <GridColumn TItem="EventDbResult" HeaderText=@_endDateHeader PropertyName="event_end_date">@context.EndDateUtc.ToServerTime()</GridColumn>
         <GridColumn TItem="EventDbResult" HeaderText=@_expiryDateHeader PropertyName="event_expiry_date">@context.ExpireDateUtc.ToServerTime()</GridColumn>
+        <GridColumn TItem="EventDbResult" HeaderText=@_openTimeHeader PropertyName="OpenTime">@_GetNearByOpenTime(context)</GridColumn>
     </GridColumns>
+    
+    <GridDetailView TItem="EventDbResult">
+        <div class="row">
+            <div class="col-2 fw-bold">Open Time</div>
+            <div class="col">
+                @_GetOpenTimeToString(context)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-2 fw-bold">Open Days</div>
+            <div class="col">
+                @_GetOpenDaysToString(context)
+            </div>
+        </div>
+    </GridDetailView>
 </Grid>
 
 <div class="d-grid gap-2 d-md-block mt-2">
@@ -33,6 +53,7 @@
     private string _startDateHeader;
     private string _endDateHeader;
     private string _expiryDateHeader;
+    private string _openTimeHeader;
 
     protected override async Task OnInitializedAsync()
     {
@@ -40,13 +61,14 @@
         _startDateHeader = $"Start Date ({_timeZone})";
         _endDateHeader = $"End Date ({_timeZone})";
         _expiryDateHeader = $"Expiry Date ({_timeZone})";
+        _openTimeHeader = $"Next Open Time ({_timeZone})";
         
         await base.OnInitializedAsync();
     }
 
     private async Task<GridDataProviderResult<EventDbResult>> EventDbDataProvider(GridDataProviderRequest<EventDbResult> request)
     {
-        var eventList = EventInfoService.GetRegisteredEvents();
+        var eventList = EventInfoService.GetRegisteredEvents().OrderBy(x => x.event_id);
         return await Task.FromResult(request.ApplyTo(eventList));
     }
 }

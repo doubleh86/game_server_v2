@@ -128,7 +128,7 @@ public class EventDbResult : EventBaseData, IDbInParameters, IHasClientModel<Gam
         var nextOpenTime = nextOpenDays.Date;
         var nextCloseTime = nextOpenTime.Date.AddDays(1).AddSeconds(-1);
 
-        return (nextCloseTime.ToUtcTime(), nextCloseTime.ToUtcTime());
+        return (nextOpenTime.ToUtcTime(), nextCloseTime.ToUtcTime());
     }
 
     private (DateTime, DateTime) _GetOpenCloseWeekDayAndTimeRangeTypeUTC(EventExtraValue extraValue)

@@ -1,45 +1,386 @@
-@using BlazorBootstrap.Components.Form.SelectInput
+@using AdminWeb.Services
+@using AdminWeb.Services.Utils
 @using DataTableLoader.Models.EventModels
-@using ServerFramework.CommonUtils.EventHelper
+@using DataTableLoader.Utils.Helper
+@using NetworkProtocols.Shared.Enums
+@using ServerFramework.CommonUtils.DateTimeHelper
+@inject EventInfoService EventInfoService
 @implements IDisposable
 
-<Modal @ref="_modal" Title="Create Admin">
+<Modal @ref="_modal" Title="@_modalTitle" Size="ModalSize.Large">
     <BodyTemplate>
-        <div class="form-group row mb-3 g-2">
-            <label class="col-md-10 col-form-label">Event Category: <span class="text-danger">*</span></label>
-            <div class="col-md-7">
-                <TextInput @bind-Value="@_eventId" Placeholder="Enter Event Type"/>
+        <div class="form-group row align-items-center mb-3 g-2">
+            <label class="col-2 col-form-label">Event Category: </label>
+            <div class="col-auto">
+                <TextInput @bind-Value="@_categoryId" Placeholder="Enter Event Type" Disabled="true"/>
             </div>
-            <div class="col-md-5">
+            <div class="col-auto">
                 <Dropdown Color="DropdownColor.Primary">
                     <DropdownToggleButton>Category</DropdownToggleButton>
                     <DropdownMenu>
-                        @foreach (EventTableBase.EventCategory category in Enum.GetValues<EventTableBase.EventCategory>())
+                        @foreach (var category in Enum.GetValues<EventTableBase.EventCategory>())
                         {
-                            <DropdownItem To="#" Type="DropdownItemType.Button">@category.ToString()</DropdownItem> 
+                            <DropdownItem Type="DropdownItemType.Button" @onclick="() => _SelectCategory(category)">
+                                @category.ToString()
+                            </DropdownItem>
                         }
                     </DropdownMenu>
                 </Dropdown>
-                
+            </div>
+        </div>
+        <div class="form-group row align-items-center mb-3 g-2">
+            <label class="col-2 col-form-label">Event Id: </label>
+            <div class="col-auto">
+                <TextInput @bind-Value="@_eventId" Placeholder="Enter Id" Disabled="true"/>
+            </div>
+            <div class="col-auto">
+                <Dropdown Color="DropdownColor.Primary">
+                    <DropdownToggleButton>EventId</DropdownToggleButton>
+                    <DropdownMenu>
+                        @foreach (var eventId in _GetValidEventId())
+                        {
+                            <DropdownItem Type="DropdownItemType.Button" @onclick="() => _SelectEventId(eventId)">@eventId.ToString()</DropdownItem>
+                        }
+                    </DropdownMenu>
+                </Dropdown>
+            </div>
+        </div>
+        <div class="form-group row align-items-center mb-3 g-2">
+            <label class="col-2 col-form-label">Period Type: </label>
+            <div class="col-auto">
+                <TextInput @bind-Value="@_eventPeriodId" Placeholder="Enter Period Type" Disabled="true"/>
+            </div>
+            <div class="col-auto">
+                <Dropdown Color="DropdownColor.Primary">
+                    <DropdownToggleButton>Period</DropdownToggleButton>
+                    <DropdownMenu>
+                        @foreach (var periodType in Enum.GetValues<EventPeriodType>())
+                        {
+                            <DropdownItem Type="DropdownItemType.Button" @onclick="() => _SelectEventPeriodType(periodType)">@periodType.ToString()</DropdownItem>
+                        }
+                    </DropdownMenu>
+                </Dropdown>
+            </div>
+        </div>
+        <div class="form-group row mb-3 g-2 align-items-center">
+            <label class="col-md-10 col-form-label">Start Date: <span class="text-danger">*</span></label>
+            <div class="col-12">
+                <div class="row g-1 align-items-center">
+                    <div class="col-5">
+                        <DateInput TValue="DateOnly" @bind-Value="@_startDate" Placeholder="Enter Start Date"></DateInput>
+                    </div>
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_startDateHour" EnableMinMax="true" Min="0" Max="23"/>
+                    </div>
+                    <span class="col-auto px-1">:</span>
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_startDateMinute" EnableMinMax="true" Min="0" Max="59"/>
+                    </div>
+                    <span class="col-auto px-1">:</span>
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_startDateSecond" EnableMinMax="true" Min="0" Max="59"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row mb-3 g-2 align-items-center">
+            <label class="col-md-10 col-form-label">End Date: <span class="text-danger">*</span></label>
+            <div class="col-12">
+                <div class="row g-1 align-items-center">
+                    <div class="col-5">
+                        <DateInput TValue="DateOnly" @bind-Value="@_endDate" Placeholder="Enter End Date"></DateInput>
+                    </div>
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_endDateHour" EnableMinMax="true" Min="0" Max="23"/>
+                    </div>
+                    <span class="col-auto px-1">:</span>
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_endDateMinute" EnableMinMax="true" Min="0" Max="59"/>
+                    </div>
+                    <span class="col-auto px-1">:</span>
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_endDateSecond" EnableMinMax="true" Min="0" Max="59"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row mb-3 g-2 align-items-center">
+            <label class="col-md-10 col-form-label">Expire Date: <span class="text-danger">*</span></label>
+            <div class="col-12">
+                <div class="row g-1 align-items-center">
+                    <div class="col-5">
+                        <DateInput TValue="DateOnly" @bind-Value="@_expireDate" Placeholder="Expire End Date"></DateInput>
+                    </div>
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_expireDateHour" EnableMinMax="true" Min="0" Max="23"/>
+                    </div>
+                    <span class="col-auto px-1">:</span>
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_expireDateMinute" EnableMinMax="true" Min="0" Max="59"/>
+                    </div>
+                    <span class="col-auto px-1">:</span>
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_expireDateSecond" EnableMinMax="true" Min="0" Max="59"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row mb-3 g-2 align-items-center">
+            <label class="col-form-label" style="width:100px;">Open Time:</label>
+            <div class="col-12">
+                <div class="row g-1 align-items-center">
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_openTimeHour" EnableMinMax="true" Min="0" Max="23" Disabled="_IsOpenCloseDisable()" />
+                    </div>
+                    <span class="col-auto px-1">:</span>
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_openTimeMinute" EnableMinMax="true" Min="0" Max="59" Disabled="_IsOpenCloseDisable()" />
+                    </div>
+                    <span class="col-auto px-1">:</span>
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_openTimeSecond" EnableMinMax="true" Min="0" Max="59" Disabled="_IsOpenCloseDisable()" />
+                    </div>
+                    <span class="col-auto px-1">~</span>
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_closeTimeHour" EnableMinMax="true" Min="0" Max="23" Disabled="_IsOpenCloseDisable()" />
+                    </div>
+                    <span class="col-auto px-1">:</span>
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_closeTimeMinute" EnableMinMax="true" Min="0" Max="59" Disabled="_IsOpenCloseDisable()" />
+                    </div>
+                    <span class="col-auto px-1">:</span>
+                    <div class="col-1">
+                        <NumberInput TValue="int" @bind-Value="@_closeTimeSecond" EnableMinMax="true" Min="0" Max="59" Disabled="_IsOpenCloseDisable()" />
+                    </div>        
+                </div>
+            </div>
+        </div>
+        <div class="form-group row mb-7 g-2 align-items-center">
+            <label class="col-md-10 col-form-label">Open DayOfWeek:</label>
+            <div class="col-12">
+                <div class="row">
+                    <div class="col-3">
+                        <CheckboxInput Label="@nameof(DayOfWeek.Sunday)" ValueChanged="() => _CheckDayOfWeek(DayOfWeek.Sunday)"
+                                       ValueExpression="() => _selectedDayOfWeek[DayOfWeek.Sunday]"
+                                       Disabled="_IsDayOfWeekDisable()"/>
+                    </div>
+                    <div class="col-3">
+                        <CheckboxInput Label="@nameof(DayOfWeek.Monday)" ValueChanged="() => _CheckDayOfWeek(DayOfWeek.Monday)"
+                                       ValueExpression="() => _selectedDayOfWeek[DayOfWeek.Monday]"
+                                       Disabled="_IsDayOfWeekDisable()"/>
+                    </div>
+                    <div class="col-3">
+                        <CheckboxInput Label="@nameof(DayOfWeek.Tuesday)" ValueChanged="() => _CheckDayOfWeek(DayOfWeek.Tuesday)"
+                                       ValueExpression="() => _selectedDayOfWeek[DayOfWeek.Tuesday]"
+                                       Disabled="_IsDayOfWeekDisable()"/>
+                    </div>
+                    <div class="col-3">
+                        <CheckboxInput Label="@nameof(DayOfWeek.Wednesday)" ValueChanged="() => _CheckDayOfWeek(DayOfWeek.Wednesday)"
+                                       ValueExpression="() => _selectedDayOfWeek[DayOfWeek.Wednesday]"
+                                       Disabled="_IsDayOfWeekDisable()"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-3">
+                        <CheckboxInput Label="@nameof(DayOfWeek.Thursday)" ValueChanged="() => _CheckDayOfWeek(DayOfWeek.Thursday)"
+                                       ValueExpression="() => _selectedDayOfWeek[DayOfWeek.Thursday]"
+                                       Disabled="_IsDayOfWeekDisable()"/>        
+                    </div>
+                    <div class="col-3">
+                        <CheckboxInput Label="@nameof(DayOfWeek.Friday)" ValueChanged="() => _CheckDayOfWeek(DayOfWeek.Friday)"
+                                       ValueExpression="() => _selectedDayOfWeek[DayOfWeek.Friday]"
+                                       Disabled="_IsDayOfWeekDisable()"/>
+                    </div>
+                    <div class="col-3">
+                        <CheckboxInput Label="@nameof(DayOfWeek.Saturday)" ValueChanged="() => _CheckDayOfWeek(DayOfWeek.Saturday)"
+                                       ValueExpression="() => _selectedDayOfWeek[DayOfWeek.Saturday]"
+                                       Disabled="_IsDayOfWeekDisable()"/>        
+                    </div>
+                </div>
             </div>
         </div>
     </BodyTemplate>
+    <FooterTemplate>
+        <Button Type="ButtonType.Button" Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+        <Button Type="ButtonType.Button" Color="ButtonColor.Success" @onclick="_OnSummit">Save</Button>
+    </FooterTemplate>
 </Modal>
+
+<Toasts class="p-3" Messages="_toastMessages" Placement="ToastsPlacement.TopCenter" AutoHide="true" Delay="4000"/>
+
 @code {
+    
+    private readonly List<ToastMessage> _toastMessages = [];
+    
+    private readonly string _modalTitle = $"Create Event ({TimeZoneHelper.CurrentTimeZone.DisplayName})";
     private Modal _modal;
+    private string _categoryId;
+    private EventTableBase.EventCategory _selectCategory = EventTableBase.EventCategory.GameEvent;
+
     private string _eventId;
-    private EventTableBase.EventCategory _selectCategory = EventTableBase.EventCategory.GameEvent; 
+    
+    private string _eventPeriodId;
+    private EventPeriodType _eventPeriodType = EventPeriodType.Default;
+
+    private DateOnly _startDate = DateOnly.FromDateTime(TimeZoneHelper.ServerTimeNow);
+    private int _startDateHour;
+    private int _startDateMinute;
+    private int _startDateSecond;
+    
+    private DateOnly _endDate = DateOnly.FromDateTime(TimeZoneHelper.ServerTimeNow).AddDays(7);
+    private int _endDateHour = 23;
+    private int _endDateMinute = 59;
+    private int _endDateSecond = 59;
+    
+    private DateOnly _expireDate = DateOnly.FromDateTime(TimeZoneHelper.ServerTimeNow).AddDays(9);
+    private int _expireDateHour = 23;
+    private int _expireDateMinute = 59;
+    private int _expireDateSecond = 59;
+
+    private int _openTimeHour = 0;
+    private int _openTimeMinute = 0;
+    private int _openTimeSecond = 0;
+
+    private int _closeTimeHour = 23;
+    private int _closeTimeMinute = 59;
+    private int _closeTimeSecond = 59;
+
+    private Dictionary<DayOfWeek, bool> _selectedDayOfWeek = new()
+    {
+        {DayOfWeek.Sunday, false},
+        {DayOfWeek.Monday, false},
+        {DayOfWeek.Tuesday, false},
+        {DayOfWeek.Wednesday, false},
+        {DayOfWeek.Thursday, false},
+        {DayOfWeek.Friday, false},
+        {DayOfWeek.Saturday, false}
+    };
     
     [Parameter] public EventCallback<bool> OnCreateResult { get; set; }
     
     public async Task ShowModalAsync()
     {
+        _categoryId = _selectCategory.ToString();
+        _eventPeriodId = _eventPeriodType.ToString();
+        
         await _modal.ShowAsync();
     }
-
-    private void _SelectCategory()
+    
+    private void _SelectCategory(EventTableBase.EventCategory select)
     {
-        // _selectCategory = category;
+        _selectCategory = select;
+        _categoryId = select.ToString();
+    }
+
+    private void _SelectEventId(int eventId)
+    {
+        _eventId = eventId.ToString();
+    }
+
+    private void _SelectEventPeriodType(EventPeriodType select)
+    {
+        _eventPeriodType = select;
+        _eventPeriodId = select.ToString();
+    }
+
+    private bool _IsOpenCloseDisable()
+    {
+        if (_eventPeriodType == EventPeriodType.TimeRange || _eventPeriodType == EventPeriodType.WeekDayAndTimeRange)
+            return false;
+
+        return true;
+    }
+
+    private bool _IsDayOfWeekDisable()
+    {
+        if (_eventPeriodType == EventPeriodType.WeekDay || _eventPeriodType == EventPeriodType.WeekDayAndTimeRange)
+            return false;
+
+        return true;
+    }
+
+    private List<int> _GetValidEventId()
+    {
+        return _selectCategory switch
+        {
+            EventTableBase.EventCategory.GameEvent => DataHelper.GetDataList<GameEventTable>().Select(x => x.index_no).ToList(),
+            EventTableBase.EventCategory.StoryEvent => DataHelper.GetDataList<EventStoryTable>().Select(x => x.index_no).ToList(),
+            _ => []
+        };
+    }
+
+    private void _CheckDayOfWeek(DayOfWeek dayOfWeek)
+    {
+        _selectedDayOfWeek[dayOfWeek] = !_selectedDayOfWeek[dayOfWeek];
+    }
+
+    private async Task _OnSummit()
+    {
+        var startDate = TimeZoneHelper.CreateDateTimeToServerTime(_startDate, _startDateHour, _startDateMinute, _startDateSecond);
+        var endDate = TimeZoneHelper.CreateDateTimeToServerTime(_endDate, _endDateHour, _endDateMinute, _endDateSecond);
+        var expireDate = TimeZoneHelper.CreateDateTimeToServerTime(_expireDate, _expireDateHour, _expireDateMinute, _expireDateSecond); 
+        
+        var openTime = $"{_openTimeHour:D2}{_openTimeMinute:D2}{_openTimeSecond:D2}";
+        var closeTime = $"{_closeTimeHour:D2}{_closeTimeMinute:D2}{_closeTimeSecond:D2}";
+
+        if (_ValidRegisterDate(startDate, endDate, expireDate) == false)
+        {
+            _toastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Warning, "잘 못된 날짜 입력"));
+            return;
+        }
+        
+        var selectedDays = _selectedDayOfWeek
+                           .Where(x => x.Value == true)
+                           .Select(x => x.Key)
+                           .ToList();
+
+        if (_ValidExtraValue(_eventPeriodType, int.Parse(openTime), int.Parse(closeTime), selectedDays) == false)
+        {
+            _toastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Warning, "오픈 시간 및 요일 체크"));
+            return;
+        }
+
+        await EventInfoService.CreateNewEventAsync(_selectCategory, eventTableIndex:int.Parse(_eventId), 
+                                                   _eventPeriodType, startDate.ToUtcTime(), endDate.ToUtcTime(), 
+                                                   expireDate.ToUtcTime(), openTime, closeTime, 
+                                                   selectedDays);
+        
+        await OnCreateResult.InvokeAsync(true);
+        await _modal.HideAsync();
+    }
+
+    private bool _ValidRegisterDate(DateTime startDate, DateTime endDate, DateTime expireDate)
+    {
+        var currentServerTime = TimeZoneHelper.ServerTimeNow;
+        if (endDate < currentServerTime)
+            return false;
+
+        if (expireDate < currentServerTime)
+            return false;
+
+        if (startDate > endDate)
+            return false;
+
+        if (startDate > expireDate)
+            return false;
+
+        if (endDate > expireDate)
+            return false;
+
+        return true;
+    }
+
+    private bool _ValidExtraValue(EventPeriodType periodType, int openTime, int closeTime, List<DayOfWeek> dayOfWeeks)
+    {
+        if (periodType == EventPeriodType.Default)
+            return true;
+
+        if ((periodType == EventPeriodType.WeekDay || periodType == EventPeriodType.WeekDayAndTimeRange) && dayOfWeeks.Count < 1)
+        {
+            return false;
+        }
+        
+        return openTime <= closeTime;
     }
     
     private async Task OnHideModalClick()
