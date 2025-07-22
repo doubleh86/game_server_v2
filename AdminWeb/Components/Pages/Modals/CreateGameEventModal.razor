@@ -325,7 +325,7 @@
 
         if (_ValidRegisterDate(startDate, endDate, expireDate) == false)
         {
-            _toastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Warning, "잘 못된 날짜 입력"));
+            _toastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Info, "등록 실패"));
             return;
         }
         
@@ -336,7 +336,7 @@
 
         if (_ValidExtraValue(_eventPeriodType, int.Parse(openTime), int.Parse(closeTime), selectedDays) == false)
         {
-            _toastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Warning, "오픈 시간 및 요일 체크"));
+            _toastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Info, "등록 실패"));
             return;
         }
 
@@ -353,19 +353,34 @@
     {
         var currentServerTime = TimeZoneHelper.ServerTimeNow;
         if (endDate < currentServerTime)
+        {
+            _toastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Warning, $"현재 시간이 종료 시간보다 큼"));
             return false;
+        }
 
         if (expireDate < currentServerTime)
+        {
+            _toastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Warning, $"현재 시간이 만료 시간보다 큼"));
             return false;
+        }
 
         if (startDate > endDate)
+        {
+            _toastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Warning, $"시작 시간이 종료 시간 보다 큼"));
             return false;
+        }
 
         if (startDate > expireDate)
+        {
+            _toastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Warning, $"시작 시간이 만료 시간보다 큼"));
             return false;
+        }
 
         if (endDate > expireDate)
+        {
+            _toastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Warning, $"종료 시간이 만료 시간보다 큼"));
             return false;
+        }
 
         return true;
     }
@@ -377,10 +392,17 @@
 
         if ((periodType == EventPeriodType.WeekDay || periodType == EventPeriodType.WeekDayAndTimeRange) && dayOfWeeks.Count < 1)
         {
+            _toastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Warning, "요일을 체크해 주세요"));
             return false;
         }
-        
-        return openTime <= closeTime;
+
+        if (openTime >= closeTime)
+        {
+            _toastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Warning, $"시작/종료 시간 체크 필요 [{openTime} >= {closeTime}]"));
+            return false;    
+        }
+
+        return true;
     }
     
     private async Task OnHideModalClick()
