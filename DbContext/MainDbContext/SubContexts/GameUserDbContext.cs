@@ -46,27 +46,20 @@ public sealed class GameUserDbContext : BaseMainDbContext
                 
             }
             
-            transaction.Commit();
+            await transaction.CommitAsync();
             return dbResult;
         }
         catch (DbContextException)
         {
-            transaction.Rollback();
+            await transaction.RollbackAsync();
             throw;
         }
         catch (Exception e)
         {
-            transaction.Rollback();
+            await transaction.RollbackAsync();
             throw new DbContextException(DbErrorCode.ProcedureError, $"[CreateNewGameUser][{e.Message}]");
         }
         
-        var command = new CreateNewGameUserAsync(this);
-        command.SetParameters(new CreateNewGameUserAsync.InParameters
-        {
-            AccountId = accountId,
-        });
-
-        return await command.ExecuteProcedureAsync();
     }
 
     private async Task<GameUserDbModel> _CreateNewGameUserAsync(long accountId, SqlTransaction transaction = null)

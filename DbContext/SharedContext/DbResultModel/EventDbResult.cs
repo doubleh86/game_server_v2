@@ -97,6 +97,9 @@ public class EventDbResult : EventBaseData, IDbInParameters, IHasClientModel<Gam
     private (DateTime, DateTime) _GetOpenCloseTimeRangeTypeUTC(EventExtraValue extraValue)
     {
         var serverTimeNow = TimeZoneHelper.ServerTimeNow;
+        if(serverTimeNow < event_start_date.ToServerTime())
+            serverTimeNow = event_start_date.ToServerTime();
+        
         var (todayOpenDate, todayCloseDate) = extraValue.GetOpenCloseServerTime(serverTimeNow);
         if (todayCloseDate < serverTimeNow)
         {
@@ -113,6 +116,9 @@ public class EventDbResult : EventBaseData, IDbInParameters, IHasClientModel<Gam
     private (DateTime, DateTime) _GetOpenCloseWeekDayTypeUTC(EventExtraValue extraValue)
     {
         var serverTimeNow = TimeZoneHelper.ServerTimeNow;
+        if(serverTimeNow < event_start_date.ToServerTime())
+            serverTimeNow = event_start_date.ToServerTime();
+        
         var todayDayOfWeek = serverTimeNow.DayOfWeek;
         
         var openDayOfWeeks =  extraValue.OpenDayOfWeekList();
@@ -134,6 +140,9 @@ public class EventDbResult : EventBaseData, IDbInParameters, IHasClientModel<Gam
     private (DateTime, DateTime) _GetOpenCloseWeekDayAndTimeRangeTypeUTC(EventExtraValue extraValue)
     {
         var serverTimeNow = TimeZoneHelper.ServerTimeNow;
+        if(serverTimeNow < event_start_date.ToServerTime())
+            serverTimeNow = event_start_date.ToServerTime();
+        
         var todayDayOfWeek = serverTimeNow.DayOfWeek;
         
         var openDayOfWeeks =  extraValue.OpenDayOfWeekList();

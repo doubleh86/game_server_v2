@@ -12,7 +12,7 @@ public class CreateAccountInfoAsync : ProcBaseModelAsync<int, int>
     {
         public string LoginId { get; init; }
     }
-    private new const string _ProcedureName = "dbo.gsp_create_account_info";
+    private const string _ProcedureName = "dbo.gsp_create_account_info";
     public CreateAccountInfoAsync(DapperServiceBase dbContext, SqlTransaction transaction = null) : base(dbContext, _ProcedureName, transaction)
     {
     }

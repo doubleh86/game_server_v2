@@ -12,6 +12,9 @@
       DataProvider="EventDbDataProvider"
       AllowPaging="true"
       AllowSorting="false"
+      AllowSelection="true"
+      SelectionMode="GridSelectionMode.Multiple"
+      @bind-SelectedItems="@_selectedEvents"
       Responsive="true"
       PageSize="20"
       Unit="Unit.Px"
@@ -19,6 +22,7 @@
     <GridColumns>
         <GridColumn TItem="EventDbResult" HeaderText="Id" PropertyName="event_id">@context.event_id</GridColumn>
         <GridColumn TItem="EventDbResult" HeaderText="Type" PropertyName="event_type_id">@_GetEventTypeToString(context)</GridColumn>
+        <GridColumn TItem="EventDbResult" HeaderText="TableIndex" PropertyName="event_id">@context.event_table_index</GridColumn>
         <GridColumn TItem="EventDbResult" HeaderText="Period" PropertyName="PeriodType">@_GetEventPeriodTypeToString(context)</GridColumn>
         <GridColumn TItem="EventDbResult" HeaderText=@_startDateHeader PropertyName="event_start_date">@context.StartDateUtc.ToServerTime()</GridColumn>
         <GridColumn TItem="EventDbResult" HeaderText=@_endDateHeader PropertyName="event_end_date">@context.EndDateUtc.ToServerTime()</GridColumn>
@@ -44,11 +48,17 @@
 
 <div class="d-grid gap-2 d-md-block mt-2">
     <Button Class="btn btn-primary" Size="ButtonSize.Small" @onclick="_OnClickButton">Create Event</Button>
+    <Button Class="btn btn-primary" Size="ButtonSize.Small" @onclick="_RemoveSelectedEventsAsync">Select Remove Event</Button>
+    <Button Class="btn btn-danger" Size="ButtonSize.Small" @onclick="_RemovePassedEventsAsync">Remove Passed Event</Button>
 </div>
 
-<CreateGameEventModal @ref="_modal" OnCreateResult="OnCreateResult"></CreateGameEventModal>
+<CreateGameEventModal @ref="_modal" OnCreateResult="OnCreateResult" ToastMessages="_toastMessages"></CreateGameEventModal>
+<Toasts class="p-3" Messages="_toastMessages" Placement="ToastsPlacement.TopCenter" AutoHide="true" Delay="4000"/>
 
 @code {
+    private readonly List<ToastMessage> _toastMessages = [];
+    private HashSet<EventDbResult> _selectedEvents = [];
+    
     private string _timeZone;
     private string _startDateHeader;
     private string _endDateHeader;

@@ -31,4 +31,9 @@ public static class CommonHelper
         
         return (hours, minutes, seconds);
     }
+
+    public static bool CheckOverlappedDate(DateTime startDate1, DateTime endDate1, DateTime startDate2, DateTime endDate2)
+    {
+        return startDate1 <= endDate2 && endDate1 >= startDate2;
+    }
 }

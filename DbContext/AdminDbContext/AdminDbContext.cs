@@ -9,7 +9,7 @@ public class AdminDbContext : DapperServiceBase
 {
     private static SqlServerDbInfo _defaultServerInfo;
 
-    public AdminDbContext(SqlServerDbInfo serverInfo) : base(serverInfo)
+    private AdminDbContext(SqlServerDbInfo serverInfo) : base(serverInfo)
     {
     }
     

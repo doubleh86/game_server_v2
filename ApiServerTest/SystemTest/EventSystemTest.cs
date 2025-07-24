@@ -1,7 +1,6 @@
 using DbContext.SharedContext;
 using DbContext.SharedContext.DbResultModel;
 using NetworkProtocols.Shared.Enums;
-using ServerFramework.CommonUtils;
 using ServerFramework.CommonUtils.DateTimeHelper;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
@@ -149,6 +148,19 @@ public class EventSystemTest
         }    
     }
 
+    [Test, Order(2)]
+    public void GetEventInfoListTest()
+    {
+        using var dbContext = SharedDbContext.Create();
+        var result = dbContext.GetEventInfoListAsync().GetAwaiter().GetResult();
+
+        foreach (var item in result)
+        {
+            var (startDateTime, endDateTime) = item.GetStartEndDateTimeUTC();
+            Console.WriteLine($"StartDate:{startDateTime.ToServerTime()} EndDate:{endDateTime.ToServerTime()}");    
+        }
+        
+    }
     private void PrintLog(bool isTimeZone, DateTime testDate, DateTime openTime, DateTime closeTime, DateTime startDate, DateTime endDate)
     {
         Console.WriteLine("---------------------------------------------------------------------------------------------------");
@@ -166,4 +178,5 @@ public class EventSystemTest
         }
         Console.WriteLine("---------------------------------------------------------------------------------------------------");
     }
+    
 }

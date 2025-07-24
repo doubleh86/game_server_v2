@@ -1,5 +1,8 @@
+using DbContext.Common;
 using DbContext.SharedContext.DbResultModel;
 using DbContext.SharedContext.ProcedureCommands.AdminTool;
+using Microsoft.Data.SqlClient;
+using NetworkProtocols.WebApi;
 
 namespace DbContext.SharedContext;
 
@@ -33,6 +36,18 @@ public partial class SharedDbContext
         command.SetParameters(dbResult);
 
         return await command.ExecuteProcedureAsync() == 0;
+    }
 
+    public async Task<bool> RemoveEventInfoAsync(EventDbResult dbResult, bool isRemoveData)
+    {
+        await using var connection = _GetConnection();
+        var command = new RemoveEventDateAsync(this);
+        command.SetParameters(new RemoveEventDateAsync.InParameters()
+        {
+            EventId = dbResult.event_id,
+            IsRemove = isRemoveData
+        });
+
+        return await command.ExecuteProcedureAsync();
     }
 }

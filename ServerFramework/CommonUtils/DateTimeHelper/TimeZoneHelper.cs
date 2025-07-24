@@ -84,12 +84,18 @@ public static class TimeZoneHelper
         return TimeZoneInfo.ConvertTimeToUtc(from, _timeZoneInfo);
     }
 
-    public static string ToTimeString(this DateTime from)
+    public static string ToTimeString(this DateTime from, bool showTimeZone = true)
     {
         if (from.Kind == DateTimeKind.Unspecified)
-            return from.ToString(_defaultDateTimeVisible) + $"({_timeZoneInfo.DisplayName})"; 
+        {
+            if(showTimeZone == true)
+                return from.ToString(_defaultDateTimeVisible) + $"({_timeZoneInfo.DisplayName})";
+            return from.ToString(_defaultDateTimeVisible);
+        }
         
-        return from.ToString(_defaultDateTimeVisible) + $"({from.Kind})";
+        if(showTimeZone == true)
+            return from.ToString(_defaultDateTimeVisible) + $"({from.Kind})";
+        return from.ToString(_defaultDateTimeVisible);
     }
 
 #endregion DateTime Extension Methods

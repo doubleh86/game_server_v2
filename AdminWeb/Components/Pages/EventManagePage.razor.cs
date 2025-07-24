@@ -1,4 +1,5 @@
 using AdminWeb.Components.Pages.Modals;
+using AdminWeb.Services.Utils;
 using BlazorBootstrap;
 using DataTableLoader.Models.EventModels;
 using DbContext.SharedContext.DbResultModel;
@@ -12,6 +13,7 @@ namespace AdminWeb.Components.Pages;
 public partial class EventManagePage : ComponentBase
 {
     [Inject] private ModalService _modalService { get; set; }
+    
     private CreateGameEventModal _modal;
     private Grid<EventDbResult> _grid;
     
@@ -32,7 +34,7 @@ public partial class EventManagePage : ComponentBase
             return "-";
         
         var (startDateTime, endDateTime) = dbResult.GetStartEndDateTimeUTC();
-        return $"{startDateTime.ToServerTime()} ~ {endDateTime.ToServerTime()}";
+        return $"{startDateTime.ToServerTime().ToTimeString(false)} ~ {endDateTime.ToServerTime().ToTimeString(false)}";
     }
 
     private string _GetOpenDaysToString(EventDbResult dbResult)
@@ -63,5 +65,27 @@ public partial class EventManagePage : ComponentBase
     private string _GetEventPeriodTypeToString(EventDbResult dbResult)
     {
         return  ((EventPeriodType)dbResult.event_period_type).ToString();
+    }
+
+    private async Task _RemovePassedEventsAsync()
+    {
+        var eventList = EventInfoService.GetRegisteredEvents();
+        var removedList = eventList.FindAll(x => x.ExpireDateUtc < TimeZoneHelper.UtcNow);
+        if (removedList.Count < 1)
+            return;
+        
+        var successCount = await EventInfoService.RemoveEventAsync(removedList, true);
+        _toastMessages.Add(ToastMessageCreator.CreateToastWithTitle(ToastType.Info, "Event Info", $"Remove Event Count (Db Removed): {successCount}"));
+        await _grid.RefreshDataAsync();
+    }
+
+    private async Task _RemoveSelectedEventsAsync()
+    {
+        if (_selectedEvents.Count < 1)
+            return;
+
+        var successCount = await EventInfoService.RemoveEventAsync(_selectedEvents.ToList(), false);
+        _toastMessages.Add(ToastMessageCreator.CreateToastWithTitle(ToastType.Info, "Event Info", $"Remove Event Count : {successCount}"));
+        await _grid.RefreshDataAsync();
     }
 }

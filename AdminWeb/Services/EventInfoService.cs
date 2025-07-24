@@ -65,6 +65,27 @@ public class EventInfoService : EventServiceBase<EventDbResult>, IDisposable
         }
     }
 
+    public async Task<int> RemoveEventAsync(List<EventDbResult> events, bool isRemove)
+    {
+        var success = 0;
+        foreach (var eventInfo in events)
+        {
+            if (await _dbContext.RemoveEventInfoAsync(eventInfo, isRemove) == false)
+                continue;
+            
+            Interlocked.Increment(ref success);
+        }
+
+        if (success < 1) 
+            return success;
+        
+        var result = await _dbContext.GetEventInfoListAsync();
+        _registeredEvents.Clear();
+        _registeredEvents = new ConcurrentBag<EventDbResult>(result);
+
+        return success;
+    }
+
     public void Dispose()
     {
         _dbContext?.Dispose();
