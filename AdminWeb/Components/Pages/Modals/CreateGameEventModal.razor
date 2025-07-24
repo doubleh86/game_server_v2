@@ -32,7 +32,7 @@
         <div class="form-group row align-items-center mb-3 g-2">
             <label class="col-2 col-form-label">Event Id: </label>
             <div class="col-auto">
-                <TextInput @bind-Value="@_eventId" Placeholder="Enter Id" Disabled="true"/>
+                <TextInput @bind-Value="@_eventTableIndex" Placeholder="Enter Id" Disabled="true"/>
             </div>
             <div class="col-auto">
                 <Dropdown Color="DropdownColor.Primary">
@@ -218,7 +218,7 @@
     private string _categoryId;
     private EventTableBase.EventCategory _selectCategory = EventTableBase.EventCategory.GameEvent;
 
-    private string _eventId;
+    private string _eventTableIndex;
     
     private string _eventPeriodId;
     private EventPeriodType _eventPeriodType = EventPeriodType.Default;
@@ -276,7 +276,7 @@
 
     private void _SelectEventId(int eventId)
     {
-        _eventId = eventId.ToString();
+        _eventTableIndex = eventId.ToString();
     }
 
     private void _SelectEventPeriodType(EventPeriodType select)
@@ -325,6 +325,12 @@
         var openTime = $"{_openTimeHour:D2}{_openTimeMinute:D2}{_openTimeSecond:D2}";
         var closeTime = $"{_closeTimeHour:D2}{_closeTimeMinute:D2}{_closeTimeSecond:D2}";
 
+        if (int.TryParse(_eventTableIndex, out var tableIndex) == false)
+        {
+            ToastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Info, "이벤트 테이블 인덱스 확인 필요."));
+            return;
+        }
+
         if (_ValidRegisterDate(startDate, endDate, expireDate) == false)
         {
             ToastMessages.Add(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Info, "등록 실패"));
@@ -342,7 +348,7 @@
             return;
         }
 
-        await EventInfoService.CreateNewEventAsync(_selectCategory, eventTableIndex:int.Parse(_eventId), 
+        await EventInfoService.CreateNewEventAsync(_selectCategory, eventTableIndex:tableIndex, 
                                                    _eventPeriodType, startDate.ToUtcTime(), endDate.ToUtcTime(), 
                                                    expireDate.ToUtcTime(), openTime, closeTime, 
                                                    selectedDays);
