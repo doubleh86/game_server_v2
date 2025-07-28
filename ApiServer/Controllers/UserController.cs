@@ -35,7 +35,7 @@ public class UserController : ApiControllerBase
 
             response.GameEventData = _eventService.GetEvents(48);
             
-            return _OkResponse(ResultCode.Ok, response, handler.RefreshDataHelper);
+            return _OkResponse(GameResultCode.Ok, response, handler.RefreshDataHelper);
         }
         catch (ApiServerException e)
         {
@@ -43,7 +43,7 @@ public class UserController : ApiControllerBase
         }
         catch (Exception e)
         {
-            return _ErrorResponse(response, ResultCode.SystemError, e.Message);
+            return _ErrorResponse(response, GameResultCode.SystemError, e.Message);
         }
     }
 }

@@ -65,7 +65,7 @@ public abstract class BaseHandler : IDisposable
     protected T GetModule<T>() where T : class, IGameModule
     {
         if (_modules.TryGetValue(typeof(T).Name, out _) == false)
-            throw new ApiServerException(ResultCode.SystemError, $"[{typeof(T).Name}] module not found]");
+            throw new ApiServerException(GameResultCode.SystemError, $"[{typeof(T).Name}] module not found]");
 
         return _modules[typeof(T).Name] as T;
     }
@@ -73,7 +73,7 @@ public abstract class BaseHandler : IDisposable
     public T GetModuleForTest<T>() where T : class, IGameModule
     {
         if (_modules.TryGetValue(typeof(T).Name, out _) == false)
-            throw new ApiServerException(ResultCode.SystemError, $"[{typeof(T).Name}] module not found]");
+            throw new ApiServerException(GameResultCode.SystemError, $"[{typeof(T).Name}] module not found]");
 
         return _modules[typeof(T).Name] as T;
     }

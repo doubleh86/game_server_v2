@@ -26,7 +26,7 @@ public class AuthHandler(ApiServerService serverService) : BaseHandler(0, server
         var dbContext = _GetSharedDbContext();
         var result = await dbContext.CreateAccountAsync(loginId);
         if(result != 0)
-            throw new ApiServerException(ResultCode.GameError, "Create account failed");
+            throw new ApiServerException(GameResultCode.GameError, "Create account failed");
         
         return await dbContext.GetAccountInfoAsync(loginId);
     }

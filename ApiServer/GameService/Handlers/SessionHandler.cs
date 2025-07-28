@@ -42,11 +42,11 @@ public class SessionHandler
     public SessionInfo CreateSessionInfo(string loginId, long accountId, byte sequence, byte subSequence, SqlServerDbInfo dbInfo, SqlServerDbInfo slaveDbInfo)
     {
         if(_sessionInfo != null)
-            throw new ApiServerException(ResultCode.SystemError, "Session already exists");
+            throw new ApiServerException(GameResultCode.SystemError, "Session already exists");
         
         var accessToken = _CreateAccessToken(loginId);
         if(string.IsNullOrEmpty(accessToken) == true)
-            throw new ApiServerException(ResultCode.SystemError, "Access token is empty");
+            throw new ApiServerException(GameResultCode.SystemError, "Access token is empty");
 
         _sessionInfo = new SessionInfo
         {
@@ -69,7 +69,7 @@ public class SessionHandler
         var sessionKey = SessionInfo.GetSessionKey(accountId);
         var result = await _redisService.StringGetAsync(sessionKey);
         if(result == null || string.IsNullOrEmpty(result) == true)
-            throw new ApiServerException(ResultCode.SystemError, "Session not found");
+            throw new ApiServerException(GameResultCode.SystemError, "Session not found");
         
         _sessionInfo = SessionInfo.CreateFromJson(result);
         return _sessionInfo;
@@ -78,7 +78,7 @@ public class SessionHandler
     public async Task<bool> SetRedisSessionInfo()
     {
         if(_sessionInfo == null)
-            throw new ApiServerException(ResultCode.SystemError, "Session info is null");
+            throw new ApiServerException(GameResultCode.SystemError, "Session info is null");
         
         var expireSeconds = _isExpiry == true ? _expirySeconds : 0;
         var result = await _redisService.StringSetAsync(_sessionInfo.GetKey(), _sessionInfo.ToJson(), ttl: expireSeconds);

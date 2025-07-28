@@ -26,7 +26,7 @@ public class AuthTest
         };
 
         var response = await _SendPacket<AuthCommand.Request, AuthCommand.Response>(request);
-        if (response.ResultCode != (int)ResultCode.Ok)
+        if (response.ResultCode != (int)GameResultCode.Ok)
         {
             Console.WriteLine($"Error Message : {response.DebugMessage}");
             return;
@@ -48,7 +48,7 @@ public class AuthTest
         };
         
         var response = await _SendPacket<GetUserCommand.Request, GetUserCommand.Response>(request);
-        if (response.ResultCode != (int)ResultCode.Ok)
+        if (response.ResultCode != (int)GameResultCode.Ok)
         {
             Console.WriteLine($"Error Message : {response.DebugMessage}");
             return;

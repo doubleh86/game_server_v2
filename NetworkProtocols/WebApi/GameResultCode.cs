@@ -1,6 +1,6 @@
 namespace NetworkProtocols.WebApi;
 
-public enum ResultCode
+public enum GameResultCode
 {
     Ok = 0,
     GameError = 1,

@@ -1,5 +1,3 @@
-
-using ApiServer.GameService.GameModules;
 using ApiServer.GameService.Handlers.GameHandlers;
 using ApiServer.Services;
 using ApiServer.Utils;
@@ -34,7 +32,7 @@ public class InventoryController : ApiControllerBase
             var inventoryItem = await handler.UseInventoryItemAsync(request.ItemIndex, request.Quantity);
             response.UseItemInfo = inventoryItem;
 
-            return _OkResponse(ResultCode.Ok, response, handler.RefreshDataHelper);
+            return _OkResponse(GameResultCode.Ok, response, handler.RefreshDataHelper);
         }
         catch (ApiServerException e)
         {
@@ -42,11 +40,11 @@ public class InventoryController : ApiControllerBase
         }
         catch (DbContextException e)
         {
-            return _ErrorResponse(response, ResultCode.DbError, $"[{e.ResultCode}][{e.Message}]");
+            return _ErrorResponse(response, GameResultCode.DbError, $"[{e.ResultCode}][{e.Message}]");
         }
         catch (Exception e)
         {
-            return _ErrorResponse(response, ResultCode.SystemError, e.Message);
+            return _ErrorResponse(response, GameResultCode.SystemError, e.Message);
         }
     }
 }

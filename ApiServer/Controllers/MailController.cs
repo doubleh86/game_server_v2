@@ -4,34 +4,31 @@ using ApiServer.Utils;
 using DbContext.Common;
 using Microsoft.AspNetCore.Mvc;
 using NetworkProtocols.WebApi;
-using NetworkProtocols.WebApi.Commands.Shop;
+using NetworkProtocols.WebApi.Commands.Mail;
 
 namespace ApiServer.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ShopController : ApiControllerBase
+public class MailController : ApiControllerBase
 {
-    private readonly EventService _eventService;
-    public ShopController(ApiServerService service, EventService eventService) : base(service)
+    public MailController(ApiServerService service) : base(service)
     {
-        _eventService = eventService;
     }
-    
+
     [HttpPost]
-    [Route("shop-buy")]
-    public async Task<ActionResult<string>> ShopBuyItem([FromBody] ShopBuyCommand.Request request)
+    [Route("get-mail")]
+    public async Task<ActionResult<string>> GetMailBoxInfo([FromBody] GetMailCommand.Request request)
     {
-        var response = new ShopBuyCommand.Response();
+        var response = new GetMailCommand.Response();
         try
         {
             var (dbInfo, slaveDbInfo) = await _Initialize(request);
-            using var handler = new ShopHandler(request.AccountId, _service, _eventService);
+            using var handler = new MailHandler(request.AccountId, _service);
             await handler.InitializeModulesAsync(dbInfo, slaveDbInfo);
 
-            var (inventoryInfo, assetInfo) = await handler.BuyShopItemAsync(request.ItemIndex, request.Amount);
-            response.Item = inventoryInfo;
-            response.Asset = assetInfo;
+            var mailDbResults = await handler.GetMailListAsync();
+            response.MailInfoList = mailDbResults.Select(x => x.ToClient()).ToList();
 
             return _OkResponse(GameResultCode.Ok, response, handler.RefreshDataHelper);
         }

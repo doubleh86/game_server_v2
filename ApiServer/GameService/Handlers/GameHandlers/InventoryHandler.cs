@@ -25,10 +25,10 @@ public class InventoryHandler(long accountId, ApiServerService serverService, Ev
         var inventoryModule = GetModule<InventoryModule>();
         var itemInfo = await inventoryModule.GetInventoryOneItemAsync(itemIndex);
         if (itemInfo == null)
-            throw new ApiServerException(ResultCode.InvalidRequest, "Invalid item index");
+            throw new ApiServerException(GameResultCode.InvalidRequest, "Invalid item index");
 
         if (itemInfo.item_amount < quantity)
-            throw new ApiServerException(ResultCode.InvalidRequest, "Invalid item quantity");
+            throw new ApiServerException(GameResultCode.InvalidRequest, "Invalid item quantity");
         
         await _UseInventoryItemAsync(itemInfo, quantity);
         return itemInfo.ToClient();
@@ -38,13 +38,13 @@ public class InventoryHandler(long accountId, ApiServerService serverService, Ev
     {
         var itemTable = DataHelper.GetData<ItemInfoTable>(dbInfo.item_index);
         if(itemTable == null)
-            throw new ApiServerException(ResultCode.InvalidRequest, $"Table not found [ItemInfoTable][{dbInfo.item_index}]");
+            throw new ApiServerException(GameResultCode.InvalidRequest, $"Table not found [ItemInfoTable][{dbInfo.item_index}]");
 
         dbInfo.UseItem(quantity);
         return (ItemType)itemTable.item_type switch
         {
             ItemType.ExpItem => await _UseExpItemAsync(itemTable, dbInfo, quantity),
-            _ => throw new ApiServerException(ResultCode.GameError, $"Invalid item type [{itemTable.item_type}]")
+            _ => throw new ApiServerException(GameResultCode.GameError, $"Invalid item type [{itemTable.item_type}]")
         };
     }
 

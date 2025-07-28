@@ -17,7 +17,7 @@ public class InventoryTest
         };
 
         var response = await ApiTestHelper.SendPacket<AuthCommand.Request, AuthCommand.Response>(request, LoginInfo.ServerUrl);
-        if (response.ResultCode != (int)ResultCode.Ok)
+        if (response.ResultCode != (int)GameResultCode.Ok)
         {
             Console.WriteLine($"Error Message : {response.DebugMessage}");
             return;
@@ -42,7 +42,7 @@ public class InventoryTest
         };
         
         var response = await ApiTestHelper.SendPacket<ItemUseCommand.Request, ItemUseCommand.Response>(request, LoginInfo.ServerUrl);
-        if (response.ResultCode != (int)ResultCode.Ok)
+        if (response.ResultCode != (int)GameResultCode.Ok)
         {
             Console.WriteLine($"Error Message : {response.DebugMessage}");
         }

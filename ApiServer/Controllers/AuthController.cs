@@ -40,16 +40,16 @@ public class AuthController(ApiServerService service) : ApiControllerBase(servic
                                                                result.GetMainDbInfo(isSlave: true));
             
             if(sessionInfo == null)
-                throw new ApiServerException(ResultCode.SystemError, "Create session failed");
+                throw new ApiServerException(GameResultCode.SystemError, "Create session failed");
             
             if(await sessionHandler.SetRedisSessionInfo() == false)
-                throw new ApiServerException(ResultCode.SystemError, "Save session failed");
+                throw new ApiServerException(GameResultCode.SystemError, "Save session failed");
             
             response.AccountId = result.AccountId;
             response.AccountType = result.AccountType;
             response.Token = sessionInfo.AccessToken;
 
-            return _OkResponse(ResultCode.Ok, response, handler.RefreshDataHelper);
+            return _OkResponse(GameResultCode.Ok, response, handler.RefreshDataHelper);
         }
         catch (ApiServerException e)
         {
@@ -57,7 +57,7 @@ public class AuthController(ApiServerService service) : ApiControllerBase(servic
         }
         catch (Exception ex)
         {
-            return _ErrorResponse(response, ResultCode.GameError, ex.Message);
+            return _ErrorResponse(response, GameResultCode.GameError, ex.Message);
         }
     }
 }

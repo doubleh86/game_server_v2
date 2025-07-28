@@ -49,7 +49,7 @@ public class UserHandler(long accountId, ApiServerService service) : BaseHandler
         
         var gameResult = await module.CreateGameUserAsync(defaultAssets);
         if(gameResult == null)
-            throw new ApiServerException(ResultCode.GameError, "Create game user failed");
+            throw new ApiServerException(GameResultCode.GameError, "Create game user failed");
         
         return gameResult;
     }

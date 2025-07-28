@@ -46,11 +46,11 @@ public abstract class ApiControllerBase: ControllerBase, IDisposable, IAsyncDisp
     {
         var sessionHandler = _GetSessionHandler(request.AccountId);
         if(sessionHandler == null)
-            throw new ApiServerException(ResultCode.SystemError, "Session handler create failed");
+            throw new ApiServerException(GameResultCode.SystemError, "Session handler create failed");
         
         var sessionInfo = await _CheckSession(request.Token, request.AccountId, request.Sequence, request.SubSequence);
         if(_InitializeDistributeLock(request.AccountId) == false)
-            throw new ApiServerException(ResultCode.SystemError, "Distribute lock create failed");
+            throw new ApiServerException(GameResultCode.SystemError, "Distribute lock create failed");
         
         return (sessionInfo.MainDbInfo, sessionInfo.SlaveMainDbInfo);
     }
@@ -59,10 +59,10 @@ public abstract class ApiControllerBase: ControllerBase, IDisposable, IAsyncDisp
     {
         var sessionInfo = await _sessionHandler.GetSessionInfoAsync(accountId);
         if(sessionInfo == null)
-            throw new ApiServerException(ResultCode.SystemError, "Session info is null");
+            throw new ApiServerException(GameResultCode.SystemError, "Session info is null");
         
         if(sessionInfo.AccessToken != token)
-            throw new ApiServerException(ResultCode.SystemError, "Access token does not match");
+            throw new ApiServerException(GameResultCode.SystemError, "Access token does not match");
         
         _CheckSequence(sessionInfo, sequence, subSequence);
         sessionInfo.SetSequence(sequence, subSequence);
@@ -78,9 +78,9 @@ public abstract class ApiControllerBase: ControllerBase, IDisposable, IAsyncDisp
             return;
 
         if (subSequence < 1)
-            throw new ApiServerException(ResultCode.SystemError, "Invalid SubSequence");
+            throw new ApiServerException(GameResultCode.SystemError, "Invalid SubSequence");
         
-        throw new ApiServerException(ResultCode.SystemError, "Invalid Sequence");
+        throw new ApiServerException(GameResultCode.SystemError, "Invalid Sequence");
     }
 
     private bool _InitializeDistributeLock(long accountId)
@@ -96,7 +96,7 @@ public abstract class ApiControllerBase: ControllerBase, IDisposable, IAsyncDisp
         return _distributeLock.IsAcquired;
     }
     
-    protected string _OkResponse<TResponse>(ResultCode resultCode, TResponse response, RefreshDataHelper refreshDataHelper) where TResponse : ResponseBase
+    protected string _OkResponse<TResponse>(GameResultCode resultCode, TResponse response, RefreshDataHelper refreshDataHelper) where TResponse : ResponseBase
     {
         response.ResultCode = (int)resultCode;
         _SetRefreshData(response, refreshDataHelper);
@@ -119,7 +119,7 @@ public abstract class ApiControllerBase: ControllerBase, IDisposable, IAsyncDisp
         refreshResponse.ChangeAssets = refreshDataHelper.GetChangeAssetList();
     }
 
-    protected string _ErrorResponse(ResponseBase response, ResultCode resultCode, string errorMessage)
+    protected string _ErrorResponse(ResponseBase response, GameResultCode resultCode, string errorMessage)
     {
         _service.LoggerService.Warning($"[Message : {errorMessage}][ResultCode: {(int)resultCode}]");
         response ??= new ResponseBase();
