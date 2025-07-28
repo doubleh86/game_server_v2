@@ -30,26 +30,35 @@ public class InventoryHandler(long accountId, ApiServerService serverService, Ev
         if (itemInfo.item_amount < quantity)
             throw new ApiServerException(ResultCode.InvalidRequest, "Invalid item quantity");
         
-        await _UseInventoryItem(itemInfo, quantity);
+        await _UseInventoryItemAsync(itemInfo, quantity);
         return itemInfo.ToClient();
     }
 
-    private async Task _UseInventoryItem(InventoryDbResult dbInfo, int quantity)
+    private async Task<bool> _UseInventoryItemAsync(InventoryDbResult dbInfo, int quantity)
     {
         var itemTable = DataHelper.GetData<ItemInfoTable>(dbInfo.item_index);
         if(itemTable == null)
             throw new ApiServerException(ResultCode.InvalidRequest, $"Table not found [ItemInfoTable][{dbInfo.item_index}]");
 
-        switch ((ItemType)itemTable.item_type)
-        {
-            case ItemType.ExpItem:
-            {
-                var gameUserModule = GetModule<GameUserModule>();
-                await gameUserModule.AddPlayerExpAsync(itemTable.use_amount * quantity);
-            }
-            break;
-        }
-        
         dbInfo.UseItem(quantity);
+        return (ItemType)itemTable.item_type switch
+        {
+            ItemType.ExpItem => await _UseExpItemAsync(itemTable, dbInfo, quantity),
+            _ => throw new ApiServerException(ResultCode.GameError, $"Invalid item type [{itemTable.item_type}]")
+        };
+    }
+
+    private async Task<bool> _UseExpItemAsync(ItemInfoTable itemTable, InventoryDbResult dbInfo, int quantity)
+    {
+        var gameUserModule = GetModule<GameUserModule>();
+        var addExp = itemTable.use_amount * quantity;
+        var gameUserDbModel = await gameUserModule.AddPlayerExpUseItemAsync(addExp, [dbInfo]);
+        
+        var refreshDataHelper = _GetRefreshDataHelper();
+                
+        refreshDataHelper.AddChangeItemList(dbInfo);
+        refreshDataHelper.SetGameUserInfo(gameUserDbModel);
+
+        return true;
     }
 }

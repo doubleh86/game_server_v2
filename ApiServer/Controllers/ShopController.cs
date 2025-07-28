@@ -33,7 +33,7 @@ public class ShopController : ApiControllerBase
             response.Item = inventoryInfo;
             response.Asset = assetInfo;
 
-            return _OkResponse(ResultCode.Ok, response);
+            return _OkResponse(ResultCode.Ok, response, handler.RefreshDataHelper);
         }
         catch (ApiServerException e)
         {

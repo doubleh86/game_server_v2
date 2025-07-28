@@ -1,3 +1,6 @@
+using NetworkProtocols.WebApi.Commands.User;
+using NetworkProtocols.WebApi.ToClientModels;
+
 namespace NetworkProtocols.WebApi.Commands;
 
 public class RequestBase
@@ -30,6 +33,9 @@ public class ResponseBase
 
 public class RefreshResponse : ResponseBase
 {
+    public GameUserInfo GameUserInfo { get; set; }
+    public List<InventoryItemInfo> ChangeInventoryItems { get; set; }
+    public List<AssetInfo> ChangeAssets { get; set; }
     protected RefreshResponse()
     {
         

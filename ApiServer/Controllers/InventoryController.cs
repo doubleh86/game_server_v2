@@ -34,7 +34,7 @@ public class InventoryController : ApiControllerBase
             var inventoryItem = await handler.UseInventoryItemAsync(request.ItemIndex, request.Quantity);
             response.UseItemInfo = inventoryItem;
 
-            return _OkResponse(ResultCode.Ok, response);
+            return _OkResponse(ResultCode.Ok, response, handler.RefreshDataHelper);
         }
         catch (ApiServerException e)
         {

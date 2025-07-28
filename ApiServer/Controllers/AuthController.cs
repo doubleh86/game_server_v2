@@ -49,7 +49,7 @@ public class AuthController(ApiServerService service) : ApiControllerBase(servic
             response.AccountType = result.AccountType;
             response.Token = sessionInfo.AccessToken;
 
-            return _OkResponse(ResultCode.Ok, response);
+            return _OkResponse(ResultCode.Ok, response, handler.RefreshDataHelper);
         }
         catch (ApiServerException e)
         {

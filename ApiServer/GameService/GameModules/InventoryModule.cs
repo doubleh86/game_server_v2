@@ -32,7 +32,7 @@ public sealed class InventoryModule : BaseModule<InventoryDbContext>, IGameModul
         var dbInfo = await GetInventoryOneItemAsync(itemIndex) ?? InventoryDbResult.Create(itemIndex, 0);
         dbInfo.item_amount += amount;
 
-        return await dbContext.InsertInventoryItemAsync(AccountId, [dbInfo]);
+        return await dbContext.UpdateInventoryItemAsync(AccountId, [dbInfo]);
     }
 
     public async Task BuyInventoryItemAsync(InventoryDbResult itemInfo, AssetDbResult assetInfo)

@@ -4,6 +4,7 @@ using DataTableLoader.Utils.Helper;
 using DbContext.Common.Models;
 using DbContext.MainDbContext.DbResultModel.GameDbModels;
 using DbContext.MainDbContext.SubContexts;
+using NetworkProtocols.WebApi.ToClientModels;
 using ServerFramework.SqlServerServices.Models;
 
 namespace ApiServer.GameService.GameModules;
@@ -63,9 +64,8 @@ public class GameUserModule : BaseModule<GameUserDbContext>, IGameModule
         return defaultAssetInfo;
     }
 
-    public async Task<bool> AddPlayerExpAsync(int addExp)
+    private void _AddPlayerExp(GameUserDbModel gameUser, int addExp)
     {
-        var gameUser = await GetGameUserDbModelAsync();
         var levelTableList = DataHelper.GetDataList<PlayerLevelTable>().OrderBy(table => table.level);
         gameUser.user_exp += addExp;
 
@@ -79,9 +79,24 @@ public class GameUserModule : BaseModule<GameUserDbContext>, IGameModule
                 gameUser.user_level = levelTable.level;
             }
         }
+    }
+
+    public async Task<bool> AddPlayerExpAsync(int addExp)
+    {
+        var gameUser = await GetGameUserDbModelAsync();
+        _AddPlayerExp(gameUser, addExp);
         
         var dbResult = await GetDbContext().ChangePlayerExpAndLevelAsync(gameUser.account_id, gameUser.user_exp, gameUser.user_level);
         return dbResult;
+    }
+
+    public async Task<GameUserDbModel> AddPlayerExpUseItemAsync(int addExp, List<InventoryDbResult> itemInfo)
+    {
+        var gameUser = await GetGameUserDbModelAsync();
+        _AddPlayerExp(gameUser, addExp);
+        
+        await GetDbContext().ChangePlayerExpAndLevelUseItemAsync(gameUser.account_id, gameUser.user_exp, gameUser.user_level, itemInfo);
+        return gameUser;
     }
     
     

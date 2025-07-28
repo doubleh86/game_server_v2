@@ -27,23 +27,13 @@ public sealed class InventoryDbContext : BaseMainDbContext
         return await command.ExecuteProcedureAsync();
     }
 
-    public async Task<bool> InsertInventoryItemAsync(long accountId, List<InventoryDbResult> itemList)
+    public async Task<bool> UpdateInventoryItemAsync(long accountId, List<InventoryDbResult> itemList)
     {
         await using var connection = _GetConnection();
-        return await _InsertInventoryItemAsync(accountId, itemList);
+        return await _UpdateInventoryItemAsync(accountId, itemList);
     }
 
-    private async Task<bool> _InsertInventoryItemAsync(long accountId, List<InventoryDbResult> itemList, SqlTransaction transaction = null)
-    {
-        var command = new UpdateInventoryListAsync(this, transaction: transaction);
-        command.SetParameters(new UpdateInventoryListAsync.InParameters
-        {
-            AccountId = accountId,
-            InventoryList = itemList
-        });
-        
-        return await command.ExecuteProcedureAsync();
-    }
+    
 
     public async Task<bool> ShopBuyItemAsync(long accountId, List<InventoryDbResult> itemList, List<AssetDbResult> assetList)
     {
@@ -54,7 +44,7 @@ public sealed class InventoryDbContext : BaseMainDbContext
 
         try
         {
-            var result = await _InsertInventoryItemAsync(accountId, itemList, transaction);
+            var result = await _UpdateInventoryItemAsync(accountId, itemList, transaction);
             if (result == false)
                 throw new DbContextException(DbErrorCode.ProcedureError, "_InsertInventoryItemAsync error");
 

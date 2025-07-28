@@ -28,7 +28,12 @@ public sealed class GameUserDbContext : BaseMainDbContext
     public async Task<bool> ChangePlayerExpAndLevelAsync(long accountId, int exp, int level)
     {
         await using var connection = _GetConnection();
-        var command = new ChangeExpAndLevelAsync(this);
+        return await _ChangePlayerExpAndLevelAsync(accountId, exp, level);
+    }
+
+    private async Task<bool> _ChangePlayerExpAndLevelAsync(long accountId, int exp, int level, SqlTransaction transaction = null)
+    {
+        var command = new ChangeExpAndLevelAsync(this, transaction: transaction);
         command.SetParameters(new ChangeExpAndLevelAsync.InParameters
         {
             AccountId = accountId,
@@ -37,6 +42,37 @@ public sealed class GameUserDbContext : BaseMainDbContext
         });
         
         return await command.ExecuteProcedureAsync();
+    }
+    
+    public async Task ChangePlayerExpAndLevelUseItemAsync(long accountId, int exp, int level, List<InventoryDbResult> itemInfo)
+    {
+        await using var connection = _GetConnection();
+        await connection.OpenAsync();
+        if(await connection.BeginTransactionAsync() is not SqlTransaction transaction)
+            throw new DbContextException(DbErrorCode.TransactionError, "[ChangePlayerExpAndLevelUseItemAsync] transaction is not opened");
+
+        try
+        {
+            var dbResult1 = await _ChangePlayerExpAndLevelAsync(accountId, exp, level, transaction);
+            if(dbResult1 == false)
+                throw new DbContextException(DbErrorCode.TransactionError, "[_ChangePlayerExpAndLevelAsync] procedure error");
+
+            var dbResult2 = await _UpdateInventoryItemAsync(accountId, itemInfo, transaction);
+            if(dbResult2 == false)
+                throw new DbContextException(DbErrorCode.ProcedureError, "[_UpdateInventoryItemAsync] procedure error");
+
+            await transaction.CommitAsync();
+        }
+        catch (DbContextException)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            throw new DbContextException(DbErrorCode.ProcedureError, $"[ChangePlayerExpAndLevelUseItemAsync][{e.Message}]");
+        }
     }
 
     public async Task<GameUserDbModel> CreateNewGameUser(long accountId, List<AssetDbResult> defaultAssets)
@@ -86,4 +122,6 @@ public sealed class GameUserDbContext : BaseMainDbContext
 
         return await command.ExecuteProcedureAsync();
     }
+    
+    
 }

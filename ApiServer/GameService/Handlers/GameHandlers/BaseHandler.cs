@@ -2,6 +2,7 @@ using ApiServer.GameService.GameModules;
 using ApiServer.GameService.Models;
 using ApiServer.Services;
 using ApiServer.Utils;
+using ApiServer.Utils.GameUtils;
 using DbContext.SharedContext;
 using DbContext.SharedContext.DbResultModel;
 using NetworkProtocols.WebApi;
@@ -17,15 +18,24 @@ public abstract class BaseHandler : IDisposable
     protected LoggerService _loggerService;
     protected EventService _eventService;
     private SharedDbContext _sharedDbContext;
+    private RefreshDataHelper _refreshDataHelper;
     
     private readonly Dictionary<string, IGameModule> _modules = [];
-    // public abstract Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo);
-
+    public RefreshDataHelper RefreshDataHelper => _refreshDataHelper;
+    
     protected BaseHandler(long accountId, ApiServerService serverService, EventService eventService = null)
     {
         _accountId = accountId;
         _loggerService = serverService.LoggerService;
         _eventService = eventService;
+    }
+
+    protected RefreshDataHelper _GetRefreshDataHelper()
+    {
+        if(_refreshDataHelper == null)
+            _refreshDataHelper = new RefreshDataHelper();
+        
+        return _refreshDataHelper;
     }
 
     public virtual Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)

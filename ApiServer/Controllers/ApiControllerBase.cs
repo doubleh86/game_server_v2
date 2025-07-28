@@ -3,6 +3,7 @@ using ApiServer.Common.Model;
 using ApiServer.GameService.Handlers;
 using ApiServer.Services;
 using ApiServer.Utils;
+using ApiServer.Utils.GameUtils;
 using Microsoft.AspNetCore.Mvc;
 using NetworkProtocols.WebApi;
 using NetworkProtocols.WebApi.Commands;
@@ -95,10 +96,27 @@ public abstract class ApiControllerBase: ControllerBase, IDisposable, IAsyncDisp
         return _distributeLock.IsAcquired;
     }
     
-    protected string _OkResponse<TResponse>(ResultCode resultCode, TResponse response) where TResponse : ResponseBase
+    protected string _OkResponse<TResponse>(ResultCode resultCode, TResponse response, RefreshDataHelper refreshDataHelper) where TResponse : ResponseBase
     {
         response.ResultCode = (int)resultCode;
+        _SetRefreshData(response, refreshDataHelper);
         return JsonSerializer.Serialize(response);
+    }
+
+    private void _SetRefreshData(ResponseBase response, RefreshDataHelper refreshDataHelper)
+    {
+        if (refreshDataHelper == null || refreshDataHelper.HasRefreshData == false)
+            return;
+
+        if (response is not RefreshResponse refreshResponse)
+        {
+            _service.LoggerService.Warning($"Need Change RefreshResponse [{response.GetType().FullName}]");
+            return;
+        }
+        
+        refreshResponse.GameUserInfo = refreshDataHelper.GetGameUserInfo();
+        refreshResponse.ChangeInventoryItems = refreshDataHelper.GetChangeItemList();
+        refreshResponse.ChangeAssets = refreshDataHelper.GetChangeAssetList();
     }
 
     protected string _ErrorResponse(ResponseBase response, ResultCode resultCode, string errorMessage)
@@ -107,7 +125,7 @@ public abstract class ApiControllerBase: ControllerBase, IDisposable, IAsyncDisp
         response ??= new ResponseBase();
         
         response.DebugMessage = errorMessage;
-        return _OkResponse(resultCode, response);
+        return _OkResponse(resultCode, response, null);
     }
 
     public void Dispose()

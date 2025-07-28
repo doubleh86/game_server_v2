@@ -15,7 +15,7 @@ public class ShopBuyCommand
         }
     }
 
-    public class Response : ResponseBase
+    public class Response : RefreshResponse
     {
         public InventoryItemInfo Item { get; set; }
         public AssetInfo Asset { get; set; }

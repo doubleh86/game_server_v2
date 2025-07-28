@@ -38,6 +38,10 @@ public class ShopHandler(long accountId, ApiServerService serverService, EventSe
         assetInfo.UseAsset(needAssetAmount);
         
         await inventoryModule.BuyInventoryItemAsync(itemInfo, assetInfo);
+
+        var refreshDataHelper = _GetRefreshDataHelper();
+        refreshDataHelper.AddChangeItemList(itemInfo);
+        refreshDataHelper.AddChangeAssetList(assetInfo);
         
         return (itemInfo.ToClient(), assetInfo.ToClient());
     }
