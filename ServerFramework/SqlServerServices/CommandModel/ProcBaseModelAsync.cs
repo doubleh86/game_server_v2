@@ -14,8 +14,8 @@ public abstract class ProcBaseModelAsync<TResult, TDbModel>
     private readonly string _procedureName;
     protected readonly DynamicParameters _parameters;
     private readonly SqlTransaction _transaction;
-    public abstract Task<TResult> ExecuteProcedureAsync();
     public abstract void SetParameters(IDbInParameters inParameters);
+    public abstract Task<TResult> ExecuteProcedureAsync();
 
     protected ProcBaseModelAsync(DapperServiceBase dbContext, string procedureName, SqlTransaction transaction = null)
     {

@@ -22,6 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\ApiServer\ApiServer.csproj" />
       <ProjectReference Include="..\DbContext\DbContext.csproj" />
       <ProjectReference Include="..\NetworkProtocols\NetworkProtocols.csproj" />
     </ItemGroup>

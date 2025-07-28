@@ -5,7 +5,8 @@ public enum ResultCode
     Ok = 0,
     GameError = 1,
     SystemError = 2,
-    DbError = 3
+    DbError = 3,
+    InvalidRequest = 4,
 }
 
 public enum DbErrorCode

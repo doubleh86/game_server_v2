@@ -45,13 +45,7 @@ public sealed class InventoryModule : BaseModule<InventoryDbContext>, IGameModul
     {
         var list = await GetInventoryListAsync();
         var item = list.FirstOrDefault(x => x.item_index == itemIndex);
-        if(item != null)
-            return item;
-        
-        item = InventoryDbResult.Create(itemIndex, 0);
-        list.Add(item);
-        return item;
-        
+        return item ?? null;
     }
     
 }

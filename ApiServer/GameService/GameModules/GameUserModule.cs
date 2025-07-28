@@ -62,5 +62,27 @@ public class GameUserModule : BaseModule<GameUserDbContext>, IGameModule
         
         return defaultAssetInfo;
     }
+
+    public async Task<bool> AddPlayerExpAsync(int addExp)
+    {
+        var gameUser = await GetGameUserDbModelAsync();
+        var levelTableList = DataHelper.GetDataList<PlayerLevelTable>().OrderBy(table => table.level);
+        gameUser.user_exp += addExp;
+
+        foreach (var levelTable in levelTableList)
+        {
+            if (levelTable.level < gameUser.user_level)
+                continue;
+
+            if (levelTable.accumulated_exp < gameUser.user_exp)
+            {
+                gameUser.user_level = levelTable.level;
+            }
+        }
+        
+        var dbResult = await GetDbContext().ChangePlayerExpAndLevelAsync(gameUser.account_id, gameUser.user_exp, gameUser.user_level);
+        return dbResult;
+    }
+    
     
 }

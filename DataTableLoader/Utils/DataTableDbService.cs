@@ -23,6 +23,7 @@ public class DataTableDbService : SqlServerServiceBase
     public DbSet<ItemInfoTable> ItemInfoTable { get; set; }
     private DbSet<AssetInfoTable> AssetInfoTable { get; set; }
     private DbSet<GameEventTable> GameEventTable { get; set; }
+    private DbSet<PlayerLevelTable> PlayerLevelTable { get; set; }
     
     public DataTableDbService(SqlServerDbInfo settings, bool isLazyLoading = false, LoggerService logger = null) : base(settings)
     {
@@ -39,6 +40,7 @@ public class DataTableDbService : SqlServerServiceBase
         _tableMapping.TryAdd(typeof(ItemInfoTable), ItemInfoTable);
         _tableMapping.TryAdd(typeof(AssetInfoTable), AssetInfoTable);
         _tableMapping.TryAdd(typeof(GameEventTable), GameEventTable);
+        _tableMapping.TryAdd(typeof(PlayerLevelTable), PlayerLevelTable);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -48,6 +50,7 @@ public class DataTableDbService : SqlServerServiceBase
         modelBuilder.Entity<ItemInfoTable>(entity => entity.HasKey(data => data.item_index));
         modelBuilder.Entity<AssetInfoTable>(entity => entity.HasKey(data => data.asset_type));
         modelBuilder.Entity<GameEventTable>(entity => entity.HasKey(data => data.index_no));
+        modelBuilder.Entity<PlayerLevelTable>(entity => entity.HasKey(data => data.level));
     }
 
     public List<T> LoadData<T>() where T : BaseData

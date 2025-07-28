@@ -25,6 +25,20 @@ public sealed class GameUserDbContext : BaseMainDbContext
         return await command.ExecuteProcedureAsync();
     }
 
+    public async Task<bool> ChangePlayerExpAndLevelAsync(long accountId, int exp, int level)
+    {
+        await using var connection = _GetConnection();
+        var command = new ChangeExpAndLevelAsync(this);
+        command.SetParameters(new ChangeExpAndLevelAsync.InParameters
+        {
+            AccountId = accountId,
+            Exp = exp,
+            Level = level
+        });
+        
+        return await command.ExecuteProcedureAsync();
+    }
+
     public async Task<GameUserDbModel> CreateNewGameUser(long accountId, List<AssetDbResult> defaultAssets)
     {
         await using var connection = _GetConnection();

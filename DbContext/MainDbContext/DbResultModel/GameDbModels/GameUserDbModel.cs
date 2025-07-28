@@ -11,6 +11,11 @@ public class GameUserDbModel : IHasClientModel<GameUserInfo>
     public DateTime update_date { get; set; }
 
 
+    public void ChangeExpAndLevel(int exp, int level)
+    {
+        user_exp = exp;
+        user_level = level;
+    }
     public GameUserInfo ToClient()
     {
         return new GameUserInfo

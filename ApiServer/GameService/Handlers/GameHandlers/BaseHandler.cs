@@ -60,6 +60,14 @@ public abstract class BaseHandler : IDisposable
         return _modules[typeof(T).Name] as T;
     }
     
+    public T GetModuleForTest<T>() where T : class, IGameModule
+    {
+        if (_modules.TryGetValue(typeof(T).Name, out _) == false)
+            throw new ApiServerException(ResultCode.SystemError, $"[{typeof(T).Name}] module not found]");
+
+        return _modules[typeof(T).Name] as T;
+    }
+    
     public void Dispose()
     {
         _sharedDbContext?.Dispose();

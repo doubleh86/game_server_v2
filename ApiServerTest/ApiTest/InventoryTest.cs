@@ -1,10 +1,10 @@
 using NetworkProtocols.WebApi;
 using NetworkProtocols.WebApi.Commands.Auth;
-using NetworkProtocols.WebApi.Commands.Shop;
+using NetworkProtocols.WebApi.Commands.Inventory;
 
 namespace ApiServerTest.ApiTest;
 
-public class ShopTest
+public class InventoryTest
 {
     private readonly LoginInfo _loginInfo = new();
     
@@ -25,28 +25,26 @@ public class ShopTest
         _loginInfo.AccountId = response.AccountId;
         _loginInfo.Token = response.Token;
     }
-    
+
     [Test, Order(1)]
-    public async Task ShopBuy()
+    public async Task UseInventoryItemTest()
     {
         _loginInfo.Sequence += 1;
-        var request = new ShopBuyCommand.Request
+        var request = new ItemUseCommand.Request
         {
             AccountId = _loginInfo.AccountId,
             Sequence = _loginInfo.Sequence,
             SubSequence = _loginInfo.SubSequence,
             Token = _loginInfo.Token,
-            
+
             ItemIndex = 1,
-            Amount = 10,
+            Quantity = 2
         };
         
-        var response = await ApiTestHelper.SendPacket<ShopBuyCommand.Request, ShopBuyCommand.Response>(request, LoginInfo.ServerUrl);
+        var response = await ApiTestHelper.SendPacket<ItemUseCommand.Request, ItemUseCommand.Response>(request, LoginInfo.ServerUrl);
         if (response.ResultCode != (int)ResultCode.Ok)
         {
             Console.WriteLine($"Error Message : {response.DebugMessage}");
-            return;
         }
     }
-
 }

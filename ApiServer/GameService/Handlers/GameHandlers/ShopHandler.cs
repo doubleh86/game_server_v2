@@ -13,14 +13,12 @@ namespace ApiServer.GameService.Handlers.GameHandlers;
 
 public class ShopHandler(long accountId, ApiServerService serverService, EventService eventService) : BaseHandler(accountId, serverService, eventService)
 {
-    public override Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
+    public override async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
     {
-        base.InitializeModulesAsync(masterDbInfo, slaveDbInfo);
+        await base.InitializeModulesAsync(masterDbInfo, slaveDbInfo);
         
         var inventoryModule = new InventoryModule(_accountId, masterDbInfo, slaveDbInfo);
         _AddModule(nameof(InventoryModule), inventoryModule);
-        
-        return Task.CompletedTask;
     }
 
     public async Task<(InventoryItemInfo, AssetInfo)> BuyShopItemAsync(int itemIndex, int amount)
@@ -35,7 +33,7 @@ public class ShopHandler(long accountId, ApiServerService serverService, EventSe
             throw new ApiServerException(ResultCode.GameError, $"Not enough asset price for {tableData.asset_type}");
         
         var inventoryModule = GetModule<InventoryModule>();
-        var itemInfo = await inventoryModule.GetInventoryOneItemAsync(itemIndex);
+        var itemInfo = await inventoryModule.GetInventoryOneItemAsync(itemIndex) ?? InventoryDbResult.Create(itemIndex, 0);
         itemInfo.AddItemAmount(amount);
         assetInfo.UseAsset(needAssetAmount);
         

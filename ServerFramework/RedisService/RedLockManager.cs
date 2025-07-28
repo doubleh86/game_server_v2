@@ -62,7 +62,7 @@ public class RedLockManager: IDisposable, IAsyncDisposable
 
     public void Dispose()
     {
-        _redLockFactory.Dispose();
+        _redLockFactory?.Dispose();
     }
 
     public async ValueTask DisposeAsync()
