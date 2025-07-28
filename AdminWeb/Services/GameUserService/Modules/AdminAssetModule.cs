@@ -20,8 +20,9 @@ public class AdminAssetModule
             return _assetDbResults;
         
         var gameDbInfo = _accountDbResult.GetMainDbInfo(isSlave: true);
-        using var dbContext = new GameUserDbContext(gameDbInfo);
-        
-        return await dbContext.GetAssetInfoAsync(_accountDbResult.AccountId);
+        using var dbContext = new AssetDbContext(gameDbInfo);
+
+        _assetDbResults = await dbContext.GetAssetInfoAsync(_accountDbResult.AccountId);
+        return _assetDbResults;
     }
 }

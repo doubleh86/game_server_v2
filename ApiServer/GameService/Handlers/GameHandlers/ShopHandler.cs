@@ -19,6 +19,9 @@ public class ShopHandler(long accountId, ApiServerService serverService, EventSe
         
         var inventoryModule = new InventoryModule(_accountId, masterDbInfo, slaveDbInfo);
         _AddModule(nameof(InventoryModule), inventoryModule);
+
+        var assetModule = new AssetInfoModule(_accountId, masterDbInfo, slaveDbInfo);
+        _AddModule(nameof(AssetInfoModule), assetModule);
     }
 
     public async Task<(InventoryItemInfo, AssetInfo)> BuyShopItemAsync(int itemIndex, int amount)
@@ -48,7 +51,7 @@ public class ShopHandler(long accountId, ApiServerService serverService, EventSe
 
     private async Task<(bool, AssetDbResult)> _IsPossiblePayment(int assetType, int price)
     {
-        var assetInfo = await GetModule<GameUserModule>().GetAssetInfoAsync(assetType);
+        var assetInfo = await GetModule<AssetInfoModule>().GetAssetInfoAsync(assetType);
         if(assetInfo == null)
             throw new ApiServerException(ResultCode.GameError, $"Asset type not found [{assetType}]");
         

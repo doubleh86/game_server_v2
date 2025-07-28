@@ -13,7 +13,7 @@ public class GameUserModule : BaseModule<GameUserDbContext>, IGameModule
 {
     public long AccountId { get; set; }
     private GameUserDbModel _gameUserDbModel;
-    private List<AssetDbResult> _assetDbResults;
+    
     public GameUserModule(long accountId, SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo) : base(masterDbInfo, slaveDbInfo)
     {
         AccountId = accountId;
@@ -32,36 +32,6 @@ public class GameUserModule : BaseModule<GameUserDbContext>, IGameModule
     {
         var result = await GetDbContext().CreateNewGameUser(AccountId, defaultAssets);
         return result;
-    }
-
-    public async Task<List<AssetDbResult>> GetAssetInfoListAsync()
-    {
-        if(_assetDbResults != null)
-            return _assetDbResults;
-        
-        _assetDbResults = await GetDbContext(true).GetAssetInfoAsync(AccountId);
-        if (_assetDbResults != null && _assetDbResults.Count > 0)
-            return _assetDbResults;
-        
-        var tableList = DataHelper.GetDataList<AssetInfoTable>();
-        _assetDbResults = tableList.Select(table => AssetDbResult.Create(table.asset_type, table.default_asset_value)).ToList();
-            
-        await GetDbContext().UpdateAssetInfoAsync(AccountId, _assetDbResults);
-        return _assetDbResults;
-    }
-
-    public async Task<AssetDbResult> GetAssetInfoAsync(int assetType)
-    {
-        var list = await GetAssetInfoListAsync();
-        var assetInfo = list.FirstOrDefault(dbResult => dbResult.asset_type == assetType);
-        if(assetInfo != null)
-            return assetInfo;
-        
-        var tableData = DataHelper.GetData<AssetInfoTable>(assetType);
-        var defaultAssetInfo = AssetDbResult.Create(tableData.asset_type, tableData.default_asset_value);
-        list.Add(defaultAssetInfo);
-        
-        return defaultAssetInfo;
     }
 
     private void _AddPlayerExp(GameUserDbModel gameUser, int addExp)

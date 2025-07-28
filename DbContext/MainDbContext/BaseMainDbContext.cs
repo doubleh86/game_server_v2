@@ -14,23 +14,7 @@ public abstract class BaseMainDbContext : DapperServiceBase
     {
     }
 
-    public async Task<List<AssetDbResult>> GetAssetInfoAsync(long accountId)
-    {
-        await using var connection = _GetConnection();
-        var command = new GetAssetInfoAsync(this);
-        command.SetParameters(new GetAssetInfoAsync.InParameters
-        {
-            AccountId = accountId
-        });
-
-        return await command.ExecuteProcedureAsync();
-    }
-
-    public async Task<bool> UpdateAssetInfoAsync(long accountId, List<AssetDbResult> assetInfo)
-    {
-        await using var connection = _GetConnection();
-        return await _UpdateAssetInfoAsync(accountId, assetInfo);
-    }
+    
 
     protected async Task<bool> _UpdateAssetInfoAsync(long accountId, List<AssetDbResult> assetList, SqlTransaction transaction = null)
     {

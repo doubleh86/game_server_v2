@@ -13,14 +13,15 @@ namespace ApiServer.GameService.Handlers.GameHandlers;
 
 public class UserHandler(long accountId, ApiServerService service) : BaseHandler(accountId, service)
 {
-    public override Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
+    public override async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
     {
-        base.InitializeModulesAsync(masterDbInfo, slaveDbInfo);
+        await base.InitializeModulesAsync(masterDbInfo, slaveDbInfo);
         
         var inventoryModule = new InventoryModule(_accountId, masterDbInfo, slaveDbInfo);
         _AddModule(nameof(InventoryModule), inventoryModule);
-        
-        return Task.CompletedTask;
+
+        var assetModule = new AssetInfoModule(_accountId, masterDbInfo, slaveDbInfo);
+        _AddModule(nameof(AssetInfoModule), assetModule);
     }
     
     public async Task<(GameUserInfo, List<InventoryItemInfo>, List<AssetInfo>)> GetUserInfoAsync()
@@ -32,7 +33,8 @@ public class UserHandler(long accountId, ApiServerService service) : BaseHandler
         var inventoryInfo = await inventoryModule.GetInventoryListAsync();
         var inventoryListToClient = inventoryInfo.Select(dbResult => dbResult.ToClient()).ToList();
 
-        var assetLists = await module.GetAssetInfoListAsync();
+        var assetModule = GetModule<AssetInfoModule>();
+        var assetLists = await assetModule.GetAssetInfoListAsync();
         var assetListToClient = assetLists.Select(dbResult => dbResult.ToClient()).ToList();
         
         return (result.ToClient(), inventoryListToClient, assetListToClient); 
