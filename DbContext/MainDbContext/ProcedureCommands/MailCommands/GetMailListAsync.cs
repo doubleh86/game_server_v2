@@ -5,21 +5,21 @@ using NetworkProtocols.WebApi;
 using ServerFramework.SqlServerServices.CommandModel;
 using ServerFramework.SqlServerServices.DapperUtils;
 
-namespace DbContext.MainDbContext.ProcedureCommands.InventoryCommands;
+namespace DbContext.MainDbContext.ProcedureCommands.MailCommands;
 
-public class GetInventoryListAsync : ProcBaseModelAsync<List<InventoryDbResult>, InventoryDbResult>
+public class GetMailListAsync : ProcBaseModelAsync<List<MailInfoDbResult>, MailInfoDbResult>
 {
     public struct InParameters : IDbInParameters
     {
         public long AccountId { get; init; }
     }
-    private const string _ProcedureName = "dbo.gsp_get_inventory_list";
+    private const string _ProcedureName = "dbo.gsp_get_mail_box_info";
     
-    public GetInventoryListAsync(DapperServiceBase dbContext, SqlTransaction transaction = null) 
+    public GetMailListAsync(DapperServiceBase dbContext, SqlTransaction transaction = null) 
         : base(dbContext, _ProcedureName, transaction)
     {
     }
-    
+
     public override void SetParameters(IDbInParameters inParameters)
     {
         if (inParameters is not InParameters inParams)
@@ -28,12 +28,11 @@ public class GetInventoryListAsync : ProcBaseModelAsync<List<InventoryDbResult>,
         _parameters.Add("@accountId", inParams.AccountId);
     }
 
-    public override async Task<List<InventoryDbResult>> ExecuteProcedureAsync()
+    public override async Task<List<MailInfoDbResult>> ExecuteProcedureAsync()
     {
         var result = await _RunDbProcedureReturnModelAsync();
         _CheckExceptionError();
         
         return result.ToList();
     }
-
 }
