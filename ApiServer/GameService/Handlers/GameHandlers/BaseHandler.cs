@@ -41,7 +41,7 @@ public abstract class BaseHandler : IDisposable
     public virtual Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
     {
         var gameUserModule = new GameUserModule(_accountId, masterDbInfo, slaveDbInfo);
-        _AddModule(nameof(GameUserModule), gameUserModule);
+        _AddModule(gameUserModule);
         
         return Task.CompletedTask;
     }
@@ -54,8 +54,9 @@ public abstract class BaseHandler : IDisposable
         return _sharedDbContext;
     }
 
-    protected void _AddModule(string moduleName, IGameModule newModule)
+    protected void _AddModule<T>(T newModule) where T : class, IGameModule
     {
+        var moduleName = typeof(T).Name;
         if (_modules.TryGetValue(moduleName, out _) == true)
             return;
         

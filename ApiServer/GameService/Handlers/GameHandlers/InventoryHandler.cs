@@ -17,7 +17,7 @@ public class InventoryHandler(long accountId, ApiServerService serverService, Ev
     {
         await base.InitializeModulesAsync(masterDbInfo, slaveDbInfo);
         var inventoryModule = new InventoryModule(_accountId, masterDbInfo, slaveDbInfo);
-        _AddModule(nameof(InventoryModule), inventoryModule);
+        _AddModule(inventoryModule);
     }
 
     public async Task<InventoryItemInfo> UseInventoryItemAsync(int itemIndex, int quantity)

@@ -18,10 +18,10 @@ public class ShopHandler(long accountId, ApiServerService serverService, EventSe
         await base.InitializeModulesAsync(masterDbInfo, slaveDbInfo);
         
         var inventoryModule = new InventoryModule(_accountId, masterDbInfo, slaveDbInfo);
-        _AddModule(nameof(InventoryModule), inventoryModule);
+        _AddModule(inventoryModule);
 
         var assetModule = new AssetInfoModule(_accountId, masterDbInfo, slaveDbInfo);
-        _AddModule(nameof(AssetInfoModule), assetModule);
+        _AddModule(assetModule);
     }
 
     public async Task<(InventoryItemInfo, AssetInfo)> BuyShopItemAsync(int itemIndex, int amount)

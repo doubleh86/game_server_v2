@@ -13,7 +13,7 @@ public class MailHandler(long accountId, ApiServerService serverService) : BaseH
     {
         await base.InitializeModulesAsync(masterDbInfo, slaveDbInfo);
         var mailModule = new MailModule(_accountId, masterDbInfo, slaveDbInfo);
-        _AddModule(nameof(MailModule), mailModule);
+        _AddModule(mailModule);
     }
     
     public async Task<List<MailInfoDbResult>> GetMailListAsync()
