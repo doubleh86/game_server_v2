@@ -64,18 +64,18 @@ public abstract class BaseHandler : IDisposable
 
     protected T GetModule<T>() where T : class, IGameModule
     {
-        if (_modules.TryGetValue(typeof(T).Name, out _) == false)
+        if (_modules.TryGetValue(typeof(T).Name, out var module) == false)
             throw new ApiServerException(GameResultCode.SystemError, $"[{typeof(T).Name}] module not found]");
 
-        return _modules[typeof(T).Name] as T;
+        return module as T;
     }
     
     public T GetModuleForTest<T>() where T : class, IGameModule
     {
-        if (_modules.TryGetValue(typeof(T).Name, out _) == false)
+        if (_modules.TryGetValue(typeof(T).Name, out var module) == false)
             throw new ApiServerException(GameResultCode.SystemError, $"[{typeof(T).Name}] module not found]");
 
-        return _modules[typeof(T).Name] as T;
+        return module as T;
     }
     
     public void Dispose()

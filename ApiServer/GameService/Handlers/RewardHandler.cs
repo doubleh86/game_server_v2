@@ -40,7 +40,7 @@ public class RewardHandler
             throw new ApiServerException(GameResultCode.SystemError, $"[{typeof(T).Name}] module not found]");
         }
         
-        return _modules[typeof(T).Name] as T;
+        return module as T;
     }
 
     public async Task ReceiveRewardAsync()
