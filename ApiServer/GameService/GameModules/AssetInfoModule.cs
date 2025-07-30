@@ -1,9 +1,13 @@
 using ApiServer.GameService.Models;
+using ApiServer.Utils;
 using DataTableLoader.Models;
 using DataTableLoader.Utils.Helper;
 using DbContext.Common.Models;
 using DbContext.MainDbContext.DbResultModel.GameDbModels;
 using DbContext.MainDbContext.SubContexts;
+using NetworkProtocols.Shared.Enums;
+using NetworkProtocols.WebApi;
+using NetworkProtocols.WebApi.Commands.User;
 using ServerFramework.SqlServerServices.Models;
 
 namespace ApiServer.GameService.GameModules;
@@ -49,5 +53,19 @@ public class AssetInfoModule : BaseModule<AssetDbContext>, IGameModule
         return defaultAssetInfo;
     }
 
-    
+    public async Task<AssetDbResult> AddAssetInfoAsync(AssetType assetType, int amount)
+    {
+        var assetInfo = await GetAssetInfoAsync((int)assetType);
+        if (assetInfo == null)
+            throw new ApiServerException(GameResultCode.GameError, $"Not exist asset Type [{assetType}]");
+        
+        assetInfo.AddAssetAmount(amount);
+        return assetInfo;
+    }
+
+    public async Task<bool> UpdateAssetInfoAsync(List<AssetDbResult> assetInfoList)
+    {
+        return await GetDbContext().UpdateAssetInfoAsync(AccountId, assetInfoList);
+    }
+
 }

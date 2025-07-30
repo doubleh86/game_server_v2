@@ -14,6 +14,8 @@ public static class SubDbContextFactory
         {
             nameof(InventoryDbContext) => new InventoryDbContext(connectionInfo),
             nameof(GameUserDbContext) => new GameUserDbContext(connectionInfo), 
+            nameof(AssetDbContext) => new AssetDbContext(connectionInfo),
+            nameof(MailDbContext) => new MailDbContext(connectionInfo),
             _ => throw new DbContextException(DbErrorCode.NotRegisteredFactory, $"[{key}] is not registered."),
         };
     }

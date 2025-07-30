@@ -15,12 +15,12 @@ namespace ApiServer.GameService.Handlers.GameHandlers;
 public abstract class BaseHandler : IDisposable
 {
     protected readonly long _accountId;
-    protected LoggerService _loggerService;
+    protected readonly LoggerService _loggerService;
     protected EventService _eventService;
     private SharedDbContext _sharedDbContext;
     private RefreshDataHelper _refreshDataHelper;
     
-    private readonly Dictionary<string, IGameModule> _modules = [];
+    protected readonly Dictionary<string, IGameModule> _modules = [];
     public RefreshDataHelper RefreshDataHelper => _refreshDataHelper;
     
     protected BaseHandler(long accountId, ApiServerService serverService, EventService eventService = null)

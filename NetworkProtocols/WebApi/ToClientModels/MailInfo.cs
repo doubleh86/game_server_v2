@@ -9,5 +9,5 @@ public class MailInfo
     public DateTime ExpireDate { get; set; }
     
     public string Message { get; set; }
-    public List<MailRewardInfo> RewardInfo { get; set; }
+    public List<RewardInfo> RewardInfo { get; set; }
 }

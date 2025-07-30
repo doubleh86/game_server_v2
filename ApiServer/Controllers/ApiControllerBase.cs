@@ -115,8 +115,8 @@ public abstract class ApiControllerBase: ControllerBase, IDisposable, IAsyncDisp
         }
         
         refreshResponse.GameUserInfo = refreshDataHelper.GetGameUserInfo();
-        refreshResponse.ChangeInventoryItems = refreshDataHelper.GetChangeItemList();
-        refreshResponse.ChangeAssets = refreshDataHelper.GetChangeAssetList();
+        refreshResponse.ChangeInventoryItems = refreshDataHelper.GetChangeItemListToClient();
+        refreshResponse.ChangeAssets = refreshDataHelper.GetChangeAssetListToClient();
     }
 
     protected string _ErrorResponse(ResponseBase response, GameResultCode resultCode, string errorMessage)

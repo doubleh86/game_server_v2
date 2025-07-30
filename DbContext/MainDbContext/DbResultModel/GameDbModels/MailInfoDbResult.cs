@@ -18,9 +18,9 @@ public class MailInfoDbResult : IHasCustomTableData, IHasClientModel<MailInfo>
     
     public static string GetCustomTableName() => "dbo.TVP_MailInfo";
 
-    private List<MailRewardInfo> _rewardInfo = null;
+    private List<RewardInfo> _rewardInfo = null;
 
-    public List<MailRewardInfo> GetMailRewardInfoList()
+    public List<RewardInfo> GetMailRewardInfoList()
     {
         if (string.IsNullOrWhiteSpace(reward_content) == true)
         {
@@ -30,7 +30,7 @@ public class MailInfoDbResult : IHasCustomTableData, IHasClientModel<MailInfo>
 
         try
         {
-            _rewardInfo = JsonSerializer.Deserialize<List<MailRewardInfo>>(reward_content); 
+            _rewardInfo = JsonSerializer.Deserialize<List<RewardInfo>>(reward_content); 
             return _rewardInfo;
         }
         catch (Exception e)
@@ -39,7 +39,7 @@ public class MailInfoDbResult : IHasCustomTableData, IHasClientModel<MailInfo>
             return _rewardInfo;
         }
     }
-    public void AddMailReward(List<MailRewardInfo> mailRewardInfo)
+    public void AddMailReward(List<RewardInfo> mailRewardInfo)
     {
         var rewardList = GetMailRewardInfoList();
         rewardList.AddRange(mailRewardInfo);

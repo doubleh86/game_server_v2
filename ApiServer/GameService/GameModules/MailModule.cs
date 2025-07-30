@@ -1,8 +1,8 @@
 using ApiServer.GameService.Models;
+using ApiServer.Utils.GameUtils;
 using DbContext.Common.Models;
 using DbContext.MainDbContext.DbResultModel.GameDbModels;
 using DbContext.MainDbContext.SubContexts;
-using ServerFramework.CommonUtils.DateTimeHelper;
 using ServerFramework.SqlServerServices.Models;
 
 namespace ApiServer.GameService.GameModules;
@@ -10,7 +10,7 @@ namespace ApiServer.GameService.GameModules;
 public class MailModule : BaseModule<MailDbContext>, IGameModule
 {
     public long AccountId { get; set; }
-    private Dictionary<long, MailInfoDbResult> _mailLists = null;
+    private Dictionary<long, MailInfoDbResult> _mailLists;
     public MailModule(long accountId, SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo) : base(masterDbInfo, slaveDbInfo)
     {
         AccountId = accountId;
@@ -33,35 +33,10 @@ public class MailModule : BaseModule<MailDbContext>, IGameModule
         return _mailLists;
     }
 
-    public async Task<List<long>> ReceiveMailRewardAsync(List<long> mailUidList)
+    public async Task ReceiveMailRewardAsync(List<MailInfoDbResult> mailList, RefreshDataHelper refreshDataHelper)
     {
-        var mailList = await GetMailListAsync();
-        var receivedFailed =  new List<long>();
-        var currentServerTime = TimeZoneHelper.ServerTimeNow;
-        
-        foreach (var mailUid in mailUidList)
-        {
-            if (mailList.TryGetValue(mailUid, out var mailDbInfo) == false)
-            {
-                receivedFailed.Add(mailUid);
-                continue;
-            }
-
-            if (mailDbInfo.expiry_date.ToServerTime() > currentServerTime)
-            {
-                receivedFailed.Add(mailUid);
-                continue;
-            }
-
-            if (mailDbInfo.is_reward_received == 1)
-            {
-                receivedFailed.Add(mailUid);
-                continue;
-            }
-            
-            mailDbInfo.is_reward_received = 0;
-        }
-        
-        return receivedFailed;
+        var dbContext = GetDbContext();
+        await dbContext.ReceivedMailRewardsAsync(AccountId, mailList, refreshDataHelper.InventoryChangeList, refreshDataHelper.AssetChangeList);
     }
+
 }

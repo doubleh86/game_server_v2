@@ -33,8 +33,6 @@ public sealed class InventoryDbContext : BaseMainDbContext
         return await _UpdateInventoryItemAsync(accountId, itemList);
     }
 
-    
-
     public async Task<bool> ShopBuyItemAsync(long accountId, List<InventoryDbResult> itemList, List<AssetDbResult> assetList)
     {
         await using var connection = _GetConnection();

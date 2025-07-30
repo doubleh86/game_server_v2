@@ -26,13 +26,12 @@ public sealed class InventoryModule : BaseModule<InventoryDbContext>, IGameModul
         return _inventoryList;
     }
     
-    public async Task<bool> AddInventoryItemAsync(int itemIndex, int amount)
+    public async Task<InventoryDbResult> AddInventoryItemAsync(int itemIndex, int amount)
     {
-        var dbContext = GetDbContext();
         var dbInfo = await GetInventoryOneItemAsync(itemIndex) ?? InventoryDbResult.Create(itemIndex, 0);
         dbInfo.item_amount += amount;
 
-        return await dbContext.UpdateInventoryItemAsync(AccountId, [dbInfo]);
+        return dbInfo;
     }
 
     public async Task BuyInventoryItemAsync(InventoryDbResult itemInfo, AssetDbResult assetInfo)

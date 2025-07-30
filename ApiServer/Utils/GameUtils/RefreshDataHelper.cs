@@ -10,6 +10,8 @@ public class RefreshDataHelper
     private readonly Dictionary<int, InventoryDbResult> _changeItemInfo = [];
     private readonly Dictionary<int, AssetDbResult> _changeAssetInfo = [];
 
+    public List<AssetDbResult> AssetChangeList => _changeAssetInfo.Values.ToList();
+    public List<InventoryDbResult> InventoryChangeList => _changeItemInfo.Values.ToList();
     public bool HasRefreshData { get; } = false;
 
     public RefreshDataHelper()
@@ -37,12 +39,12 @@ public class RefreshDataHelper
         return _gameUserDbModel.ToClient();
     }
 
-    public List<InventoryItemInfo> GetChangeItemList()
+    public List<InventoryItemInfo> GetChangeItemListToClient()
     {
         return _changeItemInfo.Values.Select(x => x.ToClient()).ToList();
     }
 
-    public List<AssetInfo> GetChangeAssetList()
+    public List<AssetInfo> GetChangeAssetListToClient()
     {
         return _changeAssetInfo.Values.Select(x => x.ToClient()).ToList();
     }

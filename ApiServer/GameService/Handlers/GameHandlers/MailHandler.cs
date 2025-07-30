@@ -1,6 +1,7 @@
 using ApiServer.GameService.GameModules;
 using ApiServer.Services;
 using DbContext.MainDbContext.DbResultModel.GameDbModels;
+using NetworkProtocols.WebApi.ToClientModels;
 using ServerFramework.CommonUtils.DateTimeHelper;
 using ServerFramework.SqlServerServices.Models;
 
@@ -25,7 +26,7 @@ public class MailHandler(long accountId, ApiServerService serverService) : BaseH
         return dbResult.Values.ToList();
     }
 
-    public async Task ReceivedMailRewardAsync(List<long> mailIds)
+    public async Task<List<long>> ReceivedMailRewardAsync(List<long> mailIds)
     {
         var currentServerTime = TimeZoneHelper.ServerTimeNow;
         var receivedFailed =  new List<long>();
@@ -33,6 +34,8 @@ public class MailHandler(long accountId, ApiServerService serverService) : BaseH
         var mailModule = GetModule<MailModule>();
         var mailList =  await mailModule.GetMailListAsync();
         
+        var rewards = new List<RewardInfo>();
+        var receivedMailInfo = new List<MailInfoDbResult>();
         foreach (var mailUid in mailIds)
         {
             if (mailList.TryGetValue(mailUid, out var mailDbInfo) == false)
@@ -53,7 +56,16 @@ public class MailHandler(long accountId, ApiServerService serverService) : BaseH
                 continue;
             }
             
+            rewards.AddRange(mailDbInfo.GetMailRewardInfoList());
             mailDbInfo.is_reward_received = 1;
+            receivedMailInfo.Add(mailDbInfo);
         }
+
+        var rewardHandler = new RewardHandler(_accountId, _modules, rewards, _GetRefreshDataHelper(), _loggerService);
+        
+        await rewardHandler.ReceiveRewardAsync();
+        await mailModule.ReceiveMailRewardAsync(receivedMailInfo, RefreshDataHelper);
+        
+        return receivedFailed;
     }
 }

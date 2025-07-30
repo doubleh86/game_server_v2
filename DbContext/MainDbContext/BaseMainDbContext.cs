@@ -39,4 +39,5 @@ public abstract class BaseMainDbContext : DapperServiceBase
         
         return await command.ExecuteProcedureAsync();
     }
+    
 }
