@@ -9,7 +9,7 @@
                 "Port": 1433,
                 "DatabaseName": "admin_tool_db",
                 "UserId": "sa",
-                "Password": "Fkdnsem1!"
+                "Password": ""
             },
             "SharedDbContext":
             {
@@ -17,7 +17,7 @@
                 "Port": 1433,
                 "DatabaseName": "shared_db",
                 "UserId": "sa",
-                "Password": "Fkdnsem1!",
+                "Password": "",
                 "MaxPoolSize": 200
             },
             "DataTableDbService":
@@ -26,7 +26,7 @@
                 "Port": 1433,
                 "DatabaseName": "data_db",
                 "UserId": "sa",
-                "Password": "Fkdnsem1!",
+                "Password": "",
                 "modelAssembly": "DataTableLoader.Models, DataTableLoader"
             }
         }
