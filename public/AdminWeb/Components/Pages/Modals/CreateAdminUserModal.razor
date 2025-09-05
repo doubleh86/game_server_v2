@@ -1,0 +1,144 @@
+@using AdminWeb.Services
+@implements IDisposable
+@inject AdminUserService AdminUserService
+<style>
+    .valid.modified:not([type=checkbox]) {
+        outline: 1px solid #26b050;
+    }
+
+    .invalid {
+        outline: 1px solid red;
+    }
+
+    .validation-message {
+        color: red;
+    }
+</style>
+
+<Modal @ref="_modal" Title="Create Admin">
+    <BodyTemplate>
+        <EditForm EditContext="@_editContext">
+            <DataAnnotationsValidator/>
+            
+            <div class="form-group row mb-3">
+                <label class="col-md-3 col-form-label">Admin Id: <span class="text-danger">*</span></label>
+                <div class="col-md-10">
+                    <TextInput @bind-Value="@_adminUser.UserId" Placeholder="Enter Admin User Id" />
+                    <ValidationMessage For="@(() => _adminUser.UserId)" />
+                </div>
+            </div>
+
+            <div class="form-group row mb-3">
+                <label class="col-md-3 col-form-label">Password: <span class="text-danger">*</span></label>
+                <div class="col-md-10">
+                    <PasswordInput @bind-Value="@_adminUser.Password" Placeholder="Enter Password" />
+                    <ValidationMessage For="@(() => _adminUser.Password)" />
+                </div>
+            </div>
+            
+            <div class="form-group row mb-3">
+                <label class="col-md-3 col-form-label">AdminType: <span class="text-danger">*</span></label>
+                <div class="col-md-10">
+                    <NumberInput @bind-Value="@_adminUser.AdminType" Placeholder="Enter Type" />
+                </div>
+            </div>
+            
+        </EditForm>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Type="ButtonType.Button" Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+        <Button Type="ButtonType.Button" Color="ButtonColor.Success" @onclick="_OnSummit">Save</Button>
+    </FooterTemplate>
+</Modal>
+
+@code {
+
+    public class AdminUser
+    {
+        public string UserId { get; set; }
+        public string Password { get; set; }
+        public int AdminType { get; set; }
+    }
+    
+    [Inject] private ToastService _toastService { get; set; }
+    
+    private Modal _modal;
+    private EditContext _editContext;
+    private AdminUser _adminUser;
+    
+    private ValidationMessageStore _messageStore;
+    private ValidationMessageStore _messageStorePwd;
+    
+    [Parameter] public EventCallback<bool> OnCreateResult { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        _adminUser = new AdminUser();
+        _editContext = new EditContext(_adminUser);
+        _editContext.OnValidationRequested += _HandleValidRequested;
+        _editContext.OnValidationRequested += _HandleValidPasswordRequested;
+        _messageStore = new ValidationMessageStore(_editContext);
+        _messageStorePwd = new ValidationMessageStore(_editContext);
+        
+        base.OnInitialized();
+    }
+
+    public async Task ShowModalAsync()
+    {
+        await _modal.ShowAsync();
+    }
+    
+    private async Task OnHideModalClick()
+    {
+        await _modal.HideAsync();
+    }
+
+    private async Task _OnSummit()
+    {
+        if (_editContext.Validate() == false)
+        {
+            return;
+        }
+
+        var result = await AdminUserService.CreateAdminUserInfoAsync(_adminUser.UserId, _adminUser.Password, _adminUser.AdminType);
+        await OnHideModalClick();
+
+        await OnCreateResult.InvokeAsync(result);
+    }
+
+    public void Dispose()
+    {
+        if (_editContext is not null)
+        {
+            _editContext.OnValidationRequested -= _HandleValidRequested;
+            _editContext.OnValidationRequested -= _HandleValidPasswordRequested;
+        }
+    }
+
+    private void _HandleValidRequested(object sender, ValidationRequestedEventArgs e)
+    {
+        _messageStore.Clear();
+        if (string.IsNullOrWhiteSpace(_adminUser.UserId) == true)
+        {
+            _messageStore.Add(() => _adminUser.UserId, "Id Required.");
+            return;
+        }
+
+        var result = Task.Run(() => AdminUserService.CheckExistAdminAsync(_adminUser.UserId)).GetAwaiter().GetResult(); 
+        if (result == true)
+        {
+            _messageStore.Add(() => _adminUser.UserId, "Id Duplication");
+        }
+    }
+
+    private void _HandleValidPasswordRequested(object sender, ValidationRequestedEventArgs e)
+    {
+        _messageStorePwd.Clear();
+        if (string.IsNullOrWhiteSpace(_adminUser.Password) == true)
+        {
+            _messageStorePwd.Add(() => _adminUser.Password, "Password Required.");
+            return;
+        }
+    }
+
+}

@@ -1,0 +1,42 @@
+@using DbContext.MainDbContext.DbResultModel.AdminTool
+
+<div class="row mb-3 align-items-center">
+    <label class="col-3">AccountId: </label>
+    <div class="col-7 justify-content-end">
+        <NumberInput @bind-Value="@UserDbInfo.account_id" Disabled="true"></NumberInput>
+    </div>
+</div>
+
+<div class="row mb-3 align-items-center">
+    <label class="col-3">LoginId: </label>
+    <div class="col-7 justify-content-end">
+        <TextInput @bind-Value="@UserDbInfo.LoginId" Disabled="true"></TextInput>
+    </div>
+</div>
+
+<div class="row mb-3 align-items-center">
+    <label class="col-3">CreateDate: </label>
+    <div class="col-7 justify-content-end">
+        <TextInput Value="@UserDbInfo.CreateDate" ValueExpression="() => UserDbInfo.CreateDate" Disabled="true"></TextInput>
+    </div>
+</div>
+
+<div class="row mb-3 align-items-center">
+    <label class="col-3">Level: </label>
+    <div class="col-7 justify-content-end">
+        <NumberInput @bind-Value="@UserDbInfo.user_level" Disabled="true"></NumberInput>
+    </div>
+</div>
+
+<div class="row mb-3 align-items-center">
+    <label class="col-3">Exp: </label>
+    <div class="col-7 justify-content-end">
+        <NumberInput @bind-Value="@UserDbInfo.user_exp" Disabled="true"></NumberInput>
+    </div>
+</div>
+
+
+
+@code{
+    [Parameter] public AdminGameUserDbModel UserDbInfo { get; set; }
+}

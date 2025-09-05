@@ -1,0 +1,57 @@
+﻿@page "/"
+@using AdminWeb.Services
+@using AdminWeb.Services.Utils
+@using DbContext.SharedContext
+@inject CachedService CachedService
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+<div class="d-grid gap-2 d-md-block mt-2">
+    <Button @ref="_reloadAccountButton" Class="btn btn-primary" Size="ButtonSize.Small" @onclick="_ReLoadAccountUserTotalList">Reload Account List</Button>
+    <Button @ref="_dummyButton" Class="btn btn-primary" Size="ButtonSize.Small" @onclick="_CreateDummyAccount">Dummy Account</Button>
+</div>
+@* <div class="row-3"> *@
+@*     <div class="col-12"> *@
+@*         <Button @ref="_reloadAccountButton" Class="btn btn-primary" Size="ButtonSize.Small" @onclick="_ReLoadAccountUserTotalList">Reload Account List</Button> *@
+@*         <Button @ref="_dummyButton" Class="btn btn-primary" Size="ButtonSize.Small" @onclick="_CreateDummyAccount">Dummy Account</Button>     *@
+@*     </div> *@
+@* </div> *@
+@code{
+    [Inject] private ToastService _toastService { get; set; }
+    private Button _dummyButton;
+    private Button _reloadAccountButton;
+
+    private async Task _ReLoadAccountUserTotalList()
+    {
+        _reloadAccountButton.ShowLoading("Loading...");
+        await CachedService.LoadAccountTotalListAsync(true);
+        _reloadAccountButton.HideLoading();
+        
+        _toastService.Notify(ToastMessageCreator.CreateToastWithTitle(ToastType.Light, "System Information","Complete Reload Account List"));
+    }
+    private async Task _CreateDummyAccount()
+    {
+        var result = await CachedService.GetAccountListAsync("Dummy");
+        if (result.Count > 0)
+        {
+            _toastService.Notify(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Info, "Already created dummy admin user."));
+            return;
+        }
+            
+        
+        _dummyButton.ShowLoading("Loading...");
+        var dummyAccounts = Enumerable.Range(0, 100000)
+                                      .Select(i => $"Dummy_{i}");
+
+        await Parallel.ForEachAsync(dummyAccounts, new ParallelOptions {MaxDegreeOfParallelism = 100}, async (account, _) =>
+        {
+            using var dbContext = SharedDbContext.Create();
+            await dbContext.CreateAccountAsync(account);
+        });
+        
+        _dummyButton.HideLoading();
+        _toastService.Notify(ToastMessageCreator.CreateToastWithoutTitle(ToastType.Light, "Complete Dummy Account"));
+    }
+
+}

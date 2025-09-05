@@ -1,0 +1,193 @@
+@using AdminWeb.Services
+@using AdminWeb.Services.GameUserService
+@using AdminWeb.Services.Utils
+@using DbContext.SharedContext.DbResultModel
+
+@inject AdminUserService AdminUserService
+@inject GameUserInfoService GameUserInfoService
+@inject CachedService CachedService
+
+<style>
+    .separator {
+        width: 100%; /* 부모 div의 가로폭에 맞춤 */
+        height: 1px; /* 선의 두께 */
+        background-color: #ccc; /* 선 색상 */
+        margin: 0.5rem 0; /* 위아래 간격 */
+    }
+
+    .vertical-line {
+        height: 24px; /* 세로선의 높이 */
+        width: 1px;   /* 세로선의 두께 */
+        background-color: #ccc; /* 세로선 색상 */
+        margin: 0 10px; /* 양옆 간격 */
+    }
+
+    .icon-radius {
+        border-radius: 20px 0 0 20px;
+    }
+
+    .btn-outline-radius {
+        border-radius: 0 20px 20px 0;
+    }
+
+</style>
+
+@* <div class="d-flex align-items-center gap-1 mt-2 " style="width: 70%"> *@
+@*     <div class="flex-grow-1"> *@
+@*         <TextInput @bind-Value="@_searchText" Placeholder="Search" Class="form-control form-control-sm"/>         *@
+@*     </div> *@
+@*     <div class="vertical-line"></div> *@
+@* </div> *@
+
+<div class="d-flex align-items-center" style="width: 100%;">
+    @* <div class="d-flex justify-content-center align-items-center" style="width: 80%"> *@
+    @*     <form class="d-flex align-items-center justify-content-center" style="width: 60%"> *@
+    @*         <div class="input-group"> *@
+    @*             <span class="input-group-text icon-radius"><Icon Name="IconName.Search"/></span> *@
+    @*             <TextInput @bind-Value="@_searchText" Placeholder="Search" Class="form-control form-control-sm"/> *@
+    @*             <Button Class="btn btn-primary btn-outline-radius" Size="ButtonSize.Small">Search</Button> *@
+    @*         </div> *@
+    @*     </form> *@
+    @* </div> *@
+    
+    <div class="d-flex justify-content-center align-items-center" style="width: 80%">
+        <div style="width: 60%">
+            <AutoComplete @bind-Value="@_searchText"
+                          TItem="GetAccountDbResult"
+                          DataProvider="GetAccountInfoListDataProvider"
+                          PropertyName="LoginId"
+                          Placeholder="Search a account..."
+                          OnChanged="(GetAccountDbResult dbResult) => OnAutoCompleteChange(dbResult)"
+                          Size="AutoCompleteSize.Small"
+                          Disabled="!_isSigned">
+            </AutoComplete>
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-end" style="width: 20%">
+        @if (_isSelectedUser)
+        {
+            <Button Color="ButtonColor.Light" Size="ButtonSize.Small" @onclick="_ShowUserInfo">Show User Info</Button>
+            <div class="vertical-line"></div>    
+        }
+        @if (_isSigned == true)
+        {
+            <Button Color="ButtonColor.Primary" Size="ButtonSize.Small" To="#" style="margin-right: 3px">@_adminUserId</Button>
+            <Button Color="ButtonColor.Danger" Size="ButtonSize.Small" @onclick="_SignOut">
+                <Icon Name="IconName.ArrowBarRight"/>
+            </Button>
+        }
+        else
+        {
+            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small" @onclick="_SignIn">Sign In</Button>
+        }
+        <div class="vertical-line"></div>
+        <ThemeSwitcher Position="DropdownMenuPosition.End"/>
+    </div>
+</div>
+
+<Offcanvas @ref="_offCanvas" Size="OffcanvasSize.Regular"></Offcanvas>
+<Toasts class="p-3" Messages="_toastMessages" Placement="@_toastsPlacement" AutoHide="true" Delay="4000"/>
+@code {
+
+    private readonly List<ToastMessage> _toastMessages = [];
+    private ToastsPlacement _toastsPlacement = ToastsPlacement.TopRight;
+    
+    private string _adminUserId = "-";
+    private bool _isSigned = false;
+    private bool _isSelectedUser = false;
+    private string _searchText = string.Empty;
+
+    private Offcanvas _offCanvas = null;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        AdminUserService.RefreshRequestedAsync += _RefreshAsync;
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task<AutoCompleteDataProviderResult<GetAccountDbResult>> GetAccountInfoListDataProvider(AutoCompleteDataProviderRequest<GetAccountDbResult> request)
+    {
+        var accountList = await _GetAccountInfoListAsync(request.Filter);
+        return await Task.FromResult(new AutoCompleteDataProviderResult<GetAccountDbResult> { Data = accountList, TotalCount = accountList.Count() });
+    }
+
+    private async Task OnAutoCompleteChange(GetAccountDbResult accountInfo)
+    {
+        if (accountInfo == null)
+            return;
+
+        var userDbInfo = await GameUserInfoService.SetAccountDbResult(accountInfo);
+        if (userDbInfo == null)
+        {
+            _toastMessages.Add(ToastMessageCreator.CreateToastWithTitle(ToastType.Danger, "System Information", "Game User does not exist!"));
+            _toastsPlacement = ToastsPlacement.TopCenter;
+            // _toastService.Notify(ToastMessageCreator.CreateToastWithTitle(ToastType.Danger, "System Information", "Game User does not exist!"));
+            return;
+        }
+
+        await _RefreshAsync();
+        await _ShowUserInfo();
+    }
+
+    private async Task _SignOut()
+    {
+        await AdminUserService.SignOutAsync();
+        GameUserInfoService.ResetUserDbInfo();
+        await AdminUserService.CallRequestRefresh();
+        
+        _toastMessages.Add(ToastMessageCreator.CreateToastWithTitle(ToastType.Danger, "System Information", "Sign Out"));
+        _toastsPlacement = ToastsPlacement.TopRight;
+    }
+
+    private async Task _SignIn()
+    {
+        var loginId = "root";
+        var result = await AdminUserService.SignInAsync(loginId, "Fkdnsem1!");
+        await AdminUserService.CallRequestRefresh();
+
+        var type = ToastType.Primary;
+        var message = string.Empty;
+        switch (result)
+        {
+            case SignInErrorType.Ok:
+                type = ToastType.Primary;
+                message = $"Sign In Complete [{loginId}]";
+                break;
+            case SignInErrorType.NotExistAdmin:
+                type = ToastType.Warning;
+                message = $"Not found User [{loginId}]";
+                break;
+            case SignInErrorType.WrongPassword:
+                type = ToastType.Warning;
+                message = $"Wrong password [{loginId}]";
+                break;
+            case SignInErrorType.NeedSignOut:
+                type = ToastType.Danger;
+                message = $"Need Sign out";
+                break;
+            case SignInErrorType.UnknownError:
+                type = ToastType.Danger;
+                message = $"Unknown Error";
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        
+        _toastMessages.Add(ToastMessageCreator.CreateToastWithTitle(type, "System Information", message));
+        _toastsPlacement = ToastsPlacement.TopRight;
+    }
+
+    private async Task _RefreshAsync()
+    {
+        _isSigned = await AdminUserService.IsSignedAsync();
+        _isSelectedUser = await GameUserInfoService.IsSelectedUser();
+        _adminUserId = AdminUserService.GetUserId;
+        await InvokeAsync(StateHasChanged);
+    }
+}
