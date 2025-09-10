@@ -5,7 +5,7 @@ namespace ApiServer.GameService.GameModules.Manager;
 
 public class GameDbModuleManager : IDisposable
 {
-    private readonly Dictionary<string, IGameModule> _modules = [];
+    private readonly Dictionary<Type, IGameModule> _modules = [];
     
     private readonly long _accountId;
     
@@ -21,12 +21,11 @@ public class GameDbModuleManager : IDisposable
 
     public T GetModule<T>() where T : class, IGameModule
     {
-        var name = typeof(T).Name;
-        if (_modules.TryGetValue(name, out var module) == true) 
+        if (_modules.TryGetValue(typeof(T), out var module) == true) 
             return module as T;
         
-        var newModule = GameDbModuleFactory.CreateModule(name, _accountId, _masterDbInfo, _slaveDbInfo);
-        _modules[name] = newModule;
+        var newModule = GameDbModuleFactory.CreateModule(typeof(T), _accountId, _masterDbInfo, _slaveDbInfo);
+        _modules[typeof(T)] = newModule;
             
         return newModule as T;
 

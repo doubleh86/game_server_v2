@@ -7,15 +7,20 @@ namespace ApiServer.GameService.GameModules.Manager;
 
 public static class GameDbModuleFactory
 {
-    public static IGameModule CreateModule(string name, long accountId, SqlServerDbInfo master, SqlServerDbInfo slave)
+    private static readonly Dictionary<Type, Func<long, SqlServerDbInfo, SqlServerDbInfo, IGameModule>> _map = new()
     {
-        return name switch
-        {
-            nameof(AssetInfoModule) => new AssetInfoModule(accountId, master, slave),
-            nameof(GameUserModule) => new GameUserModule(accountId, master, slave),
-            nameof(InventoryModule) => new InventoryModule(accountId, master, slave),
-            nameof(MailModule) => new MailModule(accountId, master, slave),
-            _ => throw new ApiServerException(GameResultCode.SystemError, $"Please add module factory [{name}]")
-        };
+        { typeof(AssetInfoModule),    (accountId, master, slave) => new AssetInfoModule(accountId, master, slave) },
+        { typeof(GameUserModule),     (accountId, master, slave) => new GameUserModule(accountId, master, slave) },
+        { typeof(InventoryModule),    (accountId, master, slave) => new InventoryModule(accountId, master, slave) },
+        { typeof(MailModule),         (accountId, master, slave) => new MailModule(accountId, master, slave) },
+    };
+    
+    public static IGameModule CreateModule(Type moduleType, long accountId, SqlServerDbInfo master, SqlServerDbInfo slave)
+    {
+        if (_map.TryGetValue(moduleType, out var factory))
+            return factory(accountId, master, slave);
+
+        throw new ApiServerException(GameResultCode.SystemError, $"Please register module factory [{moduleType.Name}]");
     }
+    
 }
