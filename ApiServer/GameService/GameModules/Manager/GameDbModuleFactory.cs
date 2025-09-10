@@ -17,7 +17,7 @@ public static class GameDbModuleFactory
     
     public static IGameModule CreateModule(Type moduleType, long accountId, SqlServerDbInfo master, SqlServerDbInfo slave)
     {
-        if (_map.TryGetValue(moduleType, out var factory))
+        if (_map.TryGetValue(moduleType, out var factory) == true)
             return factory(accountId, master, slave);
 
         throw new ApiServerException(GameResultCode.SystemError, $"Please register module factory [{moduleType.Name}]");
