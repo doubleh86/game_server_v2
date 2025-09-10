@@ -26,7 +26,7 @@ public class UserController : ApiControllerBase
         {
             var (dbInfo, slaveDbInfo) = await _Initialize(request);
             using var handler = new UserHandler(request.AccountId, _service);
-            await handler.InitializeModulesAsync(dbInfo, slaveDbInfo);
+            await handler.InitializeModulesAsync(dbInfo, slaveDbInfo, response.IsRefresh);
             
             var (gameUserInfo, inventoryInfo, assetInfo) = await handler.GetUserInfoAsync();
             response.UserInfo = gameUserInfo;

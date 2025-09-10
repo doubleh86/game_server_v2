@@ -37,7 +37,7 @@ public class RewardHandler
     {
         if (_modules.TryGetValue(typeof(T).Name, out var module) == false)
         {
-            throw new ApiServerException(GameResultCode.SystemError, $"[{typeof(T).Name}] module not found]");
+            throw new ApiServerException(GameResultCode.SystemError, $"[RewardHandler][{typeof(T).Name}] module not found]");
         }
         
         return module as T;

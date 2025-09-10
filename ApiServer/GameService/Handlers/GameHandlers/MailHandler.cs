@@ -1,6 +1,7 @@
 using ApiServer.GameService.GameModules;
 using ApiServer.Services;
 using DbContext.MainDbContext.DbResultModel.GameDbModels;
+using NetworkProtocols.Shared.Enums;
 using NetworkProtocols.WebApi.ToClientModels;
 using ServerFramework.CommonUtils.DateTimeHelper;
 using ServerFramework.SqlServerServices.Models;
@@ -9,11 +10,14 @@ namespace ApiServer.GameService.Handlers.GameHandlers;
 
 public class MailHandler(long accountId, ApiServerService serverService) : BaseHandler(accountId, serverService)
 {
-    public override async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
+    public override async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo, bool isRefreshResponse)
     {
-        await base.InitializeModulesAsync(masterDbInfo, slaveDbInfo);
+        await base.InitializeModulesAsync(masterDbInfo, slaveDbInfo, isRefreshResponse);
         var mailModule = new MailModule(_accountId, masterDbInfo, slaveDbInfo);
         _AddModule(mailModule);
+
+        var assetModule = new AssetInfoModule(_accountId, masterDbInfo, slaveDbInfo);
+        _AddModule(assetModule);
     }
     
     public async Task<List<MailInfoDbResult>> GetMailListAsync()
@@ -44,7 +48,7 @@ public class MailHandler(long accountId, ApiServerService serverService) : BaseH
                 continue;
             }
 
-            if (mailDbInfo.expiry_date.ToServerTime() > currentServerTime)
+            if (mailDbInfo.expiry_date.ToServerTime() < currentServerTime)
             {
                 receivedFailed.Add(mailUid);
                 continue;
@@ -61,11 +65,48 @@ public class MailHandler(long accountId, ApiServerService serverService) : BaseH
             receivedMailInfo.Add(mailDbInfo);
         }
 
-        var rewardHandler = new RewardHandler(_accountId, _modules, rewards, _GetRefreshDataHelper(), _loggerService);
+        var refreshDataHelper = _GetRefreshDataHelper();
+        var rewardHandler = new RewardHandler(_accountId, _modules, rewards, refreshDataHelper, _loggerService);
         
         await rewardHandler.ReceiveRewardAsync();
-        await mailModule.ReceiveMailRewardAsync(receivedMailInfo, RefreshDataHelper);
+        await mailModule.ReceiveMailRewardAsync(receivedMailInfo, refreshDataHelper);
         
         return receivedFailed;
     }
+
+    public static MailInfoDbResult CreateNewMailItem(string message, List<RewardInfo> rewardInfo, int expiryDays)
+    {
+        var newMailInfo = new MailInfoDbResult
+        {
+            is_reward_received = 0,
+            message_content = message,
+            expiry_date = TimeZoneHelper.UtcNow.AddDays(expiryDays)
+        };
+
+        if (rewardInfo is { Count: > 0 })
+        {
+            newMailInfo.AddMailReward(rewardInfo);    
+        }
+        
+        return newMailInfo;
+    }
+    
+#region Maybe for test
+
+    public async Task<List<MailInfoDbResult>> InsertMailItemForTestAsync()
+    {
+        var rewardInfo = new RewardInfo()
+        {
+            RewardType = RewardTypeEnums.Asset,
+            Index = (int)AssetType.Gold,
+            Amount = 100,
+        };
+
+        var newMail = CreateNewMailItem("test mail", [rewardInfo], 5);
+        var module = GetModule<MailModule>();
+        var result = await module.InsertMailItemAsync([newMail]);
+
+        return result.Values.ToList();
+    }
+#endregion Maybe for test
 }

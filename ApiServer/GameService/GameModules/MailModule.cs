@@ -39,4 +39,20 @@ public class MailModule : BaseModule<MailDbContext>, IGameModule
         await dbContext.ReceivedMailRewardsAsync(AccountId, mailList, refreshDataHelper.InventoryChangeList, refreshDataHelper.AssetChangeList);
     }
 
+    public async Task<Dictionary<long, MailInfoDbResult>> InsertMailItemAsync(List<MailInfoDbResult> mailList)
+    {
+        var dbContext = GetDbContext();
+        if (await dbContext.InsertMailItemAsync(AccountId, mailList) == false) 
+            return null;
+
+        if (_mailLists == null) 
+            return await GetMailListAsync();
+        
+        _mailLists.Clear();
+        _mailLists = null;
+
+        return await GetMailListAsync();
+
+    }
+
 }

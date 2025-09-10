@@ -13,9 +13,9 @@ namespace ApiServer.GameService.Handlers.GameHandlers;
 
 public class UserHandler(long accountId, ApiServerService service) : BaseHandler(accountId, service)
 {
-    public override async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
+    public override async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo, bool isRefreshResponse)
     {
-        await base.InitializeModulesAsync(masterDbInfo, slaveDbInfo);
+        await base.InitializeModulesAsync(masterDbInfo, slaveDbInfo, isRefreshResponse);
         
         var inventoryModule = new InventoryModule(_accountId, masterDbInfo, slaveDbInfo);
         _AddModule(inventoryModule);

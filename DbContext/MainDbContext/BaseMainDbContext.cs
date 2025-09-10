@@ -2,6 +2,7 @@ using DbContext.MainDbContext.DbResultModel.GameDbModels;
 using DbContext.MainDbContext.ProcedureCommands.AssetCommands;
 using DbContext.MainDbContext.ProcedureCommands.GameUserCommands;
 using DbContext.MainDbContext.ProcedureCommands.InventoryCommands;
+using DbContext.MainDbContext.ProcedureCommands.MailCommands;
 using Microsoft.Data.SqlClient;
 using ServerFramework.SqlServerServices.DapperUtils;
 using ServerFramework.SqlServerServices.Models;
@@ -14,7 +15,17 @@ public abstract class BaseMainDbContext : DapperServiceBase
     {
     }
 
-    
+    protected async Task<bool> _InsertMailItemAsync(long accountId, List<MailInfoDbResult> insertMailList, SqlTransaction transaction = null)
+    {
+        var command = new InsertMailItemInfoAsync(this, transaction: transaction);
+        command.SetParameters(new InsertMailItemInfoAsync.InParameters
+        {
+            AccountId = accountId,
+            InsertMailList = insertMailList
+        });
+
+        return await command.ExecuteProcedureAsync();
+    }
 
     protected async Task<bool> _UpdateAssetInfoAsync(long accountId, List<AssetDbResult> assetList, SqlTransaction transaction = null)
     {

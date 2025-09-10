@@ -28,14 +28,19 @@ public class ResponseBase
     
     public long ServerTime { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     public string DebugMessage { get; set; }
+
+    public virtual bool IsRefresh => false;
+
 }
 
 
 public class RefreshResponse : ResponseBase
 {
+    public override bool IsRefresh => true;
     public GameUserInfo GameUserInfo { get; set; }
     public List<InventoryItemInfo> ChangeInventoryItems { get; set; }
     public List<AssetInfo> ChangeAssets { get; set; }
+    
     protected RefreshResponse()
     {
         

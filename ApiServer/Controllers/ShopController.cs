@@ -27,7 +27,7 @@ public class ShopController : ApiControllerBase
         {
             var (dbInfo, slaveDbInfo) = await _Initialize(request);
             using var handler = new ShopHandler(request.AccountId, _service, _eventService);
-            await handler.InitializeModulesAsync(dbInfo, slaveDbInfo);
+            await handler.InitializeModulesAsync(dbInfo, slaveDbInfo, response.IsRefresh);
 
             var (inventoryInfo, assetInfo) = await handler.BuyShopItemAsync(request.ItemIndex, request.Amount);
             response.Item = inventoryInfo;

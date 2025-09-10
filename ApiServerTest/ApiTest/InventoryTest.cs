@@ -4,29 +4,9 @@ using NetworkProtocols.WebApi.Commands.Inventory;
 
 namespace ApiServerTest.ApiTest;
 
-public class InventoryTest
+public class InventoryTest : WebSendTestBase
 {
-    private readonly LoginInfo _loginInfo = new();
-    
     [Test, Order(0)]
-    public async Task Login()
-    {
-        var request = new AuthCommand.Request
-        {
-            LoginId = _loginInfo.LoginId,
-        };
-
-        var response = await ApiTestHelper.SendPacket<AuthCommand.Request, AuthCommand.Response>(request, LoginInfo.ServerUrl);
-        if (response.ResultCode != (int)GameResultCode.Ok)
-        {
-            Console.WriteLine($"Error Message : {response.DebugMessage}");
-            return;
-        }
-        _loginInfo.AccountId = response.AccountId;
-        _loginInfo.Token = response.Token;
-    }
-
-    [Test, Order(1)]
     public async Task UseInventoryItemTest()
     {
         _loginInfo.Sequence += 1;

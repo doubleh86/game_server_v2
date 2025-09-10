@@ -9,7 +9,6 @@ public class CommonHelperTest
     [SetUp]
     public void Setup()
     {
-        
         var configFiles = new List<string> {"appsettings.json", "Settings/sqlSettings.json"};
         
         _configurationHelper = new ConfigurationHelper();

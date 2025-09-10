@@ -7,17 +7,17 @@ using ServerFramework.SqlServerServices.DapperUtils;
 
 namespace DbContext.MainDbContext.ProcedureCommands.MailCommands;
 
-public class ReceiveMailRewardAsync : ProcBaseModelAsync<bool, bool>
+public class InsertMailItemInfoAsync : ProcBaseModelAsync<bool, bool>
 {
-    private const string _ProcedureName = "dbo.gsp_receive_mail_reward";
+    private const string _ProcedureName = "dbo.gsp_insert_mail_info";
 
     public struct InParameters : IDbInParameters
     {
         public long AccountId { get; init; }
-        public List<MailInfoDbResult> MailList { get; init; }
+        public List<MailInfoDbResult> InsertMailList { get; init; }
     }
     
-    public ReceiveMailRewardAsync(DapperServiceBase dbContext, SqlTransaction transaction = null) 
+    public InsertMailItemInfoAsync(DapperServiceBase dbContext, SqlTransaction transaction = null) 
         : base(dbContext, _ProcedureName, transaction)
     {
     }
@@ -28,7 +28,7 @@ public class ReceiveMailRewardAsync : ProcBaseModelAsync<bool, bool>
             throw new DbContextException(DbErrorCode.InParameterWrongType, $"[{GetType().Name}] Parameter Type is wrong");
         
         _parameters.Add("@accountId", inParams.AccountId);
-        _parameters.Add("@mailList", CustomTableDataHelper.CreateCustomQueryParameter(inParams.MailList));
+        _parameters.Add("@mailList", CustomTableDataHelper.CreateCustomQueryParameter(inParams.InsertMailList));
     }
 
     public override async Task<bool> ExecuteProcedureAsync()

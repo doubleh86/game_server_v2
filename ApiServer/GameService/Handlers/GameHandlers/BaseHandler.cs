@@ -3,9 +3,11 @@ using ApiServer.GameService.Models;
 using ApiServer.Services;
 using ApiServer.Utils;
 using ApiServer.Utils.GameUtils;
+using DbContext.MainDbContext.DbResultModel.GameDbModels;
 using DbContext.SharedContext;
 using DbContext.SharedContext.DbResultModel;
 using NetworkProtocols.WebApi;
+using NetworkProtocols.WebApi.Commands;
 using ServerFramework.CommonUtils.EventHelper;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
@@ -32,18 +34,25 @@ public abstract class BaseHandler : IDisposable
 
     protected RefreshDataHelper _GetRefreshDataHelper()
     {
-        if(_refreshDataHelper == null)
-            _refreshDataHelper = new RefreshDataHelper();
+        if (_refreshDataHelper == null)
+        {
+            throw new ApiServerException(GameResultCode.SystemError, "RefreshDataHelper does not initialize");
+        } 
         
         return _refreshDataHelper;
     }
 
-    public virtual Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
+    public virtual async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo, bool isRefreshResponse)
     {
         var gameUserModule = new GameUserModule(_accountId, masterDbInfo, slaveDbInfo);
         _AddModule(gameUserModule);
-        
-        return Task.CompletedTask;
+
+        if (isRefreshResponse == true)
+        {
+            _refreshDataHelper = new RefreshDataHelper();
+            var userDbInfo = await gameUserModule.GetGameUserDbModelAsync();
+            _refreshDataHelper.SetGameUserInfo(userDbInfo);
+        }
     }
 
     protected SharedDbContext _GetSharedDbContext()

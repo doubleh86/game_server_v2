@@ -13,9 +13,9 @@ namespace ApiServer.GameService.Handlers.GameHandlers;
 
 public class InventoryHandler(long accountId, ApiServerService serverService, EventService eventService) : BaseHandler(accountId, serverService, eventService)
 {
-    public override async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo)
+    public override async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo, bool isRefreshResponse)
     {
-        await base.InitializeModulesAsync(masterDbInfo, slaveDbInfo);
+        await base.InitializeModulesAsync(masterDbInfo, slaveDbInfo, isRefreshResponse);
         var inventoryModule = new InventoryModule(_accountId, masterDbInfo, slaveDbInfo);
         _AddModule(inventoryModule);
     }

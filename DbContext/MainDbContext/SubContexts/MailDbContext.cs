@@ -26,6 +26,12 @@ public class MailDbContext : BaseMainDbContext
         return await command.ExecuteProcedureAsync();
     }
 
+    public async Task<bool> InsertMailItemAsync(long accountId, List<MailInfoDbResult> insertMailDbList)
+    {
+        await using var connection = _GetConnection();
+        return await _InsertMailItemAsync(accountId, insertMailDbList);
+    }
+
     public async Task<bool> ReceivedMailRewardsAsync(long accountId, List<MailInfoDbResult> mailDbList, 
                                                 List<InventoryDbResult> inventoryDbList, 
                                                 List<AssetDbResult> assetDbList)

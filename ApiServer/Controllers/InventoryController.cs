@@ -4,6 +4,7 @@ using ApiServer.Utils;
 using DbContext.Common;
 using Microsoft.AspNetCore.Mvc;
 using NetworkProtocols.WebApi;
+using NetworkProtocols.WebApi.Commands;
 using NetworkProtocols.WebApi.Commands.Inventory;
 
 namespace ApiServer.Controllers;
@@ -27,7 +28,7 @@ public class InventoryController : ApiControllerBase
         {
             var (dbInfo, slaveDbInfo) = await _Initialize(request);
             using var handler = new InventoryHandler(request.AccountId, _service, _eventService);
-            await handler.InitializeModulesAsync(dbInfo, slaveDbInfo);
+            await handler.InitializeModulesAsync(dbInfo, slaveDbInfo, response.IsRefresh);
 
             var inventoryItem = await handler.UseInventoryItemAsync(request.ItemIndex, request.Quantity);
             response.UseItemInfo = inventoryItem;

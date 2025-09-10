@@ -84,13 +84,13 @@ public sealed class GameUserDbContext : BaseMainDbContext
 
         try
         {
-            var dbResult = await _CreateNewGameUserAsync(accountId);
+            var dbResult = await _CreateNewGameUserAsync(accountId, transaction);
             if(dbResult == null)
                 throw new DbContextException(DbErrorCode.ProcedureError, "[CreateNewGameUser][_CreateNewGameUserAsync] procedure returned null");
 
             if (defaultAssets != null)
             {
-                var assetResult = await _UpdateAssetInfoAsync(accountId, defaultAssets);
+                var assetResult = await _UpdateAssetInfoAsync(accountId, defaultAssets, transaction);
                 if(assetResult == false)
                     throw new DbContextException(DbErrorCode.ProcedureError, "[CreateNewGameUser][_UpdateAssetInfoAsync] procedure returned null"); 
                 
