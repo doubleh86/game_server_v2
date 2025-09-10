@@ -63,9 +63,13 @@ public class AssetInfoModule : BaseModule<AssetDbContext>, IGameModule
         return assetInfo;
     }
 
-    public async Task<bool> UpdateAssetInfoAsync(List<AssetDbResult> assetInfoList)
+    public async Task<(bool, AssetDbResult)> IsPossiblePaymentAsync(int assetType, int price)
     {
-        return await GetDbContext().UpdateAssetInfoAsync(AccountId, assetInfoList);
+        var assetInfo = await GetAssetInfoAsync(assetType);
+        if(assetInfo == null)
+            throw new ApiServerException(GameResultCode.GameError, $"Asset type not found [{assetType}]");
+        
+        return (assetInfo.amount >= price, assetInfo);
     }
 
 }

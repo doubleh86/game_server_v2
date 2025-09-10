@@ -31,7 +31,8 @@ public class ShopHandler(long accountId, ApiServerService serverService, EventSe
             throw new ApiServerException(GameResultCode.SystemError, $"Table data is null [ItemInfoTable][{itemIndex}]");
 
         var needAssetAmount = tableData.GetPrice(amount);
-        var (isPossible, assetInfo) = await _IsPossiblePayment(tableData.asset_type, needAssetAmount); 
+        var assetModule = GetModule<AssetInfoModule>();
+        var (isPossible, assetInfo) = await assetModule.IsPossiblePaymentAsync(tableData.asset_type, needAssetAmount); 
         if(isPossible == false)
             throw new ApiServerException(GameResultCode.GameError, $"Not enough asset price for {tableData.asset_type}");
         
@@ -48,14 +49,4 @@ public class ShopHandler(long accountId, ApiServerService serverService, EventSe
         
         return (itemInfo.ToClient(), assetInfo.ToClient());
     }
-
-    private async Task<(bool, AssetDbResult)> _IsPossiblePayment(int assetType, int price)
-    {
-        var assetInfo = await GetModule<AssetInfoModule>().GetAssetInfoAsync(assetType);
-        if(assetInfo == null)
-            throw new ApiServerException(GameResultCode.GameError, $"Asset type not found [{assetType}]");
-        
-        return (assetInfo.amount >= price, assetInfo);
-    }
-
 }
