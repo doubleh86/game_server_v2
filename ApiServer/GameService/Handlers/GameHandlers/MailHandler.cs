@@ -10,19 +10,10 @@ namespace ApiServer.GameService.Handlers.GameHandlers;
 
 public class MailHandler(long accountId, ApiServerService serverService) : BaseHandler(accountId, serverService)
 {
-    public override async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo, bool isRefreshResponse)
-    {
-        await base.InitializeModulesAsync(masterDbInfo, slaveDbInfo, isRefreshResponse);
-        var mailModule = new MailModule(_accountId, masterDbInfo, slaveDbInfo);
-        _AddModule(mailModule);
-
-        var assetModule = new AssetInfoModule(_accountId, masterDbInfo, slaveDbInfo);
-        _AddModule(assetModule);
-    }
     
     public async Task<List<MailInfoDbResult>> GetMailListAsync()
     {
-        var mailModule = GetModule<MailModule>();
+        var mailModule = _GetModule<MailModule>();
         var dbResult = await mailModule.GetMailListAsync();
         if (dbResult == null)
             return [];
@@ -35,7 +26,7 @@ public class MailHandler(long accountId, ApiServerService serverService) : BaseH
         var currentServerTime = TimeZoneHelper.ServerTimeNow;
         var receivedFailed =  new List<long>();
         
-        var mailModule = GetModule<MailModule>();
+        var mailModule = _GetModule<MailModule>();
         var mailList =  await mailModule.GetMailListAsync();
         
         var rewards = new List<RewardInfo>();
@@ -66,7 +57,7 @@ public class MailHandler(long accountId, ApiServerService serverService) : BaseH
         }
 
         var refreshDataHelper = _GetRefreshDataHelper();
-        var rewardHandler = new RewardHandler(_accountId, _modules, rewards, refreshDataHelper, _loggerService);
+        var rewardHandler = new RewardHandler(_accountId, _GetModuleManager(), rewards, refreshDataHelper, _loggerService);
         
         await rewardHandler.ReceiveRewardAsync();
         await mailModule.ReceiveMailRewardAsync(receivedMailInfo, refreshDataHelper);
@@ -103,7 +94,7 @@ public class MailHandler(long accountId, ApiServerService serverService) : BaseH
         };
 
         var newMail = CreateNewMailItem("test mail", [rewardInfo], 5);
-        var module = GetModule<MailModule>();
+        var module = _GetModule<MailModule>();
         var result = await module.InsertMailItemAsync([newMail]);
 
         return result.Values.ToList();

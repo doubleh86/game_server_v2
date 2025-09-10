@@ -1,4 +1,5 @@
 using ApiServer.GameService.GameModules;
+using ApiServer.GameService.GameModules.Manager;
 using ApiServer.GameService.Models;
 using ApiServer.Services;
 using ApiServer.Utils;
@@ -18,8 +19,10 @@ public abstract class BaseHandler : IDisposable
     private SharedDbContext _sharedDbContext;
     private RefreshDataHelper _refreshDataHelper;
     
-    protected readonly Dictionary<string, IGameModule> _modules = [];
     public RefreshDataHelper RefreshDataHelper => _refreshDataHelper;
+    private GameDbModuleManager _moduleManager;
+    
+    protected GameDbModuleManager _GetModuleManager() => _moduleManager;
     
     protected BaseHandler(long accountId, ApiServerService serverService, EventService eventService = null)
     {
@@ -28,17 +31,24 @@ public abstract class BaseHandler : IDisposable
         _eventService = eventService;
     }
 
-    public virtual async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo, bool isRefreshResponse)
+    public async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo, bool isRefreshResponse)
     {
-        var gameUserModule = new GameUserModule(_accountId, masterDbInfo, slaveDbInfo);
-        _AddModule(gameUserModule);
+        _moduleManager = new GameDbModuleManager(_accountId, masterDbInfo, slaveDbInfo);
 
         if (isRefreshResponse == true)
         {
             _refreshDataHelper = new RefreshDataHelper();
-            var userDbInfo = await gameUserModule.GetGameUserDbModelAsync();
+            var userDbInfo = await _GetModule<GameUserModule>().GetGameUserDbModelAsync();
             _refreshDataHelper.SetGameUserInfo(userDbInfo);
         }
+    }
+    
+    protected T _GetModule<T>()  where T : class, IGameModule
+    {
+        if(_moduleManager == null)
+            throw new ApiServerException(GameResultCode.SystemError, $"Module manager does not initialize");
+
+        return _moduleManager.GetModule<T>();
     }
     
     protected RefreshDataHelper _GetRefreshDataHelper()
@@ -59,37 +69,10 @@ public abstract class BaseHandler : IDisposable
         return _sharedDbContext;
     }
 
-    protected void _AddModule<T>(T newModule) where T : class, IGameModule
-    {
-        var moduleName = typeof(T).Name;
-        if (_modules.TryGetValue(moduleName, out _) == true)
-            return;
-        
-        _modules[moduleName] = newModule;
-    }
-
-    protected T GetModule<T>() where T : class, IGameModule
-    {
-        if (_modules.TryGetValue(typeof(T).Name, out var module) == false)
-            throw new ApiServerException(GameResultCode.SystemError, $"[{typeof(T).Name}] module not found]");
-
-        return module as T;
-    }
-    
-    public T GetModuleForTest<T>() where T : class, IGameModule
-    {
-        if (_modules.TryGetValue(typeof(T).Name, out var module) == false)
-            throw new ApiServerException(GameResultCode.SystemError, $"[{typeof(T).Name}] module not found]");
-
-        return module as T;
-    }
     
     public void Dispose()
     {
         _sharedDbContext?.Dispose();
-        foreach (var (_, module) in _modules)
-        {
-            module.Dispose();
-        }
+        _moduleManager?.Dispose();
     }
 }

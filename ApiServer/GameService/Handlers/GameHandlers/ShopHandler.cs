@@ -13,16 +13,6 @@ namespace ApiServer.GameService.Handlers.GameHandlers;
 
 public class ShopHandler(long accountId, ApiServerService serverService, EventService eventService) : BaseHandler(accountId, serverService, eventService)
 {
-    public override async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo, bool isRefreshResponse)
-    {
-        await base.InitializeModulesAsync(masterDbInfo, slaveDbInfo, isRefreshResponse);
-        
-        var inventoryModule = new InventoryModule(_accountId, masterDbInfo, slaveDbInfo);
-        _AddModule(inventoryModule);
-
-        var assetModule = new AssetInfoModule(_accountId, masterDbInfo, slaveDbInfo);
-        _AddModule(assetModule);
-    }
 
     public async Task<(InventoryItemInfo, AssetInfo)> BuyShopItemAsync(int itemIndex, int amount)
     {
@@ -31,12 +21,12 @@ public class ShopHandler(long accountId, ApiServerService serverService, EventSe
             throw new ApiServerException(GameResultCode.SystemError, $"Table data is null [ItemInfoTable][{itemIndex}]");
 
         var needAssetAmount = tableData.GetPrice(amount);
-        var assetModule = GetModule<AssetInfoModule>();
+        var assetModule = _GetModule<AssetInfoModule>();
         var (isPossible, assetInfo) = await assetModule.IsPossiblePaymentAsync(tableData.asset_type, needAssetAmount); 
         if(isPossible == false)
             throw new ApiServerException(GameResultCode.GameError, $"Not enough asset price for {tableData.asset_type}");
         
-        var inventoryModule = GetModule<InventoryModule>();
+        var inventoryModule = _GetModule<InventoryModule>();
         var itemInfo = await inventoryModule.GetInventoryOneItemAsync(itemIndex) ?? InventoryDbResult.Create(itemIndex, 0);
         itemInfo.AddItemAmount(amount);
         assetInfo.UseAsset(needAssetAmount);

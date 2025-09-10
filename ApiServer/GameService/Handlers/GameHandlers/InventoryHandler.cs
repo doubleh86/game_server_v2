@@ -7,22 +7,14 @@ using DbContext.MainDbContext.DbResultModel.GameDbModels;
 using NetworkProtocols.Shared.Enums;
 using NetworkProtocols.WebApi;
 using NetworkProtocols.WebApi.ToClientModels;
-using ServerFramework.SqlServerServices.Models;
 
 namespace ApiServer.GameService.Handlers.GameHandlers;
 
 public class InventoryHandler(long accountId, ApiServerService serverService, EventService eventService) : BaseHandler(accountId, serverService, eventService)
 {
-    public override async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo, bool isRefreshResponse)
-    {
-        await base.InitializeModulesAsync(masterDbInfo, slaveDbInfo, isRefreshResponse);
-        var inventoryModule = new InventoryModule(_accountId, masterDbInfo, slaveDbInfo);
-        _AddModule(inventoryModule);
-    }
-
     public async Task<InventoryItemInfo> UseInventoryItemAsync(int itemIndex, int quantity)
     {
-        var inventoryModule = GetModule<InventoryModule>();
+        var inventoryModule = _GetModule<InventoryModule>();
         var itemInfo = await inventoryModule.GetInventoryOneItemAsync(itemIndex);
         if (itemInfo == null)
             throw new ApiServerException(GameResultCode.InvalidRequest, "Invalid item index");
@@ -50,7 +42,7 @@ public class InventoryHandler(long accountId, ApiServerService serverService, Ev
 
     private async Task<bool> _UseExpItemAsync(ItemInfoTable itemTable, InventoryDbResult dbInfo, int quantity)
     {
-        var gameUserModule = GetModule<GameUserModule>();
+        var gameUserModule = _GetModule<GameUserModule>();
         var addExp = itemTable.use_amount * quantity;
         var gameUserDbModel = await gameUserModule.AddPlayerExpUseItemAsync(addExp, [dbInfo]);
         

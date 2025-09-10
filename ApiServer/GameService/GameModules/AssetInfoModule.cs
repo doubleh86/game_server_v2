@@ -7,7 +7,6 @@ using DbContext.MainDbContext.DbResultModel.GameDbModels;
 using DbContext.MainDbContext.SubContexts;
 using NetworkProtocols.Shared.Enums;
 using NetworkProtocols.WebApi;
-using NetworkProtocols.WebApi.Commands.User;
 using ServerFramework.SqlServerServices.Models;
 
 namespace ApiServer.GameService.GameModules;

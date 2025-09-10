@@ -1,4 +1,5 @@
 using ApiServer.GameService.GameModules;
+using ApiServer.GameService.GameModules.Manager;
 using ApiServer.GameService.Models;
 using ApiServer.Utils;
 using ApiServer.Utils.GameUtils;
@@ -17,17 +18,18 @@ public class RewardHandler
     private long _accountId;
     private readonly List<RewardInfo> _receiveRewards;
     private readonly RefreshDataHelper _refreshDataHelper;
+    private readonly GameDbModuleManager _moduleManager;
 
     private readonly Dictionary<string, IGameModule> _modules;
     
     private readonly LoggerService _loggerService;
     
-    public RewardHandler(long accountId, Dictionary<string, IGameModule> modules, 
+    public RewardHandler(long accountId, GameDbModuleManager moduleManager,
                          List<RewardInfo> receiveRewards, RefreshDataHelper refreshDataHelper,
                          LoggerService loggerService)
     {
         _accountId = accountId;
-        _modules = modules;
+        _moduleManager = moduleManager;
         _receiveRewards = receiveRewards;
         _refreshDataHelper = refreshDataHelper;
         _loggerService = loggerService;
@@ -35,12 +37,7 @@ public class RewardHandler
 
     private T _GetModule<T>() where T : class, IGameModule
     {
-        if (_modules.TryGetValue(typeof(T).Name, out var module) == false)
-        {
-            throw new ApiServerException(GameResultCode.SystemError, $"[RewardHandler][{typeof(T).Name}] module not found]");
-        }
-        
-        return module as T;
+        return _moduleManager.GetModule<T>();
     }
 
     public async Task ReceiveRewardAsync()

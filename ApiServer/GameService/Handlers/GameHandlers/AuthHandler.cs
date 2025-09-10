@@ -2,14 +2,11 @@ using ApiServer.Services;
 using ApiServer.Utils;
 using DbContext.SharedContext.DbResultModel;
 using NetworkProtocols.WebApi;
-using ServerFramework.SqlServerServices.Models;
 
 namespace ApiServer.GameService.Handlers.GameHandlers;
 
 public class AuthHandler(ApiServerService serverService) : BaseHandler(0, serverService)
 {
-    public override Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo, bool isRefreshResponse) => Task.CompletedTask;
-    
     public async Task<GetAccountDbResult> GetAccountInfoAsync(string loginId)
     {
         var dbContext = _GetSharedDbContext();
