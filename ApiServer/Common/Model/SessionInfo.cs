@@ -3,6 +3,7 @@ using ServerFramework.SqlServerServices.Models;
 
 namespace ApiServer.Common.Model;
 
+// Session Info
 public class SessionInfo
 {
     private const string _Prefix = "UD_";
