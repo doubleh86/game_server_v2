@@ -8,5 +8,3 @@
    - InitializeModulesAsync() 구현 시 base.InitializeModulesAsync() 호출 권장 
 6. 모듈 추가는 InitializeModulesAsync() 구현에서 처리
 7. SubDbContext 추가 시 BaseModule.cs 에 있는 SubDbContextFactory.CreateSubDbContext() 추가 필요.
-
-

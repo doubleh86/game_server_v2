@@ -10,6 +10,7 @@ namespace ApiServerTest.ApiTest;
 public class AuthTest : WebSendTestBase
 {
     
+    
     [Test, Order(1)]
     public async Task GetUserInfo()
     {
