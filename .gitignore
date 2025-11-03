@@ -16,6 +16,9 @@ Logs/
 AdminWeb/TableData
 *.log
 
+# 특정 파일 무시
+ApiServerTest/ApiTest/EtcTest.cs
+
 # OS별 불필요 파일 무시
 .DS_Store
 Thumbs.db
