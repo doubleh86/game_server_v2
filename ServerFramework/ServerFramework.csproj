@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="RealTimeUtils\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="Crc32.NET" Version="1.2.0" />
       <PackageReference Include="Dapper" Version="2.1.66" />
       <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
