@@ -8,4 +8,25 @@
         <RootNamespace>MissionCreator</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Folder Include="Settings\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DataTableLoader\DataTableLoader.csproj" />
+      <ProjectReference Include="..\ServerFramework\ServerFramework.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Settings\redisSettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Settings\sqlSettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

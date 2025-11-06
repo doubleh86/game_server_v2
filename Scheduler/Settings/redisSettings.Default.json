@@ -1,0 +1,21 @@
+{
+    "RedisSettings":
+    {
+        "ConnectionInfos":
+        {
+            "SessionRedisService":
+            [
+                {
+                    "Host": "127.0.0.1",
+                    "Port": 6379,
+                    "Channel": "session_1"    
+                },
+                {
+                    "Host": "127.0.0.1",
+                    "Port": 6379,
+                    "Channel": "session_2"
+                }
+            ]
+        }
+    }
+}

@@ -1,29 +1,42 @@
+using System.Data;
+using DataTableLoader.Utils;
+using DataTableLoader.Utils.Helper;
+using MissionCreator.Services;
 using MissionCreator.SubThreads;
+using ServerFramework.CommonUtils.DateTimeHelper;
 
 namespace MissionCreator.Main;
 
 public class MainThread
 {
     private ScheduleThread _scheduleThread;
-
+    private readonly ScheduleService _scheduleService = new();
+    
     public void Start()
     {
+        Console.WriteLine("Start");
         try
         {
-            _scheduleThread = new ScheduleThread();
+            _scheduleThread = new ScheduleThread(_scheduleService);
             _scheduleThread.Start();
-            while (true)
-            {
-                Console.WriteLine("Main thread running");
-                Thread.Sleep(50);
-            }
+
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
             throw;
         }
-        
     }
     
+    public void Initialize()
+    {
+        _scheduleService.Initialize();
+        
+        var serviceTimeZone = _scheduleService.CustomConfiguration.GetValue("ServiceTimeZone", "UTC");
+        TimeZoneHelper.Initialize(serviceTimeZone);
+        
+        var sqlInfo = _scheduleService.GetSqlServerDbInfo(nameof(DataTableDbService));
+        DataHelper.Initialize(sqlInfo, _scheduleService.LoggerService);
+        DataHelper.ReloadTableData();
+    }
 }

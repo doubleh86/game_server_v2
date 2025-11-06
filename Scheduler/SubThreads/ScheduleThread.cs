@@ -1,18 +1,27 @@
+using MissionCreator.Services;
+
 namespace MissionCreator.SubThreads;
 
-public class ScheduleThread
+public class ScheduleThread(ScheduleService scheduleService) : SubThreadBase(scheduleService)
 {
     private Thread _thread;
+    private CancellationTokenSource _cancelToken;
 
     public void Start()
     {
-        _thread = new Thread(StartThread);
+        _cancelToken = new CancellationTokenSource();
+        _thread = new Thread(() => _StartThread(_cancelToken.Token))
+        {
+            IsBackground = true
+        };
+        
         _thread.Start();
+        
     }
 
-    private void StartThread()
+    private void _StartThread(CancellationToken token)
     {
-        while (true)
+        while (token.IsCancellationRequested == false)
         {
             Console.WriteLine("ScheduleThread Start");
             Thread.Sleep(50);
