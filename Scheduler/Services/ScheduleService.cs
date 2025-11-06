@@ -2,7 +2,7 @@ using DbContext.SharedContext;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
 
-namespace MissionCreator.Services;
+namespace Scheduler.Services;
 
 public class ScheduleService : IDisposable
 {

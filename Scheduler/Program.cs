@@ -1,4 +1,4 @@
-﻿using MissionCreator.Main;
+﻿using Scheduler.Main;
 
 var main = new MainThread();
 main.Initialize();

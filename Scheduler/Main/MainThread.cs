@@ -1,11 +1,11 @@
 using System.Data;
 using DataTableLoader.Utils;
 using DataTableLoader.Utils.Helper;
-using MissionCreator.Services;
-using MissionCreator.SubThreads;
+using Scheduler.Services;
+using Scheduler.SubThreads;
 using ServerFramework.CommonUtils.DateTimeHelper;
 
-namespace MissionCreator.Main;
+namespace Scheduler.Main;
 
 public class MainThread
 {

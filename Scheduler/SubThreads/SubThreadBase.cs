@@ -1,7 +1,6 @@
+using Scheduler.Services;
 
-using MissionCreator.Services;
-
-namespace MissionCreator.SubThreads;
+namespace Scheduler.SubThreads;
 
 public abstract class SubThreadBase(ScheduleService scheduleService)
 {

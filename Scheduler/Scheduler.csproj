@@ -5,7 +5,6 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>warnings</Nullable>
-        <RootNamespace>MissionCreator</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
