@@ -8,6 +8,7 @@ using DbContext.SharedContext;
 using NetworkProtocols.WebApi;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
+using SharedDbContext = DbContext.SharedContext.SqlServerContext.SharedDbContext;
 
 namespace ApiServer.GameService.Handlers.GameHandlers;
 

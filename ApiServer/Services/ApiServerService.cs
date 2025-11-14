@@ -3,6 +3,7 @@ using ServerFramework.CommonUtils.Helper;
 using ServerFramework.RedisService;
 using ServerFramework.RedisService.Models;
 using ServerFramework.SqlServerServices.Models;
+using SharedDbContext = DbContext.SharedContext.SqlServerContext.SharedDbContext;
 
 namespace ApiServer.Services;
 

@@ -4,6 +4,7 @@ using NetworkProtocols.Shared.Enums;
 using ServerFramework.CommonUtils.DateTimeHelper;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
+using SharedDbContext = DbContext.SharedContext.SqlServerContext.SharedDbContext;
 
 namespace ApiServerTest.SystemTest;
 

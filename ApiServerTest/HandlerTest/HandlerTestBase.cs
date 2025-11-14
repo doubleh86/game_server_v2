@@ -4,6 +4,7 @@ using DbContext.SharedContext;
 using DbContext.SharedContext.DbResultModel;
 using ServerFramework.CommonUtils.DateTimeHelper;
 using ServerFramework.CommonUtils.Helper;
+using SharedDbContext = DbContext.SharedContext.SqlServerContext.SharedDbContext;
 
 namespace ApiServerTest.HandlerTest;
 

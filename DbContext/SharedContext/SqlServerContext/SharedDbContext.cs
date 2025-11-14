@@ -1,10 +1,10 @@
 using DbContext.SharedContext.DbResultModel;
-using DbContext.SharedContext.ProcedureCommands;
-using DbContext.SharedContext.ProcedureCommands.AdminTool;
+using DbContext.SharedContext.SqlServerContext.ProcedureCommands;
+using DbContext.SharedContext.SqlServerContext.ProcedureCommands.AdminTool;
 using ServerFramework.SqlServerServices.DapperUtils;
 using ServerFramework.SqlServerServices.Models;
 
-namespace DbContext.SharedContext;
+namespace DbContext.SharedContext.SqlServerContext;
 
 public partial class SharedDbContext : DapperServiceBase
 {

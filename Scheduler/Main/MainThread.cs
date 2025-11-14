@@ -24,7 +24,6 @@ public class MainThread
         catch (Exception e)
         {
             Console.WriteLine(e);
-            throw;
         }
     }
     

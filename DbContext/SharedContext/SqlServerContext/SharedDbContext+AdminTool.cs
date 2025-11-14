@@ -1,10 +1,7 @@
-using DbContext.Common;
 using DbContext.SharedContext.DbResultModel;
-using DbContext.SharedContext.ProcedureCommands.AdminTool;
-using Microsoft.Data.SqlClient;
-using NetworkProtocols.WebApi;
+using DbContext.SharedContext.SqlServerContext.ProcedureCommands.AdminTool;
 
-namespace DbContext.SharedContext;
+namespace DbContext.SharedContext.SqlServerContext;
 
 public partial class SharedDbContext
 {

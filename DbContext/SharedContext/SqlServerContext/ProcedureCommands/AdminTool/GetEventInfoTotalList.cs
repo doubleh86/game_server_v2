@@ -1,9 +1,10 @@
 using DbContext.SharedContext.DbResultModel;
 using Microsoft.Data.SqlClient;
+using ServerFramework.CommonUtils.RDBUtils;
 using ServerFramework.SqlServerServices.CommandModel;
 using ServerFramework.SqlServerServices.DapperUtils;
 
-namespace DbContext.SharedContext.ProcedureCommands.AdminTool;
+namespace DbContext.SharedContext.SqlServerContext.ProcedureCommands.AdminTool;
 
 public class GetEventInfoTotalList : ProcBaseModelAsync<List<EventDbResult>, EventDbResult>
 {

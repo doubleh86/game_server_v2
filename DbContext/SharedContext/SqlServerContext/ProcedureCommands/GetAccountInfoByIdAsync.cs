@@ -2,10 +2,11 @@ using DbContext.Common;
 using DbContext.SharedContext.DbResultModel;
 using Microsoft.Data.SqlClient;
 using NetworkProtocols.WebApi;
+using ServerFramework.CommonUtils.RDBUtils;
 using ServerFramework.SqlServerServices.CommandModel;
 using ServerFramework.SqlServerServices.DapperUtils;
 
-namespace DbContext.SharedContext.ProcedureCommands;
+namespace DbContext.SharedContext.SqlServerContext.ProcedureCommands;
 
 public class GetAccountInfoByIdAsync : ProcBaseModelAsync<GetAccountDbResult, GetAccountDbResult> 
 {

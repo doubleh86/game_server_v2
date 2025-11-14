@@ -1,5 +1,6 @@
 using DbContext.AdminDbContext.DbResultModel;
 using Microsoft.Data.SqlClient;
+using ServerFramework.CommonUtils.RDBUtils;
 using ServerFramework.SqlServerServices.CommandModel;
 using ServerFramework.SqlServerServices.DapperUtils;
 

@@ -4,6 +4,7 @@ using DbContext.AdminDbContext;
 using DbContext.SharedContext;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
+using SharedDbContext = DbContext.SharedContext.SqlServerContext.SharedDbContext;
 
 namespace AdminWeb.Services;
 

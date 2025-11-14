@@ -1,14 +1,10 @@
 using ApiServer.Services;
 using DataTableLoader.Utils;
 using DataTableLoader.Utils.Helper;
-using DbContext.SharedContext;
-using DbContext.SharedContext.DbResultModel;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Serilog;
 using ServerFramework.CommonUtils.DateTimeHelper;
-using ServerFramework.CommonUtils.EventHelper;
-using ServerFramework.CommonUtils.Helper;
-using ServerFramework.SqlServerServices.Models;
+using SharedDbContext = DbContext.SharedContext.SqlServerContext.SharedDbContext;
 
 var builder = WebApplication.CreateBuilder(args);
 

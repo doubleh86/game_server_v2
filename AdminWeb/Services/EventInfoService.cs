@@ -4,6 +4,7 @@ using DbContext.SharedContext;
 using DbContext.SharedContext.DbResultModel;
 using NetworkProtocols.Shared.Enums;
 using ServerFramework.CommonUtils.EventHelper;
+using SharedDbContext = DbContext.SharedContext.SqlServerContext.SharedDbContext;
 
 namespace AdminWeb.Services;
 

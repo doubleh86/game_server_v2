@@ -3,10 +3,11 @@ using DbContext.Common;
 using DbContext.SharedContext.DbResultModel;
 using Microsoft.Data.SqlClient;
 using NetworkProtocols.WebApi;
+using ServerFramework.CommonUtils.RDBUtils;
 using ServerFramework.SqlServerServices.CommandModel;
 using ServerFramework.SqlServerServices.DapperUtils;
 
-namespace DbContext.SharedContext.ProcedureCommands.AdminTool;
+namespace DbContext.SharedContext.SqlServerContext.ProcedureCommands.AdminTool;
 
 public class GetAccountInfoListAsync : ProcBaseModelAsync<List<GetAccountDbResult>, GetAccountDbResult>
 {

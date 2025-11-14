@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using Dapper;
 using Microsoft.Data.SqlClient;
+using ServerFramework.CommonUtils.RDBUtils;
 using ServerFramework.SqlServerServices.Models;
 
 namespace ServerFramework.SqlServerServices.DapperUtils;
@@ -16,7 +17,7 @@ namespace ServerFramework.SqlServerServices.DapperUtils;
 ///    => using var connection = _GetConnection() 호출 관련하여 좀 더 명확하게 처리할 수 있게
 ///
 /// </summary>
-public abstract class DapperServiceBase : IDisposable, ISqlServerContext
+public abstract class DapperServiceBase : IDisposable, IDapperService
 {
     private SqlConnection _connectionV2;
     private readonly SqlServerDbInfo _serverInfo;
@@ -28,7 +29,7 @@ public abstract class DapperServiceBase : IDisposable, ISqlServerContext
         _InitializeConnectionString();
     }
 
-    private void _InitializeConnectionString()
+    public void _InitializeConnectionString()
     {
         var maxPoolSize = _serverInfo.MaxPoolSize < 100 ? 100 : _serverInfo.MaxPoolSize;
         _connectionString = $"server={_serverInfo.Ip},{_serverInfo.Port};uid={_serverInfo.UserId};" +
