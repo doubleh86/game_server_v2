@@ -9,6 +9,7 @@ public class SqlServerDbInfo
     public string Password { get; set; }
     public int MaxPoolSize { get; set; } = 100;
     public string modelAssembly { get; set; } = "";
+    public bool IsMySql { get; set; } = false;
 }
 
 public class SqlServerDbSettings

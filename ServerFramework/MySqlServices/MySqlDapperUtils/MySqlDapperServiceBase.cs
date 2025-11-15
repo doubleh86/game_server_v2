@@ -6,12 +6,19 @@ using ServerFramework.SqlServerServices.Models;
 
 namespace ServerFramework.MySqlServices.MySqlDapperUtils;
 
-public abstract class MySqlDapperServiceBase(SqlServerDbInfo dbInfo) : IDisposable, IDapperService
+public abstract class MySqlDapperServiceBase : IDisposable, IDapperService
 {
     private MySqlConnection _connection;
+    private readonly SqlServerDbInfo _serverInfo;
     private string _connectionString;
     
     public MySqlConnection Connection => _connection;
+
+    protected MySqlDapperServiceBase(SqlServerDbInfo dbInfo)
+    {
+        _serverInfo = dbInfo;
+        _InitializeConnectionString();
+    }
 
     protected MySqlConnection _GetConnection()
     {
@@ -35,9 +42,9 @@ public abstract class MySqlDapperServiceBase(SqlServerDbInfo dbInfo) : IDisposab
     
     public void _InitializeConnectionString()
     {
-        _connectionString = $"Server={dbInfo.Ip};Port={dbInfo.Port};" +
-                            $"Database={dbInfo.DatabaseName};Uid={dbInfo.UserId};" +
-                            $"Pwd={dbInfo.Password};";
+        _connectionString = $"Server={_serverInfo.Ip};Port={_serverInfo.Port};" +
+                            $"Database={_serverInfo.DatabaseName};Uid={_serverInfo.UserId};" +
+                            $"Pwd={_serverInfo.Password};";
     }
 
     public void Dispose()

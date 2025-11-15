@@ -1,4 +1,5 @@
 using DbContext.Common;
+using DbContext.SharedContext.DbResultModel;
 using DbContext.SharedContext.MySqlContext.QueryCommands;
 using NetworkProtocols.WebApi;
 using ServerFramework.MySqlServices.MySqlDapperUtils;
@@ -37,7 +38,7 @@ public class MySqlSharedDbContext(SqlServerDbInfo dbInfo) : MySqlDapperServiceBa
             {
                 LoginId = loginId
             });
-            
+
             await transaction.CommitAsync();
             return gameDbUid;
         }
@@ -49,8 +50,16 @@ public class MySqlSharedDbContext(SqlServerDbInfo dbInfo) : MySqlDapperServiceBa
         catch (Exception e)
         {
             await transaction.RollbackAsync();
-            throw new DbContextException(DbErrorCode.ProcedureError, $"[ErrorMessage : {e.Message}][ResultCode : {e.HResult}]");
+            throw new DbContextException(DbErrorCode.ProcedureError,
+                $"[ErrorMessage : {e.Message}][ResultCode : {e.HResult}]");
         }
+    }
+    
+    public async Task<List<EventDbResult>> GetEventInfoListAsync()
+    {
+        await using var connection = _GetConnection();
+        var command = new GetEventInfoListCommandAsync(this);
         
+        return await command.ExecuteQueryAsync(null);
     }
 }

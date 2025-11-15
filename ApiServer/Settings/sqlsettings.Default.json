@@ -6,12 +6,22 @@
             "SharedDbContext":
             {
                 "Ip" : "127.0.0.1",
-                "Port": 1433,
+                "Port": 3306,
                 "DatabaseName": "shared_db",
-                "UserId": "sa",
+                "UserId": "root",
                 "Password": "",
-                "MaxPoolSize": 200
+                "IsMySql": "true"
             },
+//            "SharedDbContext":
+//            {
+//                "Ip" : "127.0.0.1",
+//                "Port": 1433,
+//                "DatabaseName": "shared_db",
+//                "UserId": "SA",
+//                "Password": "",
+//                "MaxPoolSize": 200
+//            },
+
             "DataTableDbService":
             {
                 "Ip" : "127.0.0.1",

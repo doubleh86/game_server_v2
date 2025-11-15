@@ -1,4 +1,5 @@
 using DbContext.SharedContext;
+using DbContext.SharedContext.MySqlContext;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.RedisService;
 using ServerFramework.RedisService.Models;
@@ -53,12 +54,18 @@ public partial class ApiServerService : IDisposable, IAsyncDisposable
     {
         var sqlSettings = _customConfiguration.GetSection<SqlServerDbSettings>(nameof(SqlServerDbSettings));
         _sqlServerDbInfoList = sqlSettings.ConnectionInfos;
+        
         foreach (var (key, value) in sqlSettings.ConnectionInfos)
         {
             switch (key)
             {
                 case nameof(SharedDbContext):
-                    SharedDbContext.SetDefaultServerInfo(value);
+                    if (value.IsMySql == false)
+                    {
+                        SharedDbContext.SetDefaultServerInfo(value);
+                        break;    
+                    }
+                    MySqlSharedDbContext.SetDefaultServerInfo(value);
                     break;
             }
         }
