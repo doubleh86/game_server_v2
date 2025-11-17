@@ -6,7 +6,7 @@ using ServerFramework.SqlServerServices.Models;
 
 namespace DbContext.SharedContext.SqlServerContext;
 
-public partial class SharedDbContext : DapperServiceBase
+public partial class SharedDbContext : DapperServiceBase, ISharedDbContext
 {
     private static SqlServerDbInfo _defaultServerInfo;
 

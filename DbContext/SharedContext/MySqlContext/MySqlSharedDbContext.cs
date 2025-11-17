@@ -7,7 +7,7 @@ using ServerFramework.SqlServerServices.Models;
 
 namespace DbContext.SharedContext.MySqlContext;
 
-public class MySqlSharedDbContext(SqlServerDbInfo dbInfo) : MySqlDapperServiceBase(dbInfo)
+public partial class MySqlSharedDbContext(SqlServerDbInfo dbInfo) : MySqlDapperServiceBase(dbInfo), ISharedDbContext
 {
     private static SqlServerDbInfo _defaultServerInfo;
 
@@ -22,6 +22,17 @@ public class MySqlSharedDbContext(SqlServerDbInfo dbInfo) : MySqlDapperServiceBa
             throw new DatabaseException(ServerError.DbError, "No server info provided");
         
         return serverInfo == null ? new MySqlSharedDbContext(_defaultServerInfo) : new MySqlSharedDbContext(serverInfo);
+    }
+
+    public async Task<GetAccountDbResult> GetAccountInfoAsync(string loginId)
+    {
+        await using var connection = _GetConnection();
+        var command = new GetAccountInfoCommand(this);
+
+        return await command.ExecuteQueryAsync(new GetAccountInfoCommand.InParameters()
+        {
+            LoginId = loginId
+        });
     }
 
     public async Task<int> CreateAccountAsync(string loginId)

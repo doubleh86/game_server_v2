@@ -8,17 +8,15 @@ using ServerFramework.SqlServerServices.DapperUtils;
 
 namespace DbContext.SharedContext.SqlServerContext.ProcedureCommands;
 
-public class GetAccountInfoByIdAsync : ProcBaseModelAsync<GetAccountDbResult, GetAccountDbResult> 
+public class GetAccountInfoByIdAsync(DapperServiceBase dbContext, SqlTransaction transaction = null)
+    : ProcBaseModelAsync<GetAccountDbResult, GetAccountDbResult>(dbContext, _ProcedureName, transaction)
 {
     public struct InParameters : IDbInParameters
     {
         public string LoginId  { get; init; }
     }
     private const string _ProcedureName = "dbo.gsp_get_account_info_by_login_id";
-    public GetAccountInfoByIdAsync(DapperServiceBase dbContext, SqlTransaction transaction = null) : base(dbContext, _ProcedureName, transaction)
-    {
-    }
-    
+
     public override void SetParameters(IDbInParameters inParameters)
     {
         if(inParameters is not InParameters inParams)

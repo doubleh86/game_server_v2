@@ -8,7 +8,6 @@ using DbContext.SharedContext;
 using NetworkProtocols.WebApi;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
-using SharedDbContext = DbContext.SharedContext.SqlServerContext.SharedDbContext;
 
 namespace ApiServer.GameService.Handlers.GameHandlers;
 
@@ -17,7 +16,7 @@ public abstract class BaseHandler : IDisposable
     protected readonly long _accountId;
     protected readonly LoggerService _loggerService;
     protected EventService _eventService;
-    private SharedDbContext _sharedDbContext;
+    private ISharedDbContext _sharedDbContext;
     private RefreshDataHelper _refreshDataHelper;
     
     public RefreshDataHelper RefreshDataHelper => _refreshDataHelper;
@@ -62,10 +61,10 @@ public abstract class BaseHandler : IDisposable
         return _refreshDataHelper;
     }
 
-    protected SharedDbContext _GetSharedDbContext()
+    protected ISharedDbContext _GetSharedDbContext()
     {
         if(_sharedDbContext == null)
-            _sharedDbContext = SharedDbContext.Create();
+            _sharedDbContext = SharedDbContextWrapper.Create();
         
         return _sharedDbContext;
     }

@@ -1,10 +1,8 @@
 using DbContext.SharedContext;
-using DbContext.SharedContext.MySqlContext;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.RedisService;
 using ServerFramework.RedisService.Models;
 using ServerFramework.SqlServerServices.Models;
-using SharedDbContext = DbContext.SharedContext.SqlServerContext.SharedDbContext;
 
 namespace ApiServer.Services;
 
@@ -59,13 +57,8 @@ public partial class ApiServerService : IDisposable, IAsyncDisposable
         {
             switch (key)
             {
-                case nameof(SharedDbContext):
-                    if (value.IsMySql == false)
-                    {
-                        SharedDbContext.SetDefaultServerInfo(value);
-                        break;    
-                    }
-                    MySqlSharedDbContext.SetDefaultServerInfo(value);
+                case "SharedDbContext":
+                    SharedDbContextWrapper.SetDefaultServerInfo(value);
                     break;
             }
         }

@@ -1,8 +1,7 @@
 using ApiServer.Services;
 using DataTableLoader.Utils;
 using DataTableLoader.Utils.Helper;
-using DbContext.SharedContext.MySqlContext;
-using DbContext.SharedContext.SqlServerContext;
+using DbContext.SharedContext;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Serilog;
 using ServerFramework.CommonUtils.DateTimeHelper;
@@ -82,9 +81,9 @@ async Task<bool> InitializeEventService(IServiceProvider provider)
         return false;
     }
     
-    using var mysqlDbContext = MySqlSharedDbContext.Create();
-    var eventList = await mysqlDbContext.GetEventInfoListAsync();
-
+    using var dbContext = SharedDbContextWrapper.Create();
+    var eventList = await dbContext.GetEventInfoListAsync();
+    
     // using var dbContext = SharedDbContext.Create();
     // var eventList = await dbContext.GetEventInfoListAsync();
     serverService.Initialize(eventList ?? []);
