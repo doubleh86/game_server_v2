@@ -7,8 +7,19 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
+      <PackageReference Include="Grpc.Tools" Version="2.76.0">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
       <PackageReference Include="MagicOnion.Shared" Version="7.0.2" />
       <PackageReference Include="MemoryPack" Version="1.21.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="gRPC\ScheduleSteam.proto" />
+      <Protobuf Include="gRPC\ScheduleSteam.proto"
+                OutputDir="./"/>
     </ItemGroup>
 
 </Project>

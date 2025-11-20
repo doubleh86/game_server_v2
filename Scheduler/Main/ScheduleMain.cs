@@ -7,7 +7,7 @@ using ServerFramework.CommonUtils.DateTimeHelper;
 
 namespace Scheduler.Main;
 
-public class MainThread
+public class ScheduleMain
 {
     private ScheduleThread _scheduleThread;
     private readonly ScheduleService _scheduleService = new();
@@ -37,5 +37,10 @@ public class MainThread
         var sqlInfo = _scheduleService.GetSqlServerDbInfo(nameof(DataTableDbService));
         DataHelper.Initialize(sqlInfo, _scheduleService.LoggerService);
         DataHelper.ReloadTableData();
+    }
+    
+    public int GetGrpcPort()
+    {
+        return _scheduleService.CustomConfiguration.GetValue("GrpcPort", 5001);
     }
 }

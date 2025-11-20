@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+service ScheduleGRpcService {
+  rpc Subscribe (SubscribeRequest) returns (stream ScheduleEvent);
+}
+
+message SubscribeRequest {
+  string serverName = 1;
+}
+
+message ScheduleEvent {
+  string eventName = 1;
+  string payload = 2;
+}
