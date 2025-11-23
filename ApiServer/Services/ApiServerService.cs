@@ -13,11 +13,15 @@ public partial class ApiServerService : IDisposable, IAsyncDisposable
     private readonly LoggerService _loggerService = new();
     private readonly RedisServiceManager _redisServiceManager = new();
     private readonly RedLockManager _lockManager = new();
+    private GrpcService _grpcService;
+    
     private Dictionary<string, SqlServerDbInfo> _sqlServerDbInfoList = new();
+    
+    
     public LoggerService LoggerService => _loggerService;
     public ConfigurationHelper CustomConfiguration => _customConfiguration;
     public RedLockManager LockManager => _lockManager;
-
+    
     
 
     public void Initialize()
@@ -30,6 +34,11 @@ public partial class ApiServerService : IDisposable, IAsyncDisposable
         _InitializeRedisService();
         _InitializeSqlServerDbInfo();
         _InitializeRedLockManager();
+        
+        _grpcService = new GrpcService(_loggerService);
+        
+        var grpcAddress = _customConfiguration.GetValue("ScheduleGRpcAddress", "http://localhost:6000");
+        _grpcService.Initialize(grpcAddress);
     }
 
     private void _InitializeRedLockManager()

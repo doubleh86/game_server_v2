@@ -13,6 +13,7 @@ public class ScheduleGrpcServiceImpl : ScheduleGRpcService.ScheduleGRpcServiceBa
         
         try
         {
+            Console.WriteLine($"Subscribe: {request.ServerName}");
             await Task.Delay(-1, context.CancellationToken); // 연결 유지
         }
         catch

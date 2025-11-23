@@ -23,7 +23,6 @@ public class ScheduleThread(ScheduleService scheduleService) : SubThreadBase(sch
     {
         while (token.IsCancellationRequested == false)
         {
-            Console.WriteLine("ScheduleThread Start");
             Thread.Sleep(50);
         }
     }
