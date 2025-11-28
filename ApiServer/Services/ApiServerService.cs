@@ -35,10 +35,10 @@ public partial class ApiServerService : IDisposable, IAsyncDisposable
         _InitializeSqlServerDbInfo();
         _InitializeRedLockManager();
         
-        _grpcService = new GrpcService(_loggerService);
-        
         var grpcAddress = _customConfiguration.GetValue("ScheduleGRpcAddress", "http://localhost:6000");
-        _grpcService.Initialize(grpcAddress);
+        _grpcService = new GrpcService(_loggerService, "apiServer", grpcAddress);
+        
+        _grpcService.Initialize();
     }
 
     private void _InitializeRedLockManager()
