@@ -19,8 +19,14 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\GSFramework\ServerFramework\ServerFramework.csproj" />
       <ProjectReference Include="..\DataTableLoader\DataTableLoader.csproj" />
-      <ProjectReference Include="..\ServerFramework\ServerFramework.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="ServerFramework">
+        <HintPath>..\..\GSFramework\ServerFramework\bin\Debug\net10.0\ServerFramework.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

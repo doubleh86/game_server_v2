@@ -5,8 +5,8 @@ using ServerFramework.GrpcServices;
 
 namespace ApiServer.Services;
 
-public class GrpcService(LoggerService loggerService, string serverName, string serverAddress) 
-    : GrpcServiceBase<ScheduleGRpcService.ScheduleGRpcServiceClient>(loggerService, serverName, serverAddress)
+public class GRpcService(LoggerService loggerService, string serverName, string serverAddress) 
+    : GRpcServiceBase<ScheduleGRpcService.ScheduleGRpcServiceClient>(loggerService, serverName, serverAddress)
 {
     
     protected override ScheduleGRpcService.ScheduleGRpcServiceClient _CreateClient(GrpcChannel channel)

@@ -10,7 +10,6 @@
       <ProjectReference Include="..\DataTableLoader\DataTableLoader.csproj" />
       <ProjectReference Include="..\DbContext\DbContext.csproj" />
       <ProjectReference Include="..\NotifyServer\NotifyServer.csproj" />
-      <ProjectReference Include="..\ServerFramework\ServerFramework.csproj" />
     </ItemGroup>
 
     <ItemGroup>

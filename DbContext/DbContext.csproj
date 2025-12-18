@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\GSFramework\ServerFramework\ServerFramework.csproj" />
       <ProjectReference Include="..\NetworkProtocols\NetworkProtocols.csproj" />
-      <ProjectReference Include="..\ServerFramework\ServerFramework.csproj" />
     </ItemGroup>
 
 </Project>

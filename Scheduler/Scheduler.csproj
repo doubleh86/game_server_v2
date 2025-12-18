@@ -13,7 +13,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\DataTableLoader\DataTableLoader.csproj" />
-      <ProjectReference Include="..\ServerFramework\ServerFramework.csproj" />
     </ItemGroup>
 
     <ItemGroup>
