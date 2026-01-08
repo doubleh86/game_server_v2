@@ -16,6 +16,9 @@ using WorldServer.NetworkCommand;
 
 var host = CreateHostBuilder().Build();
 
+ThreadPool.GetMinThreads(out var minWorker, out var minIOThread);
+ThreadPool.SetMinThreads(Math.Max(minWorker, Environment.ProcessorCount * 2), minIOThread);
+
 try
 {
     await host.RunAsync();

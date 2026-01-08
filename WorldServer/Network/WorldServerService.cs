@@ -9,7 +9,6 @@ using WorldServer.Network.Models;
 namespace WorldServer.Network;
 
 public class WorldServerService : SuperSocketService<NetworkPackage>
-
 {
     private readonly UserService _userService;
     private readonly WorldService _worldService;
@@ -39,7 +38,9 @@ public class WorldServerService : SuperSocketService<NetworkPackage>
         var serviceTimeZone = _configurationHelper.GetValue("ServiceTimeZone", "UTC");
         TimeZoneHelper.Initialize(serviceTimeZone);
         
+        _worldService.SetServerService(this);
         _worldService.StartGlobalTicker();
+        
         await base.OnStartedAsync();
     }
 

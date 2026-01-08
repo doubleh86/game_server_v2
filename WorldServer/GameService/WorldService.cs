@@ -1,15 +1,21 @@
 using System.Collections.Concurrent;
-using ServerFramework.CommonUtils.DateTimeHelper;
+using ServerFramework.CommonUtils.Helper;
 using WorldServer.Network;
 
 namespace WorldServer.GameService;
 
 public class WorldService : IDisposable
 {
+    private WorldServerService _serverService;
+    
     private readonly ConcurrentDictionary<string, WorldInstance> _worldInstances = new();
+    private readonly int _workerCount = Environment.ProcessorCount;
     private readonly CancellationTokenSource _cts = new();
-    private bool _isTicking = false;
 
+    public void SetServerService(WorldServerService serverService)
+    {
+        _serverService = serverService;
+    }
     public async Task<WorldInstance> CreateWorldInstance(string roomId, UserSessionInfo userSessionInfo)
     {
         var newWorldInstance = new WorldInstance(roomId, userSessionInfo);
@@ -39,26 +45,32 @@ public class WorldService : IDisposable
 
     public void StartGlobalTicker()
     {
-        if (_isTicking == true)
-            return;
-        
-        _isTicking = true;
-        _ = Task.Run(_TickLoopAsync);
+        for(int i = 0; i < _workerCount; i++)
+        {
+            int shardIndex = i;
+            Task.Factory.StartNew(() => GlobalTickLoop(shardIndex), TaskCreationOptions.LongRunning);
+        }
     }
 
-    private async Task _TickLoopAsync()
+    private async Task GlobalTickLoop(int shardIndex)
     {
-        while (_cts.IsCancellationRequested == false)
+        var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(30));
+        while (await timer.WaitForNextTickAsync(_cts.Token))
         {
-            var startTime = TimeZoneHelper.UtcNow;
-            foreach (var worldInstance in _worldInstances.Values)
+            try
             {
-                worldInstance.Tick();
+                foreach (var worldInstance in _worldInstances.Values)
+                {
+                    if (Math.Abs(worldInstance.GetRoomId().GetHashCode() % _workerCount) == shardIndex)
+                    {
+                        worldInstance.Tick();
+                    }
+                }
             }
-            
-            var elapsed = DateTime.UtcNow - startTime;
-            var delay = Math.Max(0, 100 - (int)elapsed.TotalMilliseconds);
-            await Task.Delay(delay, _cts.Token);
+            catch (Exception e)
+            {
+                _serverService.GetLoggerService().Warning($"GlobalTickLoop Error : {e.Message}", e);
+            }
         }
     }
 
