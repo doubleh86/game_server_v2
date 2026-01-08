@@ -1,12 +1,19 @@
 ## GameServer Framework
 
+AdminWeb : 운영툴
+ApiServer : 웹 API 서버
+DataTableLoader : 데이터 테이블 로더
+NotifyServer : 알림 서버
+Scheduler : 스케쥴 기반 컨텐츠 관리용 
+WorldServer : 게임 서버
+ - JobQueue 기반
+
 간단 소개
 - 소켓: SuperSocket
-- API: ASP.NET Core (net9.0)
+- API: ASP.NET Core (net10.0)
 - 관리자 UI: Blazor (Blazor Bootstrap)
 - 데이터 접근: Dapper
 - 데이터베이스: MySQL(Shared DB), SQL Server(Data 테이블 + Game/Main DB 스키마)
-
 
 ToDo
 - 테이블 데이터 파일 저장 후 적용 방식으로 변경
