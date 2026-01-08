@@ -2,18 +2,18 @@ using NetworkProtocols;
 using NetworkProtocols.Socket;
 using NetworkProtocols.Socket.CommonCommand;
 using NotifyServer.Helpers;
-using NotifyServer.Models.NetworkModels;
 using SuperSocket.Command;
 using SuperSocket.Server.Abstractions.Session;
+using WorldServer.Network.Models;
 
-namespace NotifyServer.NetworkCommand;
+namespace WorldServer.NetworkCommand;
 
-[Command(Key = PingCommand.PingCommandId)]
-public class Ping : IAsyncCommand<NetworkPackage>
+[Command(Key = NetworkProtocols.Socket.CommonCommand.PingCommand.PingCommandId)]
+public class PingCommand : IAsyncCommand<NetworkPackage>
 {
     public async ValueTask ExecuteAsync(IAppSession session, NetworkPackage package, CancellationToken cancellationToken)
     {
-        var receivedPackage = MemoryPackHelper.Deserialize<PingCommand>(package.Body);
+        var receivedPackage = MemoryPackHelper.Deserialize<NetworkProtocols.Socket.CommonCommand.PingCommand>(package.Body);
         if(receivedPackage == null)
             return;
         

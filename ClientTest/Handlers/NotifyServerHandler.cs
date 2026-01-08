@@ -1,6 +1,7 @@
 using ClientTest.Models;
 using ClientTest.Socket;
 using NetworkProtocols;
+using NetworkProtocols.Socket;
 using NetworkProtocols.Socket.NotifyServerProtocols;
 using NetworkProtocols.Socket.NotifyServerProtocols.TwoWayModels;
 

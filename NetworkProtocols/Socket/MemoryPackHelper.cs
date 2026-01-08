@@ -1,6 +1,6 @@
 using MemoryPack;
 
-namespace NetworkProtocols;
+namespace NetworkProtocols.Socket;
 
 public static class MemoryPackHelper
 {

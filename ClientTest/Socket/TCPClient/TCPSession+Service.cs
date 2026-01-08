@@ -1,5 +1,6 @@
 ﻿using ClientTest.Helpers;
 using NetworkProtocols;
+using NetworkProtocols.Socket;
 using NetworkProtocols.Socket.CommonCommand;
 
 namespace ClientTest.Socket.TCPClient;
@@ -12,6 +13,8 @@ public partial class TCPSession
 	private long _lastReceivedPongTime = 0;
 	private long _lastSendPingTime = 0;
 	private int _pingTryCount = 0;
+	
+	private DateTime _lastSendPingTimeUtc = DateTime.MinValue;
 		
 	private Thread _keepAliveThread;
 		
@@ -29,6 +32,10 @@ public partial class TCPSession
 	{
 		_lastReceivedPongTime = _GetUtcTimeStampSeconds();
 		Interlocked.Exchange(ref _pingTryCount, 0);
+		
+		var currentTime = DateTime.UtcNow;
+		var timeSpan = currentTime - _lastSendPingTimeUtc;
+		Console.WriteLine($"Ping Time [{timeSpan.TotalMilliseconds}] ms");
 	}
 		
 		
@@ -98,6 +105,7 @@ public partial class TCPSession
 		
 		Interlocked.Increment(ref _pingTryCount);
 		_lastSendPingTime = _GetUtcTimeStampSeconds();
+		_lastSendPingTimeUtc = DateTime.UtcNow;
 	}
 	public List<NetworkPackage> GetQueueData()
 	{
@@ -151,8 +159,6 @@ public partial class TCPSession
 		var body = MemoryPackHelper.Serialize(command);
 		var packet = TCPNetworkHelper.MakePackage(ConnectedCommand.ConnectedCommandId, body);
 		_PushReceiveQueueFirst(packet);
-		
-		_PushReceiveQueue(packet);
 	}
 
 	private void _SetClosePacket(SessionCloseReason reason, string message = "disconnected")

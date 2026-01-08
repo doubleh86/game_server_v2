@@ -1,4 +1,5 @@
 using NetworkProtocols;
+using NetworkProtocols.Socket;
 using NetworkProtocols.Socket.NotifyServerProtocols;
 using NetworkProtocols.Socket.NotifyServerProtocols.TwoWayModels;
 using NotifyServer.Helpers;
