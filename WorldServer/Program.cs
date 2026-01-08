@@ -41,6 +41,7 @@ IHostBuilder CreateHostBuilder()
     
     builder.ConfigureServices((ctx, services) =>
     {
+        services.AddSingleton<GlobalDbService>();
         services.AddSingleton<LoggerService>();
         services.AddSingleton<UserService>();
         services.AddSingleton<WorldService>();

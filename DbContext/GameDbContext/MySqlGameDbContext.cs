@@ -33,4 +33,17 @@ public class MySqlGameDbContext(SqlServerDbInfo dbInfo) : MySqlDapperServiceBase
             accountId = accountId
         });
     }
+
+    public async Task<int> ItemUseAsync(long accountId, int itemId, int itemCount)
+    {
+        await using var connection = _GetConnection();
+        var command = new ItemUseCommandAsync(this);
+
+        return await command.ExecuteQueryAsync(new ItemUseCommandAsync.InParameters()
+        {
+            accountId = accountId,
+            itemId = itemId,
+            itemCount = itemCount
+        });
+    }
 }

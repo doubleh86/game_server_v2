@@ -6,6 +6,7 @@ using ServerFramework.CommonUtils.Helper;
 using WorldServer.GameObjects;
 using WorldServer.JobModels;
 using WorldServer.Network;
+using WorldServer.Services;
 
 namespace WorldServer.WorldHandler;
 
@@ -18,6 +19,7 @@ public partial class WorldInstance : IDisposable
     
     private readonly ConcurrentDictionary<long, MonsterObject> _monsters = new();
     private readonly LoggerService _loggerService;
+    private readonly GlobalDbService _globalDbService;
     
     private readonly Dictionary<GameCommandId, Func<byte[], ValueTask>> _commandHandlers = new();
     private PlayerObject _worldOwner;
@@ -25,10 +27,11 @@ public partial class WorldInstance : IDisposable
     public string GetRoomId() => _roomId;
     private UserSessionInfo _GetUserSessionInfo() => _worldOwner.GetSessionInfo();
 
-    public WorldInstance(string roomId, LoggerService loggerService)
+    public WorldInstance(string roomId, LoggerService loggerService, GlobalDbService dbService)
     {
         _roomId = roomId;
         _loggerService = loggerService;
+        _globalDbService = dbService;
 
         _dbContext = GameDbContextWrapper.Create();
         _RegisterGameHandler();
@@ -38,6 +41,7 @@ public partial class WorldInstance : IDisposable
     private void _RegisterGameHandler()
     {
         _commandHandlers.Add(GameCommandId.MoveCommand, _HandleMove);
+        _commandHandlers.Add(GameCommandId.UseItemCommand, _HandleItemUse);
     }
     
     public async ValueTask InitializeAsync(UserSessionInfo sessionInfo)

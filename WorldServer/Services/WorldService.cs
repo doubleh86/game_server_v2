@@ -32,7 +32,9 @@ public class WorldService : IDisposable
     }
     public async Task<WorldInstance> CreateWorldInstance(string roomId, UserSessionInfo userSessionInfo)
     {
-        var newWorldInstance = new WorldInstance(roomId, _serverService.GetLoggerService());
+        var newWorldInstance = new WorldInstance(roomId, _serverService.GetLoggerService(), 
+                                                 _serverService.GetGlobalDbService());
+        
         await newWorldInstance.InitializeAsync(userSessionInfo);
         
         if (_worldInstances.TryAdd(roomId, newWorldInstance) == false)

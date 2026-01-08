@@ -14,6 +14,7 @@ public class WorldServerService : SuperSocketService<NetworkPackage>
     private readonly UserService _userService;
     private readonly WorldService _worldService;
     private readonly LoggerService _loggerService;
+    private readonly GlobalDbService _globalDbService;
     
     private readonly ConfigurationHelper _configurationHelper;
     private Dictionary<string, SqlServerDbInfo> _sqlServerDbInfoList = new();
@@ -22,11 +23,12 @@ public class WorldServerService : SuperSocketService<NetworkPackage>
     public WorldService GetWorldService() => _worldService;
     public LoggerService GetLoggerService() => _loggerService;
     public ConfigurationHelper GetConfigHelper() => _configurationHelper;
+    public GlobalDbService GetGlobalDbService() => _globalDbService;
 
     public WorldServerService(IServiceProvider serviceProvider, IOptions<ServerOptions> serverOptions) : base(serviceProvider, serverOptions)
     {
         _userService = serviceProvider.GetService(typeof(UserService)) as UserService;
-        
+        _globalDbService = serviceProvider.GetService(typeof(GlobalDbService)) as GlobalDbService;
         _worldService = serviceProvider.GetService(typeof(WorldService)) as WorldService;
         _loggerService = serviceProvider.GetService(typeof(LoggerService)) as LoggerService;
         _configurationHelper = serviceProvider.GetService(typeof(ConfigurationHelper)) as ConfigurationHelper;
@@ -54,6 +56,9 @@ public class WorldServerService : SuperSocketService<NetworkPackage>
         _configurationHelper.Initialize(configFiles);
         _InitializeSqlServerDbInfo();
         _loggerService.CreateLogger(_configurationHelper.Configuration);
+        
+        var shardCount = _configurationHelper.GetValue("GlobalDbShardCount", 4);
+        _globalDbService.Initialize(shardCount, _loggerService);
         
         var serviceTimeZone = _configurationHelper.GetValue("ServiceTimeZone", "UTC");
         TimeZoneHelper.Initialize(serviceTimeZone);

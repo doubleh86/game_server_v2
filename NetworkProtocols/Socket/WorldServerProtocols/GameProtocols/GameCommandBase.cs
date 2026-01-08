@@ -6,6 +6,10 @@ public enum GameCommandId
 {
     MoveCommand = 1,
     MonsterUpdateCommand = 2,
+    UseItemCommand = 3,
+    
+    // Response
+    UseItemResponse = 1001,
 }
 
 // 필요 없을 듯

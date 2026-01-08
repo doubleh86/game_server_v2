@@ -24,6 +24,7 @@ public partial class WorldServerHandler(ITCPClient client) : TCPPacketHandler(cl
         _handler.Add((int)WorldServerKeys.GameCommandResponse, OnGameCommand);
         
         _gameHandler.Add((int)GameCommandId.MonsterUpdateCommand, _OnMonsterUpdateCommand);
+        _gameHandler.Add((int)GameCommandId.UseItemCommand, _OnItemUseCommand);
     }
 
     private void OnGameCommand(NetworkPackage obj)
@@ -61,22 +62,51 @@ public partial class WorldServerHandler(ITCPClient client) : TCPPacketHandler(cl
             
             while (_cts.IsCancellationRequested == false)
             {
-                client.SendGameCommand(new GameCommandRequest
+                var random = new Random().Next(0, 10);
+                if (random > 5)
                 {
-                    CommandId = (int)GameCommandId.MoveCommand,
-                    CommandData = MemoryPackHelper.Serialize(new MoveCommand()
-                    {
-                        X = 10,
-                        Y = 10,
-                        Direction = 1
-                    })
-                });
+                    _SendMoveCommand(client, 10, 10, 1);
+                }
+                else
+                {
+                    _SendItemUseCommand(client, 1);
+                }
+                
                 
                 var startTime = DateTime.UtcNow;
                 var elapsed = DateTime.UtcNow - startTime;
                 var delay = Math.Max(0, 100 - (int)elapsed.TotalMilliseconds);
                 await Task.Delay(delay, _cts.Token);
+                
+                _SendItemUseCommand(client, 1);
             }
+        });
+    }
+
+    private void _SendMoveCommand(TestSession client, int x, int y, int direction)
+    {
+        client.SendGameCommand(new GameCommandRequest
+        {
+            CommandId = (int)GameCommandId.MoveCommand,
+            CommandData = MemoryPackHelper.Serialize(new MoveCommand()
+            {
+                X = x,
+                Y = y,
+                Direction = direction
+            })
+        });
+    }
+
+    private void _SendItemUseCommand(TestSession client, int itemId)
+    {
+        client.SendGameCommand(new GameCommandRequest()
+        {
+            CommandId = (int)GameCommandId.UseItemCommand,
+            CommandData = MemoryPackHelper.Serialize(new UseItemCommand()
+            {
+                ItemId = itemId,
+                UseCount = 1
+            }) 
         });
     }
     
