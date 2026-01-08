@@ -14,12 +14,16 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\GSFramework\ServerFramework\ServerFramework.csproj" />
+      <ProjectReference Include="..\DbContext\DbContext.csproj" />
       <ProjectReference Include="..\NetworkProtocols\NetworkProtocols.csproj" />
       <ProjectReference Include="..\NotifyServer\NotifyServer.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <None Update="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Settings\sqlSettings.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

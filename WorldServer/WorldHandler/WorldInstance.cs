@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Numerics;
+using DbContext.GameDbContext;
 using NetworkProtocols.Socket.WorldServerProtocols.GameProtocols;
 using ServerFramework.CommonUtils.Helper;
 using WorldServer.GameObjects;
@@ -10,6 +11,7 @@ namespace WorldServer.WorldHandler;
 
 public partial class WorldInstance : IDisposable
 {
+    private readonly IGameDbContext _dbContext;
     private readonly string _roomId;
     private readonly ConcurrentQueue<Job> _jobQueue = new();
     private int _isProcessing;
@@ -27,7 +29,8 @@ public partial class WorldInstance : IDisposable
     {
         _roomId = roomId;
         _loggerService = loggerService;
-        
+
+        _dbContext = GameDbContextWrapper.Create();
         _RegisterGameHandler();
         
     }
@@ -59,6 +62,9 @@ public partial class WorldInstance : IDisposable
         _worldOwner = new PlayerObject(sessionInfo.Identifier, new Vector3(0, 0, 0), sessionInfo);
         _worldOwner.UpdatePosition(new Vector3(10, 29, 30));
         // World 생성 NPC 생성
+        
+        var playerInfo = await _dbContext.GetPlayerInfoAsync(1);
+        _worldOwner.SetPlayerInfo(playerInfo);
     }
 
     public void Tick()
@@ -121,5 +127,6 @@ public partial class WorldInstance : IDisposable
     public void Dispose()
     {
         // TODO release managed resources here
+        _dbContext?.Dispose();
     }
 }
