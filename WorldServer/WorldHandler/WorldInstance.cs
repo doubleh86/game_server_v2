@@ -1,26 +1,45 @@
 using System.Collections.Concurrent;
 using System.Numerics;
-using MessagePack;
 using NetworkProtocols.Socket.WorldServerProtocols.GameProtocols;
+using ServerFramework.CommonUtils.Helper;
 using WorldServer.GameObjects;
 using WorldServer.JobModels;
 using WorldServer.Network;
 
-namespace WorldServer.GameService;
+namespace WorldServer.WorldHandler;
 
-public partial class WorldInstance(string roomId, UserSessionInfo userSessionInfo) : IDisposable
+public partial class WorldInstance : IDisposable
 {
-    private readonly string _roomId = roomId;
+    private readonly string _roomId;
     private readonly ConcurrentQueue<Job> _jobQueue = new();
-    private int _isProcessing = 0;
+    private int _isProcessing;
     
     private readonly ConcurrentDictionary<long, MonsterObject> _monsters = new();
+    private readonly LoggerService _loggerService;
     
-    private UserSessionInfo _userSessionInfo = userSessionInfo;
-    public string GetRoomId() => _roomId;
+    private readonly Dictionary<GameCommandId, Func<byte[], ValueTask>> _commandHandlers = new();
+    private PlayerObject _worldOwner;
 
-    public async ValueTask InitializeAsync()
+    public string GetRoomId() => _roomId;
+    private UserSessionInfo _GetUserSessionInfo() => _worldOwner.GetSessionInfo();
+
+    public WorldInstance(string roomId, LoggerService loggerService)
     {
+        _roomId = roomId;
+        _loggerService = loggerService;
+        
+        _RegisterGameHandler();
+        
+    }
+    
+    private void _RegisterGameHandler()
+    {
+        _commandHandlers.Add(GameCommandId.MoveCommand, _HandleMove);
+    }
+    
+    public async ValueTask InitializeAsync(UserSessionInfo sessionInfo)
+    {
+        await _InitializeWorldAsync(sessionInfo);
         var tasks = Enumerable.Range(0, 100).Select(async i =>
         {
             // Monster 생성 및 추가 (비동기 시뮬레이션이 필요하다면 여기서 수행)
@@ -34,6 +53,14 @@ public partial class WorldInstance(string roomId, UserSessionInfo userSessionInf
         await Task.WhenAll(tasks);
     }
 
+    private async ValueTask _InitializeWorldAsync(UserSessionInfo sessionInfo)
+    {
+        // Maybe Db Call?
+        _worldOwner = new PlayerObject(sessionInfo.Identifier, new Vector3(0, 0, 0), sessionInfo);
+        _worldOwner.UpdatePosition(new Vector3(10, 29, 30));
+        // World 생성 NPC 생성
+    }
+
     public void Tick()
     {
         _Push(new MonsterUpdateJob(_monsters, _OnMonsterUpdate));
@@ -41,11 +68,16 @@ public partial class WorldInstance(string roomId, UserSessionInfo userSessionInf
 
     public async ValueTask HandleGameCommand(GameCommandId command, byte[] commandData)
     {
-        switch (command)
+        try
         {
-            case GameCommandId.MoveCommand:
-                await _HandleMove(commandData);
-                break;
+            if (_commandHandlers.TryGetValue(command, out var handler) == false)
+                return;
+            
+            await handler(commandData);
+        }
+        catch (Exception e)
+        {
+            _loggerService.Warning($"Command failed [{e.Message}][{command}]", e);
         }
     }
 
@@ -66,7 +98,14 @@ public partial class WorldInstance(string roomId, UserSessionInfo userSessionInf
             {
                 while (_jobQueue.TryDequeue(out var job))
                 {
-                    await job.ExecuteAsync();
+                    try
+                    {
+                        await job.ExecuteAsync();
+                    }
+                    catch (Exception e)
+                    {
+                        _loggerService.Warning($"Job failed [{e.Message}]", e);    
+                    }
                 }
             }
             finally

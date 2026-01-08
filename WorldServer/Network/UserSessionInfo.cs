@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Http;
 using SuperSocket.Connection;
 using SuperSocket.Server;
 using SuperSocket.Server.Abstractions.Session;
-using WorldServer.GameService;
 using WorldServer.Services;
+using WorldInstance = WorldServer.WorldHandler.WorldInstance;
 
 namespace WorldServer.Network;
 

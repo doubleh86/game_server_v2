@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using WorldServer.GameObjects;
-using WorldServer.GameService;
 
 namespace WorldServer.JobModels;
 

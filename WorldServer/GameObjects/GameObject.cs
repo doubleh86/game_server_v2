@@ -4,13 +4,17 @@ namespace WorldServer.GameObjects;
 
 public abstract class GameObject
 {
-    protected long _id;
+    protected readonly long _id;
     protected Vector3 _position;
-    
-    public GameObject(long id, Vector3 position)
+
+    protected GameObject(long id, Vector3 position)
     {
         _id = id;
         _position = position;
     }
-    
+
+    public void UpdatePosition(Vector3 position)
+    {
+        _position = position;
+    }
 }

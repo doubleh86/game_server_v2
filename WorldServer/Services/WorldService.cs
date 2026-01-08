@@ -1,28 +1,49 @@
 using System.Collections.Concurrent;
-using WorldServer.GameService;
 using WorldServer.Network;
+using WorldInstance = WorldServer.WorldHandler.WorldInstance;
 
 namespace WorldServer.Services;
 
 public class WorldService : IDisposable
 {
     private WorldServerService _serverService;
+    private List<WorldInstance>[] _shardWorldLists;
+    private object[] _shardLocks;
     
     private readonly ConcurrentDictionary<string, WorldInstance> _worldInstances = new();
     private readonly int _workerCount = Environment.ProcessorCount;
     private readonly CancellationTokenSource _cts = new();
 
-    public void SetServerService(WorldServerService serverService)
+    public void Initialize(WorldServerService serverService)
+    {
+        _shardWorldLists = new List<WorldInstance>[_workerCount];
+        _shardLocks = new object[_workerCount];
+        for (int i = 0; i < _workerCount; i++)
+        {
+            _shardWorldLists[i] = new List<WorldInstance>();
+            _shardLocks[i] = new object();
+        }
+        
+        _SetServerService(serverService);    
+    }
+    private void _SetServerService(WorldServerService serverService)
     {
         _serverService = serverService;
     }
     public async Task<WorldInstance> CreateWorldInstance(string roomId, UserSessionInfo userSessionInfo)
     {
-        var newWorldInstance = new WorldInstance(roomId, userSessionInfo);
-        await newWorldInstance.InitializeAsync();
+        var newWorldInstance = new WorldInstance(roomId, _serverService.GetLoggerService());
+        await newWorldInstance.InitializeAsync(userSessionInfo);
+        
         if (_worldInstances.TryAdd(roomId, newWorldInstance) == false)
             return null;
-
+        
+        var shardIndex = Math.Abs(roomId.GetHashCode() % _workerCount);
+        lock (_shardLocks[shardIndex])
+        {
+            _shardWorldLists[shardIndex].Add(newWorldInstance);
+        }
+        
         return newWorldInstance;
     }
 
@@ -48,24 +69,27 @@ public class WorldService : IDisposable
         for(int i = 0; i < _workerCount; i++)
         {
             int shardIndex = i;
-            Task.Factory.StartNew(() => GlobalTickLoop(shardIndex), TaskCreationOptions.LongRunning);
+            Task.Factory.StartNew(() => _GlobalTickLoop(shardIndex), TaskCreationOptions.LongRunning);
         }
     }
 
-    private async Task GlobalTickLoop(int shardIndex)
+    private async Task _GlobalTickLoop(int shardIndex)
     {
         var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(30));
+        var myShardList = _shardWorldLists[shardIndex];
         while (await timer.WaitForNextTickAsync(_cts.Token))
         {
             try
             {
-                foreach (var worldInstance in _worldInstances.Values)
+                WorldInstance[] shapShot;
+                lock (_shardLocks[shardIndex])
                 {
-                    if (Math.Abs(worldInstance.GetRoomId().GetHashCode() % _workerCount) == shardIndex)
+                    foreach (var worldInstance in myShardList)
                     {
                         worldInstance.Tick();
                     }
                 }
+                
             }
             catch (Exception e)
             {

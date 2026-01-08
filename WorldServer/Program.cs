@@ -9,7 +9,6 @@ using ServerFramework.RedisService;
 using SuperSocket.Command;
 using SuperSocket.Server;
 using SuperSocket.Server.Host;
-using WorldServer.GameService;
 using WorldServer.Network;
 using WorldServer.NetworkCommand;
 using WorldServer.Services;

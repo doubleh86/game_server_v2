@@ -3,7 +3,6 @@ using ServerFramework.CommonUtils.DateTimeHelper;
 using ServerFramework.CommonUtils.Helper;
 using SuperSocket.Server;
 using SuperSocket.Server.Abstractions;
-using WorldServer.GameService;
 using WorldServer.Network;
 
 namespace WorldServer.Services;
@@ -38,7 +37,7 @@ public class WorldServerService : SuperSocketService<NetworkPackage>
         var serviceTimeZone = _configurationHelper.GetValue("ServiceTimeZone", "UTC");
         TimeZoneHelper.Initialize(serviceTimeZone);
         
-        _worldService.SetServerService(this);
+        _worldService.Initialize(this);
         _worldService.StartGlobalTicker();
         
         await base.OnStartedAsync();
