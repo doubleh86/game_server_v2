@@ -4,7 +4,7 @@ using NetworkProtocols.Socket.CommonCommand;
 using NotifyServer.Helpers;
 using SuperSocket.Command;
 using SuperSocket.Server.Abstractions.Session;
-using WorldServer.Network.Models;
+using WorldServer.Network;
 
 namespace WorldServer.NetworkCommand;
 

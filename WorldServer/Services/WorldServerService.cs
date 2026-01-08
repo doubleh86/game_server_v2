@@ -4,9 +4,9 @@ using ServerFramework.CommonUtils.Helper;
 using SuperSocket.Server;
 using SuperSocket.Server.Abstractions;
 using WorldServer.GameService;
-using WorldServer.Network.Models;
+using WorldServer.Network;
 
-namespace WorldServer.Network;
+namespace WorldServer.Services;
 
 public class WorldServerService : SuperSocketService<NetworkPackage>
 {

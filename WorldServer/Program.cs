@@ -11,8 +11,8 @@ using SuperSocket.Server;
 using SuperSocket.Server.Host;
 using WorldServer.GameService;
 using WorldServer.Network;
-using WorldServer.Network.Models;
 using WorldServer.NetworkCommand;
+using WorldServer.Services;
 
 var host = CreateHostBuilder().Build();
 

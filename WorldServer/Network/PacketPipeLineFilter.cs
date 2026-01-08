@@ -1,7 +1,7 @@
 using System.Buffers;
 using SuperSocket.ProtoBase;
 
-namespace WorldServer.Network.Models;
+namespace WorldServer.Network;
 
 public class PacketPipeLineFilter() : FixedHeaderPipelineFilter<NetworkPackage>(NetworkPackage.HeaderSize)
 {

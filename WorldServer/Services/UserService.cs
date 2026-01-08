@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
+using WorldServer.Network;
 
-namespace WorldServer.Network;
+namespace WorldServer.Services;
 
 public class UserService
 {

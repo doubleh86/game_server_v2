@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
-using ServerFramework.CommonUtils.Helper;
+using WorldServer.GameService;
 using WorldServer.Network;
 
-namespace WorldServer.GameService;
+namespace WorldServer.Services;
 
 public class WorldService : IDisposable
 {

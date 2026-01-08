@@ -1,6 +1,6 @@
 using SuperSocket.ProtoBase;
 
-namespace WorldServer.Network.Models;
+namespace WorldServer.Network;
 
 // [bodySize][Key][Body]
 public class NetworkPackage : IKeyedPackageInfo<int>
