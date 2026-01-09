@@ -42,9 +42,11 @@ public class UserSessionInfo : AppSession
     {
         Console.WriteLine($"Closed from server [{e.Reason}]");
         _serverService.GetUserService().RemoveUser(_identifier);
-        if(_worldInstance != null)
+        if (_worldInstance != null)
+        {
             _serverService.GetWorldService().RemoveWorldInstance(_worldInstance.GetRoomId());
-        
+        }
+           
         return ValueTask.CompletedTask;
     }
 }

@@ -4,6 +4,9 @@ using ServerFramework.CommonUtils.Helper;
 
 namespace WorldServer.Services;
 
+/// <summary>
+/// 순서 보장을 위해 
+/// </summary>
 public class GlobalDbService : IDisposable
 {
     private int _shardCount;
@@ -61,6 +64,9 @@ public class GlobalDbService : IDisposable
     
     public void Dispose()
     {
-        // TODO release managed resources here
+        foreach (var dbContext in _dbContexts)
+        {
+            dbContext.Dispose();
+        }
     }
 }

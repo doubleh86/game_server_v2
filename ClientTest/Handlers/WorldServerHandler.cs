@@ -1,3 +1,4 @@
+using System.Numerics;
 using ClientTest.Models;
 using ClientTest.Socket;
 using ClientTest.Socket.TCPClient;
@@ -25,6 +26,7 @@ public partial class WorldServerHandler(ITCPClient client) : TCPPacketHandler(cl
         
         _gameHandler.Add((int)GameCommandId.MonsterUpdateCommand, _OnMonsterUpdateCommand);
         _gameHandler.Add((int)GameCommandId.UseItemCommand, _OnItemUseCommand);
+        _gameHandler.Add((int)GameCommandId.SpawnGameObject, _OnSpawnGameObject);
     }
 
     private void OnGameCommand(NetworkPackage obj)
@@ -62,15 +64,9 @@ public partial class WorldServerHandler(ITCPClient client) : TCPPacketHandler(cl
             
             while (_cts.IsCancellationRequested == false)
             {
-                var random = new Random().Next(0, 10);
-                if (random > 5)
-                {
-                    _SendMoveCommand(client, 10, 10, 1);
-                }
-                else
-                {
-                    _SendItemUseCommand(client, 1);
-                }
+                var randomX = new Random().Next(0, 1200);
+                var randomZ = new Random().Next(0, 1200); 
+                _SendMoveCommand(client, randomX, randomZ, 101);
                 
                 
                 var startTime = DateTime.UtcNow;
@@ -78,21 +74,19 @@ public partial class WorldServerHandler(ITCPClient client) : TCPPacketHandler(cl
                 var delay = Math.Max(0, 100 - (int)elapsed.TotalMilliseconds);
                 await Task.Delay(delay, _cts.Token);
                 
-                _SendItemUseCommand(client, 1);
             }
         });
     }
 
-    private void _SendMoveCommand(TestSession client, int x, int y, int direction)
+    private void _SendMoveCommand(TestSession client, int x, int z, int zoneId)
     {
         client.SendGameCommand(new GameCommandRequest
         {
             CommandId = (int)GameCommandId.MoveCommand,
             CommandData = MemoryPackHelper.Serialize(new MoveCommand()
             {
-                X = x,
-                Y = y,
-                Direction = direction
+                Position = new Vector3(x, 0, z),
+                ZoneId = zoneId
             })
         });
     }

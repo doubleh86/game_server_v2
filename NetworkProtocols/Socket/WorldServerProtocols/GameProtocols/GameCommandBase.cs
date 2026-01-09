@@ -7,6 +7,7 @@ public enum GameCommandId
     MoveCommand = 1,
     MonsterUpdateCommand = 2,
     UseItemCommand = 3,
+    SpawnGameObject,
     
     // Response
     UseItemResponse = 1001,

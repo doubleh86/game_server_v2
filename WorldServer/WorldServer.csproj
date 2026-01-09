@@ -15,6 +15,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\GSFramework\ServerFramework\ServerFramework.csproj" />
       <ProjectReference Include="..\DbContext\DbContext.csproj" />
+      <ProjectReference Include="..\MySqlDataTableLoader\MySqlDataTableLoader.csproj" />
       <ProjectReference Include="..\NetworkProtocols\NetworkProtocols.csproj" />
       <ProjectReference Include="..\NotifyServer\NotifyServer.csproj" />
     </ItemGroup>

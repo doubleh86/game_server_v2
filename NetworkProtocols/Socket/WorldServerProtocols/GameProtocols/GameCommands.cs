@@ -1,3 +1,4 @@
+using System.Numerics;
 using MemoryPack;
 
 namespace NetworkProtocols.Socket.WorldServerProtocols.GameProtocols;
@@ -19,8 +20,8 @@ public partial class UseItemCommandResponse : GameCommandBase
 [MemoryPackable]
 public partial class MoveCommand : GameCommandBase
 {
-    public int X { get; set; }
-    public int Y { get; set; }
+    public Vector3 Position { get; set; }
     
-    public int Direction { get; set; }
+    public int ZoneId { get; set; }
+    
 }

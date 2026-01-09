@@ -1,23 +1,28 @@
 using System.Collections.Concurrent;
+using System.Net;
 using System.Numerics;
 using DbContext.GameDbContext;
+using MySqlDataTableLoader.Models;
+using MySqlDataTableLoader.Utils.Helper;
 using NetworkProtocols.Socket.WorldServerProtocols.GameProtocols;
 using ServerFramework.CommonUtils.Helper;
+using SuperSocket.Server.Abstractions;
 using WorldServer.GameObjects;
 using WorldServer.JobModels;
 using WorldServer.Network;
 using WorldServer.Services;
+using WorldServer.WorldHandler.WorldDataModels;
 
 namespace WorldServer.WorldHandler;
 
 public partial class WorldInstance : IDisposable
 {
-    private readonly IGameDbContext _dbContext;
+    private readonly IGameDbContext _dbContext; // Read 용 dbContext 
     private readonly string _roomId;
     private readonly ConcurrentQueue<Job> _jobQueue = new();
     private int _isProcessing;
+    private bool _isDisposed = false;
     
-    private readonly ConcurrentDictionary<long, MonsterObject> _monsters = new();
     private readonly LoggerService _loggerService;
     private readonly GlobalDbService _globalDbService;
     
@@ -26,6 +31,7 @@ public partial class WorldInstance : IDisposable
 
     public string GetRoomId() => _roomId;
     private UserSessionInfo _GetUserSessionInfo() => _worldOwner.GetSessionInfo();
+    private WorldMapInfo _worldMapInfo;
 
     public WorldInstance(string roomId, LoggerService loggerService, GlobalDbService dbService)
     {
@@ -47,33 +53,46 @@ public partial class WorldInstance : IDisposable
     public async ValueTask InitializeAsync(UserSessionInfo sessionInfo)
     {
         await _InitializeWorldAsync(sessionInfo);
-        var tasks = Enumerable.Range(0, 100).Select(async i =>
-        {
-            // Monster 생성 및 추가 (비동기 시뮬레이션이 필요하다면 여기서 수행)
-            var monster = new MonsterObject(i, new Vector3(10, 10, 10));
-            _monsters.TryAdd(i, monster);
-            
-            await Task.Yield(); // 다른 작업에 실행권을 잠시 양보 (대량 작업 시 UI/네트워크 스레드 방해 방지)
-        });
-        
-        // 2. 모든 작업이 완료될 때까지 비동기로 대기합니다.
-        await Task.WhenAll(tasks);
     }
 
     private async ValueTask _InitializeWorldAsync(UserSessionInfo sessionInfo)
     {
-        // Maybe Db Call?
-        _worldOwner = new PlayerObject(sessionInfo.Identifier, new Vector3(0, 0, 0), sessionInfo);
-        _worldOwner.UpdatePosition(new Vector3(10, 29, 30));
-        // World 생성 NPC 생성
+        _worldOwner = new PlayerObject(sessionInfo.Identifier, new Vector3(0, 0, 0), sessionInfo, 0);
+        _worldOwner.UpdatePosition(new Vector3(10, 29, 30), 101);
         
         var playerInfo = await _dbContext.GetPlayerInfoAsync(1);
         _worldOwner.SetPlayerInfo(playerInfo);
+
+        await _RoadCurrentWorldMapAsync(1);
+    }
+
+    private ValueTask _RoadCurrentWorldMapAsync(int worldId)
+    {
+        var worldMapInfo = MySqlDataTableHelper.GetData<WorldInfo>(worldId);
+        if (worldMapInfo == null)
+            return ValueTask.CompletedTask;
+
+        _worldMapInfo = new WorldMapInfo(worldId, _worldOwner.AccountId);
+        _worldMapInfo.Initialize();
+
+        _worldMapInfo.AddObject(_worldOwner);
+        
+        return ValueTask.CompletedTask;
     }
 
     public void Tick()
     {
-        _Push(new MonsterUpdateJob(_monsters, _OnMonsterUpdate));
+        if(IsAliveWorld() == false) 
+            return;
+        
+        var centerCell = _worldMapInfo.GetCell(_worldOwner.GetZoneId(), _worldOwner.GetPosition());
+        if (centerCell == null)
+            return;
+        
+        var nearByCells = _worldMapInfo.GetNearByCells(_worldOwner.GetZoneId(), 
+                                                                    centerCell.X, centerCell.Z, 
+                                                                    range: 2);
+        _Push(new MonsterUpdateJob(nearByCells, _OnMonsterUpdate));
     }
 
     public async ValueTask HandleGameCommand(GameCommandId command, byte[] commandData)
@@ -99,6 +118,8 @@ public partial class WorldInstance : IDisposable
     
     private void _ProcessJobs()
     {
+        if (_isDisposed)
+            return;
         if (Interlocked.CompareExchange(ref _isProcessing, 1, 0) != 0)
             return;
 
@@ -128,9 +149,36 @@ public partial class WorldInstance : IDisposable
         });
     }
 
+    public bool IsAliveWorld()
+    {
+        if (_isDisposed == true)
+            return false;
+        
+        if (_worldOwner == null)
+            return false;
+        
+        var session = _worldOwner.GetSessionInfo();
+        if(session == null)
+            return false;
+
+        if (session.State == SessionState.Closed || session.State == SessionState.None)
+            return false;
+        
+        return true;
+    }
+
     public void Dispose()
     {
-        // TODO release managed resources here
+        if(_isDisposed) 
+            return;
+
+        _isDisposed = true;
+        _jobQueue.Clear();
+        _commandHandlers.Clear();
+        _worldOwner = null;
+        _worldMapInfo?.Dispose();
+        _worldMapInfo = null;
+        
         _dbContext?.Dispose();
     }
 }

@@ -1,5 +1,7 @@
 using DbContext.GameDbContext;
 using Microsoft.Extensions.Options;
+using MySqlDataTableLoader.Utils;
+using MySqlDataTableLoader.Utils.Helper;
 using ServerFramework.CommonUtils.DateTimeHelper;
 using ServerFramework.CommonUtils.Helper;
 using ServerFramework.SqlServerServices.Models;
@@ -52,30 +54,58 @@ public class WorldServerService : SuperSocketService<NetworkPackage>
     
     protected override async ValueTask OnStartedAsync()
     {
-        var configFiles = new List<string> { "appsettings.json", "Settings/redisSettings.json", "Settings/sqlSettings.json"};
-        _configurationHelper.Initialize(configFiles);
-        _InitializeSqlServerDbInfo();
-        _loggerService.CreateLogger(_configurationHelper.Configuration);
+        try
+        {
+            var configFiles = new List<string> { "appsettings.json", "Settings/redisSettings.json", "Settings/sqlSettings.json"};
+            _configurationHelper.Initialize(configFiles);
         
-        var shardCount = _configurationHelper.GetValue("GlobalDbShardCount", 4);
-        _globalDbService.Initialize(shardCount, _loggerService);
+            _InitializeSqlServerDbInfo();
+            _loggerService.CreateLogger(_configurationHelper.Configuration);
         
-        var serviceTimeZone = _configurationHelper.GetValue("ServiceTimeZone", "UTC");
-        TimeZoneHelper.Initialize(serviceTimeZone);
+            var shardCount = _configurationHelper.GetValue("GlobalDbShardCount", 4);
+            _globalDbService.Initialize(shardCount, _loggerService);
+
+            _InitializeDataTable();
         
-        var minWorker = _configurationHelper.GetValue("MinWorkerThreads", 120);
-        var minIOThread = _configurationHelper.GetValue("MinIOThreads", 120);
+            var serviceTimeZone = _configurationHelper.GetValue("ServiceTimeZone", "UTC");
+            TimeZoneHelper.Initialize(serviceTimeZone);
         
-        ThreadPool.SetMinThreads(Math.Max(minWorker, Environment.ProcessorCount * 2), minIOThread);
+            var minWorker = _configurationHelper.GetValue("MinWorkerThreads", 120);
+            var minIOThread = _configurationHelper.GetValue("MinIOThreads", 120);
         
-        _worldService.Initialize(this);
-        _worldService.StartGlobalTicker();
+            ThreadPool.SetMinThreads(Math.Max(minWorker, Environment.ProcessorCount * 2), minIOThread);
         
-        await base.OnStartedAsync();
+            _worldService.Initialize(this);
+            _worldService.StartGlobalTicker();
+        
+            await base.OnStartedAsync();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Maybe error {e.Message}");
+        }
+        
+    }
+
+    private void _InitializeDataTable()
+    {
+        if (_sqlServerDbInfoList.TryGetValue(nameof(DataTableDbService), out var sqlInfo) == false)
+        {
+            _loggerService.Error("Can't find DataTableDbService connection info");
+            return;
+        }
+        
+        MySqlDataTableHelper.Initialize(sqlInfo, _loggerService);
+        MySqlDataTableHelper.ReloadTableData();
     }
 
     protected override async ValueTask OnStopAsync()
     {
+        _worldService?.Dispose();
+        await Task.Delay(100);
+        _globalDbService?.Dispose();
+        _userService?.Dispose();
+        
         await base.OnStopAsync();
     }
     

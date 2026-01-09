@@ -9,6 +9,7 @@ public class WorldService : IDisposable
     private WorldServerService _serverService;
     private List<WorldInstance>[] _shardWorldLists;
     private object[] _shardLocks;
+    private readonly ConcurrentDictionary<string, int> _roomShardMap = new();
     
     private readonly ConcurrentDictionary<string, WorldInstance> _worldInstances = new();
     private readonly int _workerCount = Environment.ProcessorCount;
@@ -39,11 +40,24 @@ public class WorldService : IDisposable
         
         if (_worldInstances.TryAdd(roomId, newWorldInstance) == false)
             return null;
-        
-        var shardIndex = Math.Abs(roomId.GetHashCode() % _workerCount);
-        lock (_shardLocks[shardIndex])
+
+        int bestShardIndex = 0;
+        int minCount = int.MaxValue;
+
+        for (int i = 0; i < _workerCount; i++)
         {
-            _shardWorldLists[shardIndex].Add(newWorldInstance);
+            int count = _shardWorldLists[i].Count;
+            if (count < minCount)
+            {
+                minCount = count;
+                bestShardIndex = i;
+            }
+        }
+        
+        lock (_shardLocks[bestShardIndex])
+        {
+            _shardWorldLists[bestShardIndex].Add(newWorldInstance);
+            _roomShardMap.TryAdd(roomId, bestShardIndex);
         }
         
         return newWorldInstance;
@@ -56,14 +70,18 @@ public class WorldService : IDisposable
 
     public void RemoveWorldInstance(string roomId)
     {
-        var worldInstance = GetWorldInstance(roomId);
-        if (worldInstance == null)
-        {
+        if (_worldInstances.TryRemove(roomId, out var worldInstance) == false)
             return;
-        }
 
+        if (_roomShardMap.TryRemove(roomId, out var shardIndex) == false)
+            return;
+
+        lock (_shardLocks[shardIndex])
+        {
+            _shardWorldLists[shardIndex].Remove(worldInstance);
+        }
+        
         worldInstance.Dispose();
-        _worldInstances.TryRemove(roomId, out _);
     }
 
     public void StartGlobalTicker()
@@ -79,24 +97,60 @@ public class WorldService : IDisposable
     {
         var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(30));
         var myShardList = _shardWorldLists[shardIndex];
+        List<WorldInstance> tickSnapShot = new();
+        List<WorldInstance> removeList = new();
+        
         while (await timer.WaitForNextTickAsync(_cts.Token))
         {
             try
             {
-                WorldInstance[] shapShot;
                 lock (_shardLocks[shardIndex])
                 {
-                    foreach (var worldInstance in myShardList)
-                    {
-                        worldInstance.Tick();
-                    }
+                    tickSnapShot.AddRange(myShardList);
                 }
                 
+                foreach (var worldInstance in tickSnapShot)
+                {
+                    if (worldInstance.IsAliveWorld() == false)
+                    {
+                        removeList.Add(worldInstance);
+                        continue;
+                    }
+                        
+                    worldInstance.Tick();
+                }
+
+                if (removeList.Count > 0)
+                {
+                    _RemoveDeadWorlds(shardIndex, myShardList, removeList);
+                    removeList.Clear();
+                }
+                
+                tickSnapShot.Clear();
+            }
+            catch (OperationCanceledException)
+            {
+                break;
             }
             catch (Exception e)
             {
                 _serverService.GetLoggerService().Warning($"GlobalTickLoop Error : {e.Message}", e);
             }
+        }
+    }
+
+    private void _RemoveDeadWorlds(int shardIndex, List<WorldInstance> myShardList, List<WorldInstance> removeList)
+    {
+        lock (_shardLocks[shardIndex])
+        {
+            foreach (var worldInstance in removeList)
+            {
+                myShardList.Remove(worldInstance);
+                _worldInstances.TryRemove(worldInstance.GetRoomId(), out _);
+                _roomShardMap.TryRemove(worldInstance.GetRoomId(), out _);
+                        
+                worldInstance.Dispose();
+            }    
         }
     }
 

@@ -13,10 +13,16 @@ public partial class WorldInstance
     private ValueTask _HandleMove(byte[] commandData)
     {
         var moveCommand = MemoryPackHelper.Deserialize<MoveCommand>(commandData);
-        
-        _Push(new ActionJob<MoveCommand>(moveCommand, async (data) =>
+        _Push(new ActionJob<MoveCommand>(moveCommand, async(_)  =>
         {
-            Console.WriteLine($"[{_GetUserSessionInfo().Identifier}] Move [{data.X}, {data.Y}, {data.Direction}]");
+            var oldCell = _worldMapInfo.GetCell(_worldOwner.GetZoneId(), _worldOwner.GetPosition());
+            _worldOwner.UpdatePosition(moveCommand.Position, moveCommand.ZoneId);
+            var newCell = _worldMapInfo.GetCell(_worldOwner.GetZoneId(), _worldOwner.GetPosition());
+
+            if (oldCell == newCell)
+                return;
+            
+            await _worldMapInfo.UpdatePlayerViewAsync(_worldOwner.GetSessionInfo(), oldCell, newCell);
         }));
         
         return ValueTask.CompletedTask;
