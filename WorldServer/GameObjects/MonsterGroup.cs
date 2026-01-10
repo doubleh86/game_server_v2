@@ -1,0 +1,45 @@
+using System.Numerics;
+using MySqlDataTableLoader.Models;
+using NetworkProtocols.Socket.WorldServerProtocols.Models;
+
+namespace WorldServer.GameObjects;
+
+public class MonsterGroup
+{
+    public long Id { get; set; }
+    private MonsterTGroup _monsterTGroup { get; set; }
+    public float RoamRadius { get; set; }
+    
+    private readonly List<MonsterObject> _monsters = new();
+    
+    public Vector3 AnchorPosition => _monsterTGroup.AnchorPosition;
+    public int ZoneId => _monsterTGroup.zone_id;
+    
+    public bool IsAnyMemberInCombat { get; set; }
+    public PlayerObject TargetPlayer { get; set; }
+    
+    public int MonsterCount => _monsters.Count;
+
+    public MonsterGroup(MonsterTGroup monsterTGroup)
+    {
+        _monsterTGroup = monsterTGroup;
+    }
+
+    public void AddMember(MonsterObject spawnedMonster)
+    {
+        _monsters.Add(spawnedMonster);
+    }
+    
+    public void UpdateIsAnyMemberInCombat(PlayerObject targetPlayer)
+    {
+        IsAnyMemberInCombat = _monsters.Any(monster => monster.GetState() == AIState.Attack 
+                                                       || monster.GetState() == AIState.Chase);
+        if (IsAnyMemberInCombat == false)
+        {
+            TargetPlayer = null;
+            return;
+        }
+            
+        TargetPlayer = targetPlayer;
+    }
+}

@@ -19,7 +19,19 @@ public class DataDictionary<TData> where TData : BaseData
         var dataList = service.LoadData<TData>();
         if (dataList == null)
             return false;
+        
+        // 데이터 자체가 없을 수 있다.
+        if (dataList.Count == 0)
+            return true;
 
+        if (dataList.FirstOrDefault() is IPrepareLoad)
+        {
+            foreach (var prepareLoad in dataList.Select(data => data as IPrepareLoad))
+            {
+                prepareLoad?.PrepareLoad();
+            }
+        }
+        
         _dictionary = dataList.ToDictionary(x => x.GetKeyString());
         return true;
     }

@@ -20,6 +20,8 @@ public class WorldMapInfo : IDisposable
     private readonly Dictionary<int, MapCell[,]> _zoneCells = new();
     private readonly Dictionary<int, MapInfo> _zoneInfos = new();
     
+    private List<MonsterGroup> _monsterGroups = new();
+    
     public WorldMapInfo(int worldMapId, long accountId)
     {
         _worldMapId = worldMapId;
@@ -56,23 +58,36 @@ public class WorldMapInfo : IDisposable
         _zoneCells.Add(mapInfo.zone_id, cells);
     }
 
-    private MapInfo _GetRandomZoneInfo()
-    {
-        return _zoneInfos.Values.ElementAt(new Random().Next(_zoneInfos.Count));
-    }
-
+    
     private void _InitializeMonsters()
     {
-        for(int i = 0; i < 100; i++)
+        var monsterGroupList = MySqlDataTableHelper
+            .GetDataList<MonsterTGroup>()
+            .Where(x => x.world_id == _worldMapId);
+
+        foreach (var monsterGroup in monsterGroupList)
         {
-            var mapInfo = _GetRandomZoneInfo();
-            var x = new Random().Next(1, mapInfo.size_x);
-            var z = new Random().Next(1, mapInfo.size_z);
+            var registerMonsterGroup = new MonsterGroup(monsterGroup.Clone() as MonsterTGroup);
+            var position = new Vector3(monsterGroup.position_x, 0, monsterGroup.position_z);
             
-            var monster = new MonsterObject(IdGenerator.NextId(_accountId), new Vector3(x, 0, z), mapInfo.zone_id);
+            registerMonsterGroup.Id = IdGenerator.NextId(_accountId);
+            registerMonsterGroup.RoamRadius = 20;
             
-            var cell = GetCell(mapInfo.zone_id, monster.GetPosition());
-            cell.Enter(monster);
+            foreach (var monsterId in monsterGroup.MonsterList)
+            {
+                var cell = GetCell(monsterGroup.zone_id, position);
+                if (cell == null)
+                    break;
+                
+                var spawnedMonster = new MonsterObject(monsterId, position, monsterGroup.zone_id, registerMonsterGroup);
+                cell.Enter(spawnedMonster);
+                registerMonsterGroup.AddMember(spawnedMonster);
+            }
+            
+            if(registerMonsterGroup.MonsterCount < 1)
+                continue;
+            
+            _monsterGroups.Add(registerMonsterGroup);
         }
     }
 
@@ -140,8 +155,8 @@ public class WorldMapInfo : IDisposable
         if (oldCell == null || newCell == null)
             return ;
         
-        var oldNearByCells = GetNearByCells(oldCell.ZoneId, oldCell.X, oldCell.Z, range: 8);
-        var nearByCells = GetNearByCells(newCell.ZoneId, newCell.X, newCell.Z, range: 8);
+        var oldNearByCells = GetNearByCells(oldCell.ZoneId, oldCell.X, oldCell.Z, range: 2);
+        var nearByCells = GetNearByCells(newCell.ZoneId, newCell.X, newCell.Z, range: 2);
 
         var enterCells = nearByCells.Except(oldNearByCells).ToList();
         var leaveCells = oldNearByCells.Except(nearByCells).ToList();
@@ -162,7 +177,6 @@ public class WorldMapInfo : IDisposable
                     GameObjects = updateObjects
                 })
             };
-            
             
             var sendPackage = NetworkHelper.CreateSendPacket((int)WorldServerKeys.GameCommandResponse, gameCommand);
             await sessionInfo.SendAsync(sendPackage.GetSendBuffer());
@@ -201,6 +215,7 @@ public class WorldMapInfo : IDisposable
         }
 
         // 2. 딕셔너리 메모리 해제
+        _monsterGroups.Clear();
         _zoneCells.Clear();
         _zoneInfos.Clear();
     }

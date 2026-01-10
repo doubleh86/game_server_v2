@@ -1,24 +1,115 @@
 using System.Numerics;
 using NetworkProtocols.Shared.Enums;
 using NetworkProtocols.Socket.WorldServerProtocols.GameProtocols;
+using NetworkProtocols.Socket.WorldServerProtocols.Models;
 
 namespace WorldServer.GameObjects;
 
-public class MonsterObject(long id, Vector3 position, int zoneId) 
-    : GameObject(id, zoneId, position, GameObjectType.Monster)
+public class MonsterObject : GameObject
 {
+    private readonly MonsterGroup _group;
     private readonly MonsterObjectBase _packet = new();
-    // 0 : idle, 1 : move, 2 : target, 3 : attack
-    private int _state;
-    private int _targetUserIndex;
+    private AIState _state;
+    private DateTime _nextDecisionTime = DateTime.UtcNow;
+    
+    public AIState GetState() => _state;
+    public MonsterGroup GetGroup() => _group;
 
-    public async Task<bool> UpdateStateAsync(int state)
+    
+    public MonsterObject(long id, Vector3 position, int zoneId, MonsterGroup group)
+        : base(id, zoneId, position, GameObjectType.Monster)
     {
-        if (_state == state)
-            return false;
-       
-        _state = state;
-        return true;
+        _group = group;
+    }
+
+    private void _UpdateStateChange(AIState newState)
+    {
+        if (_state == newState)
+            return;
+        
+        _isChanged = true;
+        _state = newState;
+    }
+
+    private void _UpdateState(Vector3 playerPosition)
+    {
+        if (_state == AIState.Return)
+        {
+            var anchorDistance = Vector3.Distance(_group.AnchorPosition, GetPosition());
+            if (anchorDistance < 1.0f)
+            {
+                _UpdateStateChange(AIState.Idle);
+            }
+
+            return;
+        }
+        
+        if (_state == AIState.Chase)
+        {
+            var anchorDistance = Vector3.Distance(_group.AnchorPosition, GetPosition());
+            if (anchorDistance > 40.0f)
+            {
+                _UpdateStateChange(AIState.Return);
+                return;
+            }
+        }
+        
+        var distance = Vector3.Distance(playerPosition, GetPosition());
+        if (distance < 3.0f)
+        {
+            _UpdateStateChange(AIState.Attack);
+            return;
+        }
+
+        if (distance < 15.0f)
+        {
+            _UpdateStateChange(AIState.Chase);
+            return;
+        }
+        
+        _UpdateStateChange(AIState.Idle);
+    }
+
+    public void UpdateAI(Vector3 playerPosition)
+    {
+        if (DateTime.UtcNow < _nextDecisionTime)
+            return;
+        
+        _UpdateState(playerPosition);
+        _nextDecisionTime = DateTime.UtcNow.AddMilliseconds(500);
+        switch (_state)
+        {
+            case AIState.Idle: // UserCheck
+                break;
+            case AIState.Sleep: // 계속 잔다?
+                break;
+            case AIState.Chase:
+            {
+                var diff = playerPosition - GetPosition();
+                if (diff.LengthSquared() < 0.001f)
+                    return;
+                
+                var direction = Vector3.Normalize(diff);
+                var newPos = GetPosition() + direction * 0.5f;
+                _UpdateChangePosition(newPos);    
+                
+                return;
+            }
+
+            case AIState.Return:
+            {
+                var diff = _group.AnchorPosition - GetPosition();
+                if (diff.LengthSquared() < 0.001f)
+                    return;
+
+                var direction = Vector3.Normalize(diff);
+                var newPos = GetPosition() + direction * 0.5f;
+                _UpdateChangePosition(newPos);
+                
+                return;
+            }
+                
+        }
     }
 
     public override MonsterObjectBase ToPacket()
@@ -26,7 +117,7 @@ public class MonsterObject(long id, Vector3 position, int zoneId)
         _packet.Id = _id;
         _packet.Position = GetPosition();
         _packet.ZoneId = GetZoneId();
-        _packet.State = _state;
+        _packet.State = (int)_state;
 
         return _packet;
     }

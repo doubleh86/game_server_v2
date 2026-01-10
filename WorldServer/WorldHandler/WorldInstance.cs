@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Numerics;
 using DbContext.GameDbContext;
+using Microsoft.Identity.Client;
 using MySqlDataTableLoader.Models;
 using MySqlDataTableLoader.Utils.Helper;
 using NetworkProtocols.Socket.WorldServerProtocols.GameProtocols;
@@ -92,7 +93,8 @@ public partial class WorldInstance : IDisposable
         var nearByCells = _worldMapInfo.GetNearByCells(_worldOwner.GetZoneId(), 
                                                                     centerCell.X, centerCell.Z, 
                                                                     range: 2);
-        _Push(new MonsterUpdateJob(nearByCells, _OnMonsterUpdate));
+        
+        _Push(new MonsterUpdateJob(_worldOwner.GetPosition(), nearByCells, _OnMonsterUpdate, _loggerService));
     }
 
     public async ValueTask HandleGameCommand(GameCommandId command, byte[] commandData)
@@ -167,12 +169,25 @@ public partial class WorldInstance : IDisposable
         return true;
     }
 
+    private void _AutoSaveWorldState()
+    {
+        if (_worldOwner == null)
+            return;
+        
+        _globalDbService.PushJob(_worldOwner.AccountId, async (dbContext) =>
+        {
+            // TODO : world state update
+        });
+    }
+
     public void Dispose()
     {
         if(_isDisposed) 
             return;
 
         _isDisposed = true;
+        _AutoSaveWorldState();
+        
         _jobQueue.Clear();
         _commandHandlers.Clear();
         _worldOwner = null;

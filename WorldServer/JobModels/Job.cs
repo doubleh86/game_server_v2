@@ -1,8 +1,9 @@
+using ServerFramework.CommonUtils.Helper;
+
 namespace WorldServer.JobModels;
 
-public abstract class Job(byte[] commandData)
+public abstract class Job(LoggerService loggerService)
 {
-    protected byte[] commandData { get; set; } = commandData;
-    public abstract void Execute();
+    protected LoggerService _loggerService = loggerService;
     public abstract ValueTask ExecuteAsync();
 }
