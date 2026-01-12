@@ -13,16 +13,17 @@ public class MonsterGroup
     private readonly List<MonsterObject> _monsters = new();
     
     public Vector3 AnchorPosition => _monsterTGroup.AnchorPosition;
-    public int ZoneId => _monsterTGroup.zone_id;
+    public readonly int ZoneId;
     
     public bool IsAnyMemberInCombat { get; set; }
     public PlayerObject TargetPlayer { get; set; }
     
     public int MonsterCount => _monsters.Count;
 
-    public MonsterGroup(MonsterTGroup monsterTGroup)
+    public MonsterGroup(MonsterTGroup monsterTGroup, int zoneId)
     {
         _monsterTGroup = monsterTGroup;
+        ZoneId = zoneId;
     }
 
     public void AddMember(MonsterObject spawnedMonster)

@@ -64,7 +64,7 @@ public partial class WorldServerHandler(ITCPClient client) : TCPPacketHandler(cl
             
             while (_cts.IsCancellationRequested == false)
             {
-                var randomX = new Random().Next(0, 1200);
+                var randomX = new Random().Next(0, 1800);
                 var randomZ = new Random().Next(0, 1200); 
                 _SendMoveCommand(client, randomX, randomZ, 101);
                 

@@ -15,12 +15,19 @@ public partial class WorldInstance
         var moveCommand = MemoryPackHelper.Deserialize<MoveCommand>(commandData);
         _Push(new ActionJob<MoveCommand>(moveCommand, async(command)  =>
         {
-            var oldCell = _worldMapInfo.GetCell(_worldOwner.GetZoneId(), _worldOwner.GetPosition());
-            _worldOwner.UpdatePosition(command.Position, command.ZoneId);
-            var newCell = _worldMapInfo.GetCell(_worldOwner.GetZoneId(), _worldOwner.GetPosition());
-
-            if (oldCell == newCell)
+            var oldZoneId = _worldOwner.GetZoneId();
+            var oldPosition = _worldOwner.GetPosition();
+            var oldCell = _worldMapInfo.GetCell(oldPosition, oldZoneId);
+            var newCell = _worldMapInfo.GetCell(command.Position);
+            if (newCell == null)
                 return;
+            
+            _worldOwner.UpdatePosition(command.Position, newCell.ZoneId);
+            if (oldCell != newCell)
+            {
+                oldCell?.Leave(_worldOwner.GetId());
+                newCell.Enter(_worldOwner);
+            }
             
             await _worldMapInfo.UpdatePlayerViewAsync(_worldOwner.GetSessionInfo(), oldCell, newCell);
         }));

@@ -26,8 +26,8 @@ public partial class WorldInstance
             if (newPosition == Vector3.Zero || oldPosition == newPosition)
                 continue;
             
-            var cell = _worldMapInfo.GetCell(monster.GetZoneId(), oldPosition);
-            var changeCell = _worldMapInfo.GetCell(monster.GetZoneId(), newPosition);
+            var cell = _worldMapInfo.GetCell(oldPosition, monster.GetZoneId());
+            var changeCell = _worldMapInfo.GetCell(newPosition, monster.GetZoneId());
             
             if (changeCell == null)
                 continue;

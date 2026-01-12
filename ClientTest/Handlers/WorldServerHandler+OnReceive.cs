@@ -1,3 +1,4 @@
+using NetworkProtocols.Shared.Enums;
 using NetworkProtocols.Socket;
 using NetworkProtocols.Socket.WorldServerProtocols.GameProtocols;
 
@@ -9,7 +10,7 @@ public partial class WorldServerHandler
     {
         var packet = MemoryPackHelper.Deserialize<MonsterUpdateCommand>(data);
         
-        Console.WriteLine($"Monster Update : {packet.Monsters.Count}");
+        // Console.WriteLine($"Monster Update : {packet.Monsters.Count}");
     }
 
     private void _OnItemUseCommand(byte[] data)
@@ -21,6 +22,20 @@ public partial class WorldServerHandler
     private void _OnSpawnGameObject(byte[] data)
     {
         var packet = MemoryPackHelper.Deserialize<UpdateGameObjects>(data);
-        Console.WriteLine($"Spawn GameObject {packet.GameObjects.Count} | Spawn Type : {packet.IsSpawn}");
+        if (packet == null)
+            return;
+
+        if (packet.IsSpawn == false)
+            return;
+
+        if (packet.GameObjects == null)
+            return;
+        var list = packet.GameObjects.FindAll(x => x.Type == GameObjectType.Player);
+        // foreach (var player in list)
+        // {
+        //     Console.WriteLine($"Spawn Player {player.Id}|{player.ZoneId}|{player.Position}");
+        // }
+        
+        //Console.WriteLine($"Spawn GameObject {packet.GameObjects.Count} | Spawn Type : {packet.IsSpawn}");
     }
 }

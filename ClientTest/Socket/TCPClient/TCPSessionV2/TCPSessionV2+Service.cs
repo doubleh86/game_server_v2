@@ -41,7 +41,7 @@ public partial class TCPSessionV2
 			while (token.IsCancellationRequested == false && IsConnected() == true)
 			{
 				_KeepAliveTick();
-				await Task.Delay(TimeSpan.FromSeconds(2), token);
+				await Task.Delay(TimeSpan.FromSeconds(5), token);
 			}
 		}
 		catch (OperationCanceledException)
@@ -60,7 +60,7 @@ public partial class TCPSessionV2
 			return;
 		
 		long currentTime = _GetUtcTimeStampSeconds();
-		if (currentTime - _lastReceivedPongTime > TCPCommon.SendPingSeconds || _pingTryCount > 3)
+		if (currentTime - _lastReceivedPongTime > TCPCommon.SendPingSeconds || _pingTryCount > 10)
 		{
 			Disconnect(SessionCloseReason.Timeout);
 			return;

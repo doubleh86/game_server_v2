@@ -59,7 +59,7 @@ public partial class WorldInstance : IDisposable
     private async ValueTask _InitializeWorldAsync(UserSessionInfo sessionInfo)
     {
         _worldOwner = new PlayerObject(sessionInfo.Identifier, new Vector3(0, 0, 0), sessionInfo, 0);
-        _worldOwner.UpdatePosition(new Vector3(10, 29, 30), 101);
+        _worldOwner.UpdatePosition(new Vector3(10, 0, 30), 101);
         
         var playerInfo = await _dbContext.GetPlayerInfoAsync(1);
         _worldOwner.SetPlayerInfo(playerInfo);
@@ -73,7 +73,7 @@ public partial class WorldInstance : IDisposable
         if (worldMapInfo == null)
             return ValueTask.CompletedTask;
 
-        _worldMapInfo = new WorldMapInfo(worldId, _worldOwner.AccountId);
+        _worldMapInfo = new WorldMapInfo(worldId, _worldOwner.AccountId, _loggerService);
         _worldMapInfo.Initialize();
 
         _worldMapInfo.AddObject(_worldOwner);
@@ -86,13 +86,13 @@ public partial class WorldInstance : IDisposable
         if(IsAliveWorld() == false) 
             return;
         
-        var centerCell = _worldMapInfo.GetCell(_worldOwner.GetZoneId(), _worldOwner.GetPosition());
+        var centerCell = _worldMapInfo.GetCell(_worldOwner.GetPosition());
         if (centerCell == null)
             return;
         
-        var nearByCells = _worldMapInfo.GetNearByCells(_worldOwner.GetZoneId(), 
-                                                                    centerCell.X, centerCell.Z, 
-                                                                    range: 2);
+        var nearByCells = _worldMapInfo.GetWorldNearByCells(_worldOwner.GetZoneId(), 
+            _worldOwner.GetPosition(), 
+            range: 2);
         
         _Push(new MonsterUpdateJob(_worldOwner.GetPosition(), nearByCells, _OnMonsterUpdate, _loggerService));
     }

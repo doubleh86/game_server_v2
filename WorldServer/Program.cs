@@ -17,6 +17,8 @@ var host = CreateHostBuilder().Build();
 
 try
 {
+    Console.WriteLine($"Is Server GC: {System.Runtime.GCSettings.IsServerGC}");
+    Console.WriteLine($"GC Latency Mode: {System.Runtime.GCSettings.LatencyMode}");
     await host.RunAsync();
 }
 catch (Exception e)
