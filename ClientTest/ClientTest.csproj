@@ -12,7 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Socket\TCPClientV2\" />
       <Folder Include="Socket\TCPClient\TCPSessionV2\" />
     </ItemGroup>
 
