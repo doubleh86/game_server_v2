@@ -28,6 +28,6 @@ public class MonsterTGroup : BaseData, IPrepareLoad, ICloneable
 
     public object Clone()
     {
-        throw new NotImplementedException();
+        return MemberwiseClone();
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Net.Sockets;
 
-namespace ClientTest.Socket.TCPClient;
+namespace ClientTest.Socket.TCPClient.TCPSessionV1;
 
 public partial class TCPSession
 {

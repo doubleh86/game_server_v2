@@ -1,9 +1,8 @@
 ﻿using ClientTest.Helpers;
-using NetworkProtocols;
 using NetworkProtocols.Socket;
 using NetworkProtocols.Socket.CommonCommand;
 
-namespace ClientTest.Socket.TCPClient;
+namespace ClientTest.Socket.TCPClient.TCPSessionV1;
 
 public partial class TCPSession
 {
@@ -47,7 +46,6 @@ public partial class TCPSession
 		while (_isRunKeepAlive)
 		{
 			var currentTimeStamp = _GetUtcTimeStampSeconds();
-
 			if (currentTimeStamp - _lastSendPingTime > TCPCommon.TimeoutSeconds || _pingTryCount > 3)
 			{
 				if (_pingTryCount > 3)

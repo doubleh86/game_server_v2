@@ -10,6 +10,7 @@ public class PlayerObject : GameObject
 {
     private readonly UserSessionInfo _sessionInfo;
     private PlayerInfoResult _playerInfo;
+    
     public UserSessionInfo GetSessionInfo() => _sessionInfo;
     public long AccountId => _playerInfo.account_id;
     public PlayerObject(long id, Vector3 position, UserSessionInfo sessionInfo, int zoneId) 
@@ -26,6 +27,12 @@ public class PlayerObject : GameObject
 
     public override GameObjectBase ToPacket()
     {
-        throw new NotImplementedException();
+        return new GameObjectBase()
+        {
+            Id = AccountId,
+            ZoneId = GetZoneId(),
+            Position = GetPosition(),
+            Type = GameObjectType.Player
+        };
     }
 }

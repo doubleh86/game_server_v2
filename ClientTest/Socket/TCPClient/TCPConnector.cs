@@ -1,14 +1,15 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using ClientTest.Socket.TCPClient.TCPSessionV1;
 
 namespace ClientTest.Socket.TCPClient;
 
 public class TCPConnector : IDisposable
 {
-    public delegate void ConnectHandler(TCPSession session);
+    public delegate void ConnectHandler(ITCPSession session);
         
     private System.Net.Sockets.Socket _socket;
-    private readonly ManualResetEventSlim _connectEvent = new ManualResetEventSlim(false);
+    private readonly ManualResetEventSlim _connectEvent = new(false);
 
     public ConnectHandler ConnectionCompleteHandler;
         
@@ -27,8 +28,8 @@ public class TCPConnector : IDisposable
         }
 
         _socket = new System.Net.Sockets.Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-        var tcpSession = new TCPSession(_socket);
-        tcpSession.AccountId = accountId;
+        var tcpSession = new TCPSessionV2.TCPSessionV2(_socket);
+        tcpSession.Identifier = accountId;
 
         _socket.BeginConnect(ip, port, ConnectComplete, tcpSession);
         _connectEvent.Wait();
@@ -40,7 +41,7 @@ public class TCPConnector : IDisposable
     {
         _connectEvent.Set();
             
-        var tcpSession = ar.AsyncState as TCPSession;
+        var tcpSession = ar.AsyncState as ITCPSession;
         if (tcpSession == null)
         {
             return;

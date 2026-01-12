@@ -1,27 +1,20 @@
 ﻿using System.Net.Sockets;
 
-namespace ClientTest.Socket.TCPClient;
+namespace ClientTest.Socket.TCPClient.TCPSessionV1;
 
-public partial class TCPSession : IDisposable
+public partial class TCPSession : ITCPSession
 {
-    public enum SessionState
-    {
-        None,
-        Connected,
-        Disconnected
-    }
-        
     private readonly System.Net.Sockets.Socket _socket;
     private readonly string _socketUdid;
         
-    private SessionState _state = SessionState.None;
+    private ITCPSession.SessionState _state = ITCPSession.SessionState.None;
     private readonly Lock _disconnectLock = new();
         
     public System.Net.Sockets.Socket GetSocket() => _socket;
     public string GetUdid() => _socketUdid;
-
-    public ulong AccountId;
-
+    
+    public ulong Identifier { get; set; }
+ 
     public TCPSession(System.Net.Sockets.Socket socket)
     {
         _socket = socket;
@@ -36,27 +29,32 @@ public partial class TCPSession : IDisposable
         _ReceiveMemberClear();
         _SendMemberClear();
         _ServiceMemberClear();
-        _state = SessionState.None;
+        _state = ITCPSession.SessionState.None;
     }
 
     public void ConnectComplete()
     {
-        _lastReceivedPongTime = TCPSession._GetUtcTimeStampSeconds();
-        _state = SessionState.Connected;
+        _lastReceivedPongTime = _GetUtcTimeStampSeconds();
+        _state = ITCPSession.SessionState.Connected;
         _SetConnectPacket(true, 0, "");
 
-        _keepAliveThread = new Thread(_KeepAliveThread);
+        _isRunKeepAlive = true;
+        _keepAliveThread = new Thread(_KeepAliveThread)
+        {
+            IsBackground = true
+        };
+        
         _keepAliveThread.Start();
-            
         _StartReceive();
     }
+
 
     public bool IsConnected()
     {
         if (_socket == null || _socket.Connected == false)
             return false;
 
-        return _state == SessionState.Connected;
+        return _state == ITCPSession.SessionState.Connected;
     }
         
     public void Disconnect(SessionCloseReason reason)
@@ -65,9 +63,11 @@ public partial class TCPSession : IDisposable
 
         lock (_disconnectLock)
         {
+            if (_state == ITCPSession.SessionState.Disconnected)
+                return;
             try
             {
-                if (_state == SessionState.Connected)
+                if (_state == ITCPSession.SessionState.Connected)
                 {
                     _SetClosePacket(reason);
                 }
@@ -84,12 +84,13 @@ public partial class TCPSession : IDisposable
                 if(_socket != null)
                     _socket.Close();
                 
-                _state = SessionState.Disconnected;
+                _state = ITCPSession.SessionState.Disconnected;
                 _isRunKeepAlive = false;
             }    
         }
     }
-        
+    
+
     public void Dispose()
     {
         if(IsConnected() == true)

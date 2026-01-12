@@ -1,6 +1,6 @@
 ﻿using System.Net.Sockets;
 
-namespace ClientTest.Socket.TCPClient;
+namespace ClientTest.Socket.TCPClient.TCPSessionV1;
 
 public partial class TCPSession
 {
@@ -17,7 +17,7 @@ public partial class TCPSession
         
     private void _StartReceive()
     {
-        if (_state != SessionState.Connected)
+        if (_state != ITCPSession.SessionState.Connected)
             return; 
             
         _socket.BeginReceive(_receiveBuffer, _receiveWriteOffset, TCPCommon.MaxReceivePacketSize, SocketFlags.None, _ReceiveComplete, this);
@@ -34,7 +34,7 @@ public partial class TCPSession
             return;
         }
         
-        if (tcpSession.GetSocket() == null || tcpSession._state != SessionState.Connected)
+        if (tcpSession.GetSocket() == null || tcpSession._state != ITCPSession.SessionState.Connected)
         {
             Console.WriteLine("Tcp socket already closed");
             return;

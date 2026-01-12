@@ -6,7 +6,7 @@ namespace ClientTest.Socket;
 
 public class TCPNetworkWrapper
 {
-    private TCPSession _tcpSession;
+    private ITCPSession _tcpSession;
     private Thread _receiveThread;
     private CancellationTokenSource _cancellationTokenSource;
 
@@ -16,7 +16,7 @@ public class TCPNetworkWrapper
     private readonly int _serverPort;
 
 
-    public TCPSession GetTcpSession() => _tcpSession;
+    public ITCPSession GetTcpSession() => _tcpSession;
     
         
     public TCPNetworkWrapper(string serverIp, int serverPort, ulong accountId, TCPPacketHandler packetReceiveHandler)
@@ -43,15 +43,15 @@ public class TCPNetworkWrapper
         var tcpConnector = new TCPConnector();
         tcpConnector.ConnectionCompleteHandler = session =>
         {
-            if (session.AccountId != _accountId)
+            if (session.Identifier != _accountId)
             {
-                Console.WriteLine($"Account Id is not same [{session.AccountId}][{_accountId}]");
+                Console.WriteLine($"Account Id is not same [{session.Identifier}][{_accountId}]");
                 return;
             }
                 
             _tcpSession = session;
             _tcpSession.ConnectComplete();
-            _tcpSession.AccountId = _accountId;
+            _tcpSession.Identifier = _accountId;
         };
             
         _ = tcpConnector.Connect(_serverIp, _serverPort, 0, _accountId);
