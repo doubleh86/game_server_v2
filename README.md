@@ -1,12 +1,11 @@
 ## GameServer Framework
 
-AdminWeb : 운영툴
-ApiServer : 웹 API 서버
-DataTableLoader : 데이터 테이블 로더
-NotifyServer : 알림 서버
-Scheduler : 스케쥴 기반 컨텐츠 관리용 
-WorldServer : 게임 서버
- - JobQueue 기반
+- AdminWeb : 운영툴
+- ApiServer : 웹 API 서버
+- DataTableLoader : 데이터 테이블 로더
+- NotifyServer : 알림 서버
+- Scheduler : 스케쥴 기반 컨텐츠 관리용 
+- WorldServer : 게임 서버
 
 간단 소개
 - 소켓: SuperSocket
