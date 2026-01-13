@@ -10,6 +10,7 @@ public partial class GameObjectBase
 {
     public long Id { get; set; }
     public int ZoneId { get; set; }
+    public float Rotation { get; set; }
     public Vector3 Position { get; set; }
     public GameObjectType Type { get; set; }
 }

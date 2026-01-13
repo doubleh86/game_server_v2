@@ -14,7 +14,7 @@ namespace WorldServer.WorldHandler.WorldDataModels;
 
 public class WorldMapInfo : IDisposable
 {
-    private const float WorldGridSize = 100; // 1km 격자 구성
+    private const float WorldGridSize = 100; // 100m 격자 구성
     private readonly LoggerService _loggerService;
     
     private readonly long _accountId;
@@ -76,23 +76,34 @@ public class WorldMapInfo : IDisposable
             float maxZ = minZ + (info.chunk_size * info.MaxChunkZ);
 
             int startX = (int)Math.Floor(minX / WorldGridSize);
-            int endX = (int)Math.Floor(maxX / WorldGridSize);
+            int endX = (int)Math.Ceiling(maxX / WorldGridSize) - 1;
             int startZ = (int)Math.Floor(minZ / WorldGridSize);
-            int endZ = (int)Math.Floor(maxZ / WorldGridSize);
+            int endZ = (int)Math.Ceiling(maxZ / WorldGridSize) - 1;
+            
+            endX = Math.Max(endX, startX);
+            endZ = Math.Max(endZ, startZ);
             
             for (int gx = startX; gx <= endX; gx++)
             {
                 for (int gz = startZ; gz <= endZ; gz++)
                 {
-                    long gridKey = ((long)gx << 32) | (gz & 0xFFFFFFFFL);
-                    if (_worldZoneGrid.ContainsKey(gridKey) == false)
-                        _worldZoneGrid[gridKey] = [];
-                    
-                    if(_worldZoneGrid[gridKey].Contains(zoneId) == false)
-                        _worldZoneGrid[gridKey].Add(zoneId);
+                    var gridKey = _GetGridKey(gx, gz);
+                    if (!_worldZoneGrid.TryGetValue(gridKey, out var zones))
+                    {
+                        zones = new List<int>(capacity: 4);
+                        _worldZoneGrid[gridKey] = zones;
+                    }
+
+                    if (zones.Contains(zoneId) == false)
+                        zones.Add(zoneId);
                 }
             }
         }
+    }
+
+    private long _GetGridKey(long gridX, long gridZ)
+    {
+        return (gridX << 32) | (gridZ & 0xFFFFFFFFL);
     }
     
     private void _InitializeMonsters()
@@ -150,13 +161,23 @@ public class WorldMapInfo : IDisposable
 
     public MapCell GetCell(Vector3 worldPosition, int zoneId = 0)
     {
-        if(zoneId == 0 || _zoneInfos.TryGetValue(zoneId, out var mapInfo) == false)
-            return _GetCell(worldPosition);
-        
-        int xIdx = (int)((worldPosition.X - mapInfo.world_offset_x) / mapInfo.chunk_size);
-        int zIdx = (int)((worldPosition.Z - mapInfo.world_offset_z) / mapInfo.chunk_size);
+        if (zoneId != 0 && _zoneInfos.TryGetValue(zoneId, out var mapInfo) == true)
+        {
+            var minX = mapInfo.world_offset_x;
+            var maxX = mapInfo.world_offset_x + mapInfo.chunk_size * mapInfo.MaxChunkX;
+            var minZ = mapInfo.world_offset_z;
+            var maxZ = mapInfo.world_offset_z + mapInfo.chunk_size * mapInfo.MaxChunkZ;
 
-        return _GetCellByIndex(zoneId, xIdx, zIdx);
+            if (worldPosition.X >= minX && worldPosition.X < maxX &&
+                worldPosition.Z >= minZ && worldPosition.Z < maxZ)
+            {
+                int xIdx = (int)((worldPosition.X - mapInfo.world_offset_x) / mapInfo.chunk_size);
+                int zIdx = (int)((worldPosition.Z - mapInfo.world_offset_z) / mapInfo.chunk_size);
+                return _GetCellByIndex(zoneId, xIdx, zIdx);
+            }
+        }
+
+        return _GetCell(worldPosition);
     }
 
     private MapCell _GetCell(Vector3 worldPosition)
@@ -173,9 +194,9 @@ public class WorldMapInfo : IDisposable
 
     private int _FindZoneByWorldPosition(Vector3 worldPosition)
     {
-        long gx = (long)Math.Floor(worldPosition.X / WorldGridSize);
-        long gz = (long)Math.Floor(worldPosition.Z / WorldGridSize);
-        long gridKey = (gx << 32) | (gz & 0xFFFFFFFFL);
+        var gx = (long)Math.Floor(worldPosition.X / WorldGridSize);
+        var gz = (long)Math.Floor(worldPosition.Z / WorldGridSize);
+        var gridKey = _GetGridKey(gx, gz);
 
         if (_worldZoneGrid.TryGetValue(gridKey, out var candidateZones) == false)
             return -1;
@@ -190,8 +211,8 @@ public class WorldMapInfo : IDisposable
             var minZ = zoneEntry.world_offset_z;
             var maxZ = zoneEntry.world_offset_z + zoneEntry.chunk_size * zoneEntry.MaxChunkZ;
 
-            if (worldPosition.X >= minX && worldPosition.X <= maxX &&
-                worldPosition.Z >= minZ && worldPosition.Z <= maxZ)
+            if (worldPosition.X >= minX && worldPosition.X < maxX &&
+                worldPosition.Z >= minZ && worldPosition.Z < maxZ)
             {
                 return zoneId;
             }
@@ -206,21 +227,23 @@ public class WorldMapInfo : IDisposable
         if (centerCell == null)
             return [];
         
+        var baseZoneId = centerCell.ZoneId;
         var nearCells = new List<MapCell>();
         for (var x = centerCell.X - range; x <= centerCell.X + range; x++)
         {
             for (var z = centerCell.Z - range; z <= centerCell.Z + range; z++)
             {
-                var cell = _GetCellByIndex(zoneId, x, z);
+                var cell = _GetCellByIndex(baseZoneId, x, z);
                 if (cell != null)
                 {
                     nearCells.Add(cell);
                     continue;
                 }
                 
-                var neighborCell = _GetNeighborZoneCell(zoneId, x, z);
+                var neighborCell = _GetNeighborZoneCell(baseZoneId, x, z);
                 if (neighborCell == null)
                     continue;
+                
                 nearCells.Add(neighborCell);
             }
         }

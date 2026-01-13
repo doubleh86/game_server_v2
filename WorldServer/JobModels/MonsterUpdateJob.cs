@@ -43,7 +43,10 @@ public class MonsterUpdateJob : Job
         {
             try
             {
-                Parallel.ForEach(targetMonsters, (monster) => { monster.UpdateAI(_playerPosition); });
+                foreach (var monster in targetMonsters)
+                {
+                    monster.UpdateAI(_playerPosition);
+                }
             }
             catch (Exception e)
             {

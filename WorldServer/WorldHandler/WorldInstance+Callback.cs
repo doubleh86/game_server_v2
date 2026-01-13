@@ -10,7 +10,7 @@ namespace WorldServer.WorldHandler;
 
 public partial class WorldInstance
 {
-    
+    private const int _MaxMonsterUpdateCount = 50;
     private async ValueTask _OnMonsterUpdate(List<MonsterObject> monsters)
     {
         var updateMonsterGroups = new HashSet<MonsterGroup>();
@@ -20,27 +20,25 @@ public partial class WorldInstance
         
         foreach (var monster in dirtyMonsters)
         {
-            var oldPosition = monster.GetPosition();
-            var newPosition = monster.GetChangePosition();
-
-            if (newPosition == Vector3.Zero || oldPosition == newPosition)
-                continue;
-            
-            var cell = _worldMapInfo.GetCell(oldPosition, monster.GetZoneId());
-            var changeCell = _worldMapInfo.GetCell(newPosition, monster.GetZoneId());
-            
+            var cell = _worldMapInfo.GetCell(monster.GetPosition(), monster.GetZoneId());
+            var changeCell = _worldMapInfo.GetCell(monster.GetChangePosition());
             if (changeCell == null)
+            {
+                monster.ResetChanged();
                 continue;
+            }
+                
+            monster.UpdatePosition(monster.GetChangePosition(), monster.GetChangeRotation(), changeCell.ZoneId);
+            monster.ResetChanged();
             
-            monster.UpdatePosition(newPosition, monster.GetZoneId());
+            updateMonsterGroups.Add(monster.GetGroup());
+            
             if (cell == changeCell) 
                 continue;
             
             changeCell.Enter(monster);
             cell.Leave(monster.GetId());
             
-            monster.ResetChanged();
-            updateMonsterGroups.Add(monster.GetGroup());
         }
 
         foreach (var monsterGroup in updateMonsterGroups)
@@ -48,18 +46,26 @@ public partial class WorldInstance
             monsterGroup.UpdateIsAnyMemberInCombat(_worldOwner);
         }
         
-        var gameCommand = new MonsterUpdateCommand
-        {
-            Monsters = dirtyMonsters.Select(x => x.ToPacket()).ToList()
-        };
-        
         var notify = new GameCommandResponse
         {
             CommandId = (int)GameCommandId.MonsterUpdateCommand,
-            CommandData = MemoryPackHelper.Serialize(gameCommand)
         };
+
+        for (var i = 0; i < dirtyMonsters.Count; i += _MaxMonsterUpdateCount)
+        {
+            int count = Math.Min(_MaxMonsterUpdateCount, dirtyMonsters.Count - i);
+            var batchMonsters = dirtyMonsters.GetRange(i, count);
+
+            var gameCommand = new MonsterUpdateCommand
+            {
+                Monsters = batchMonsters.Select(x => x.ToPacket()).ToList()
+            };
+            
+            notify.CommandData = MemoryPackHelper.Serialize(gameCommand);
+            var sendPackage = NetworkHelper.CreateSendPacket((int)WorldServerKeys.GameCommandResponse, notify);
+            
+            await _worldOwner.GetSessionInfo().SendAsync(sendPackage.GetSendBuffer());
+        }
         
-        var sendPackage = NetworkHelper.CreateSendPacket((int)WorldServerKeys.GameCommandResponse, notify);
-        await _worldOwner.GetSessionInfo().SendAsync(sendPackage.GetSendBuffer());
     }
 }

@@ -1,8 +1,6 @@
 using System.Collections.Concurrent;
-using System.Net;
 using System.Numerics;
 using DbContext.GameDbContext;
-using Microsoft.Identity.Client;
 using MySqlDataTableLoader.Models;
 using MySqlDataTableLoader.Utils.Helper;
 using NetworkProtocols.Socket.WorldServerProtocols.GameProtocols;
@@ -13,6 +11,7 @@ using WorldServer.JobModels;
 using WorldServer.Network;
 using WorldServer.Services;
 using WorldServer.WorldHandler.WorldDataModels;
+// ReSharper disable AsyncVoidLambda
 
 namespace WorldServer.WorldHandler;
 
@@ -22,7 +21,7 @@ public partial class WorldInstance : IDisposable
     private readonly string _roomId;
     private readonly ConcurrentQueue<Job> _jobQueue = new();
     private int _isProcessing;
-    private bool _isDisposed = false;
+    private bool _isDisposed;
     
     private readonly LoggerService _loggerService;
     private readonly GlobalDbService _globalDbService;
@@ -59,7 +58,7 @@ public partial class WorldInstance : IDisposable
     private async ValueTask _InitializeWorldAsync(UserSessionInfo sessionInfo)
     {
         _worldOwner = new PlayerObject(sessionInfo.Identifier, new Vector3(0, 0, 0), sessionInfo, 0);
-        _worldOwner.UpdatePosition(new Vector3(10, 0, 30), 101);
+        _worldOwner.UpdatePosition(new Vector3(10, 0, 30), 0f, 101);
         
         var playerInfo = await _dbContext.GetPlayerInfoAsync(1);
         _worldOwner.SetPlayerInfo(playerInfo);
@@ -91,8 +90,8 @@ public partial class WorldInstance : IDisposable
             return;
         
         var nearByCells = _worldMapInfo.GetWorldNearByCells(_worldOwner.GetZoneId(), 
-            _worldOwner.GetPosition(), 
-            range: 2);
+                                                            _worldOwner.GetPosition(), 
+                                                            range: 2);
         
         _Push(new MonsterUpdateJob(_worldOwner.GetPosition(), nearByCells, _OnMonsterUpdate, _loggerService));
     }
@@ -114,6 +113,9 @@ public partial class WorldInstance : IDisposable
 
     private void _Push(Job action)
     {
+        if (_isDisposed == true)
+            return;
+        
         _jobQueue.Enqueue(action);
         _ProcessJobs();
     }
@@ -122,14 +124,15 @@ public partial class WorldInstance : IDisposable
     {
         if (_isDisposed)
             return;
+        
         if (Interlocked.CompareExchange(ref _isProcessing, 1, 0) != 0)
             return;
 
-        Task.Run(async () =>
+        ThreadPool.UnsafeQueueUserWorkItem(async _ =>
         {
             try
             {
-                while (_jobQueue.TryDequeue(out var job))
+                while (_isDisposed == false && _jobQueue.TryDequeue(out var job))
                 {
                     try
                     {
@@ -145,10 +148,10 @@ public partial class WorldInstance : IDisposable
             {
                 Interlocked.Exchange(ref _isProcessing, 0);
                 
-                if(_jobQueue.IsEmpty == false)
+                if(_isDisposed == false && _jobQueue.IsEmpty == false)
                     _ProcessJobs();
             }
-        });
+        }, null);
     }
 
     public bool IsAliveWorld()
@@ -190,9 +193,11 @@ public partial class WorldInstance : IDisposable
         
         _jobQueue.Clear();
         _commandHandlers.Clear();
-        _worldOwner = null;
+        
         _worldMapInfo?.Dispose();
         _worldMapInfo = null;
+        _worldOwner = null;
+        
         
         _dbContext?.Dispose();
     }

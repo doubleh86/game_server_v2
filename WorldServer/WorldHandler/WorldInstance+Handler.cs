@@ -22,13 +22,14 @@ public partial class WorldInstance
             if (newCell == null)
                 return;
             
-            _worldOwner.UpdatePosition(command.Position, newCell.ZoneId);
-            if (oldCell != newCell)
+            _worldOwner.UpdatePosition(command.Position, moveCommand.Rotation, newCell.ZoneId);
+            if (oldCell == newCell)
             {
-                oldCell?.Leave(_worldOwner.GetId());
-                newCell.Enter(_worldOwner);
+                return;
             }
             
+            oldCell?.Leave(_worldOwner.GetId());
+            newCell.Enter(_worldOwner);
             await _worldMapInfo.UpdatePlayerViewAsync(_worldOwner.GetSessionInfo(), oldCell, newCell);
         }));
         

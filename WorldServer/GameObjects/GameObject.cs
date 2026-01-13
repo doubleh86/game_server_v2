@@ -9,7 +9,10 @@ public abstract class GameObject
     protected readonly long _id;
     private readonly GameObjectType _objectType; // 0: Player, 1: Monster, 2: StaticObject, 3: DynamicObject
     private Vector3 _position;
+    private float _rotation;
+    
     private Vector3 _changePosition = Vector3.Zero;
+    private float _changeRotation = 0f;
     private int _zoneId;
     
     protected bool _isChanged = false;
@@ -18,7 +21,10 @@ public abstract class GameObject
     public long GetId() => _id;
     public Vector3 GetPosition() => _position;
     public Vector3 GetChangePosition() => _changePosition;
+    
     public int GetZoneId() => _zoneId;
+    public float GetRotation() => _rotation;
+    public float GetChangeRotation() => _changeRotation;
     public abstract GameObjectBase ToPacket();
     protected GameObject(long id, int zoneId, Vector3 position, GameObjectType objectType)
     {
@@ -28,26 +34,20 @@ public abstract class GameObject
         _objectType = objectType;
     }
 
-    public void UpdatePosition(Vector3 position, int zoneId)
+    public void UpdatePosition(Vector3 position, float rotation, int zoneId)
     {
-        if (_position == position && zoneId == _zoneId)
-            return;
-
-        if (position == Vector3.Zero)
-            return;
-        
         _position = position;
+        _rotation = rotation;
         _zoneId = zoneId;
         
-        _UpdateChangePosition(Vector3.Zero);
+        _UpdateChangePositionAndRotation(Vector3.Zero, 0f);
     }
-    
-    protected void _UpdateChangePosition(Vector3 changePosition)
+
+    protected void _UpdateChangePositionAndRotation(Vector3 changePosition, float rotation)
     {
-        if (changePosition == _position)
-            return;
-        
         _changePosition = changePosition;
+        _changeRotation = rotation;
+        
         _isChanged = true;
     }
     

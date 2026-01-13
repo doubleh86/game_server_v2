@@ -66,7 +66,7 @@ public partial class WorldServerHandler(ITCPClient client) : TCPPacketHandler(cl
             {
                 var randomX = new Random().Next(0, 1800);
                 var randomZ = new Random().Next(0, 1200); 
-                _SendMoveCommand(client, randomX, randomZ, 101);
+                _SendMoveCommand(client, randomX, randomZ, 2.0f);
                 
                 
                 var startTime = DateTime.UtcNow;
@@ -78,7 +78,7 @@ public partial class WorldServerHandler(ITCPClient client) : TCPPacketHandler(cl
         });
     }
 
-    private void _SendMoveCommand(TestSession client, int x, int z, int zoneId)
+    private void _SendMoveCommand(TestSession client, int x, int z, float rotation)
     {
         client.SendGameCommand(new GameCommandRequest
         {
@@ -86,7 +86,7 @@ public partial class WorldServerHandler(ITCPClient client) : TCPPacketHandler(cl
             CommandData = MemoryPackHelper.Serialize(new MoveCommand()
             {
                 Position = new Vector3(x, 0, z),
-                ZoneId = zoneId
+                Rotation = rotation
             })
         });
     }

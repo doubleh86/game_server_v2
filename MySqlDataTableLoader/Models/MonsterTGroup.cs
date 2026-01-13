@@ -29,6 +29,12 @@ public class MonsterTGroup : BaseData, IPrepareLoad, ICloneable
 
     public object Clone()
     {
-        return MemberwiseClone();
+        var clone = (MonsterTGroup)MemberwiseClone();
+        if (MonsterList != null)
+        {
+            clone.MonsterList = new List<int>(MonsterList);
+        }
+        
+        return clone;
     }
 }

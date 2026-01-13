@@ -70,6 +70,19 @@ public class MonsterObject : GameObject
         _UpdateStateChange(AIState.Idle);
     }
 
+    private void _Move(Vector3 targetPosition)
+    {
+        var diff = targetPosition - GetPosition();
+        if (diff.LengthSquared() < 0.001f)
+            return;
+                
+        var direction = Vector3.Normalize(diff);
+        var newPos = GetPosition() + direction * 0.5f;
+        
+        float newRotation = MathF.Atan2(direction.Y, direction.X);
+        _UpdateChangePositionAndRotation(newPos, newRotation);
+    }
+
     public void UpdateAI(Vector3 playerPosition)
     {
         if (DateTime.UtcNow < _nextDecisionTime)
@@ -85,27 +98,13 @@ public class MonsterObject : GameObject
                 break;
             case AIState.Chase:
             {
-                var diff = playerPosition - GetPosition();
-                if (diff.LengthSquared() < 0.001f)
-                    return;
-                
-                var direction = Vector3.Normalize(diff);
-                var newPos = GetPosition() + direction * 0.5f;
-                _UpdateChangePosition(newPos);    
-                
+                _Move(playerPosition);
                 return;
             }
 
             case AIState.Return:
             {
-                var diff = _group.AnchorPosition - GetPosition();
-                if (diff.LengthSquared() < 0.001f)
-                    return;
-
-                var direction = Vector3.Normalize(diff);
-                var newPos = GetPosition() + direction * 0.5f;
-                _UpdateChangePosition(newPos);
-                
+                _Move(_group.AnchorPosition);
                 return;
             }
                 
@@ -118,6 +117,7 @@ public class MonsterObject : GameObject
         _packet.Position = GetPosition();
         _packet.ZoneId = GetZoneId();
         _packet.State = (int)_state;
+        _packet.Rotation = GetRotation();
 
         return _packet;
     }

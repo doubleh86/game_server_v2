@@ -1,5 +1,4 @@
 ﻿using System.Net.Sockets;
-using ClientTest.Socket.TCPClient.TCPSessionV1;
 
 namespace ClientTest.Socket.TCPClient.TCPSessionV2;
 
@@ -7,7 +6,7 @@ public partial class TCPSessionV2
 {
         
     private readonly LAQueue<NetworkPackage> _receiveQueue = new();
-    private readonly byte[] _receiveBuffer = new byte[TCPCommon.MaxReceivePacketSize * TCPCommon.BufferFactor];
+    private byte[] _receiveBuffer = new byte[TCPCommon.MaxReceivePacketSize * TCPCommon.BufferFactor];
     private int _receiveWriteOffset;
 
     private void _ReceiveMemberClear()
@@ -23,6 +22,15 @@ public partial class TCPSessionV2
             while (token.IsCancellationRequested == false && IsConnected() == true)
             {
                 int freeSpace = _receiveBuffer.Length - _receiveWriteOffset;
+                if (freeSpace < NetworkPackage.HeaderSize)
+                {
+                    if (_receiveWriteOffset >= _receiveBuffer.Length)
+                    {
+                        Array.Resize(ref _receiveBuffer, _receiveBuffer.Length * 2);
+                    }
+                    
+                    freeSpace = _receiveBuffer.Length - _receiveWriteOffset;
+                }
                 var receivedbuffer = new Memory<byte>(_receiveBuffer, _receiveWriteOffset, freeSpace);
                 var received = await _socket.ReceiveAsync(receivedbuffer, SocketFlags.None, token);
                 if (received <= 0)

@@ -21,7 +21,5 @@ public partial class UseItemCommandResponse : GameCommandBase
 public partial class MoveCommand : GameCommandBase
 {
     public Vector3 Position { get; set; }
-    
-    public int ZoneId { get; set; }
-    
+    public float Rotation { get; set; }
 }
