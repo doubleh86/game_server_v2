@@ -22,8 +22,9 @@ public class UpdatePlayerInfoAsync : QueryCommandBaseAsync<int, int>
     
     private const string _UpdatePlayerInfo = "UPDATE player_info SET last_world_id = @lastWorldId, " +
                                              "last_zone_id = @lastZoneId, " +
-                                             "position_x = @positionX, position_y = @positionY, position_z = @positionZ, " +
-                                             "update_date = CURRENT_TIMESTAMP" +
+                                             "position_x = @positionX, position_y = @positionY, " +
+                                             "position_z = @positionZ, " +
+                                             "update_date = CURRENT_TIMESTAMP " +
                                              "WHERE account_id = @accountId";
 
     public UpdatePlayerInfoAsync(MySqlDapperServiceBase dbContext, MySqlTransaction transaction = null) 

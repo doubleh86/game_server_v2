@@ -91,7 +91,7 @@ public class WorldService : IDisposable
         for(int i = 0; i < _workerCount; i++)
         {
             int shardIndex = i;
-            Task.Factory.StartNew(() => _GlobalTickLoop(shardIndex), TaskCreationOptions.LongRunning);
+            Task.Run(() => _GlobalTickLoop(shardIndex));
         }
     }
 

@@ -180,36 +180,37 @@ public partial class WorldInstance : IDisposable
 
     private void _AutoSaveWorldState()
     {
-        if (_worldOwner == null)
+        var owner = _worldOwner;
+        if (owner == null)
             return;
 
         if (Interlocked.Exchange(ref _autoSaving, 1) == 1)
             return;
 
-        _globalDbService.PushJob(_worldOwner.AccountId, async (dbContext) =>
+        _globalDbService.PushJob(owner.AccountId, async (dbContext) =>
         {
             try
             {
-                if (_worldOwner.IsSaveDirty() == false)
+                if (owner.IsSaveDirty() == false)
                     return;
                 
-                var playerInfoResult = _worldOwner.GetPlayerInfoWithSave(true);
+                var playerInfoResult = owner.GetPlayerInfoWithSave(true);
                 await dbContext.AutoSaveInfoAsync(playerInfoResult);
                 
                 // TODO : world state update
-                _Push(new GlobalDbResultJob<PlayerObject>(_loggerService, _worldOwner, (owner) =>
+                _Push(new GlobalDbResultJob<PlayerObject>(_loggerService, owner, (player) =>
                 {
-                    owner.OnAutoSaveSuccess();
+                    player.OnAutoSaveSuccess();
                     return ValueTask.CompletedTask;
                 }));
             }
             catch (DatabaseException ex)
             {
-                _loggerService.Warning($"AutoSaveInfoAsync failed for Account:{_worldOwner.AccountId}", ex);
+                _loggerService.Warning($"AutoSaveInfoAsync failed for Account:{owner.AccountId}", ex);
             }
             catch (Exception e)
             {
-                _loggerService.Warning($"AutoSaveInfoAsync failed for Account:{_worldOwner.AccountId}", e);
+                _loggerService.Warning($"AutoSaveInfoAsync failed for Account:{owner.AccountId}", e);
             }
             finally
             {
@@ -241,14 +242,34 @@ public partial class WorldInstance : IDisposable
         _loggerService.Information($"World Exit Reason : {reason} | roomId = {_roomId}");
         Dispose();
     }
-    
+
+    private void _FinalAutoSaveWorldState()
+    {
+        var owner = _worldOwner;
+        if (owner == null)
+            return;
+
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            _globalDbService.PushJobAndWaitAsync(owner.AccountId, async dbContext =>
+            {
+                var info = owner.GetPlayerInfoWithSave(true);
+                await dbContext.AutoSaveInfoAsync(info);
+            }, cts.Token).GetAwaiter().GetResult();
+        }
+        catch (Exception e)
+        {
+            _loggerService.Warning($"Final autosave failed on dispose [{e.Message}]", e);
+        }
+    }
     public void Dispose()
     {
         if(_isDisposed) 
             return;
 
+        _FinalAutoSaveWorldState();
         _isDisposed = true;
-        _AutoSaveWorldState();
         
         _jobCts.Cancel();
         _jobSignal.Release();
@@ -259,7 +280,7 @@ public partial class WorldInstance : IDisposable
         }
         catch
         {
-            // Nothing
+            _loggerService.Warning("Job worker task wait failed");
         }
         
         _jobQueue.Clear();

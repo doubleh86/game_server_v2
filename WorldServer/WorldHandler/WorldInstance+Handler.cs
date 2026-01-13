@@ -58,6 +58,10 @@ public partial class WorldInstance
     
     private async Task _ItemUseAsync(UseItemCommand command)
     {
+        var owner = _worldOwner;
+        if(owner == null)
+            return;
+        
         var useItemCommandResponse = new UseItemCommandResponse
         {
             ItemId = command.ItemId,
@@ -65,20 +69,20 @@ public partial class WorldInstance
         };
 
         await _SendGameCommandPacket(GameCommandId.UseItemResponse, MemoryPackHelper.Serialize(useItemCommandResponse));
-        _globalDbService.PushJob(_worldOwner.AccountId, async (dbContext) =>
+        await _globalDbService.PushJobAsync(owner.AccountId, async (dbContext) =>
         {
             try
             {
-                var result = await dbContext.ItemUseAsync(_worldOwner.AccountId, command.ItemId, command.UseCount);
+                var result = await dbContext.ItemUseAsync(owner.AccountId, command.ItemId, command.UseCount);
                 _loggerService.Information($"Success Item use : {result}");
             }
             catch (DbContextException e)
             {
-                _loggerService.Warning($"Item use failed for Account:{_worldOwner.AccountId}, Item:{command.ItemId}", e);
+                _loggerService.Warning($"Item use failed for Account:{owner.AccountId}, Item:{command.ItemId}", e);
             }
             catch (Exception e)
             {
-                _loggerService.Warning($"Exception {_worldOwner.AccountId}, Item:{command.ItemId} {e.Message}", e);
+                _loggerService.Warning($"Exception {owner.AccountId}, Item:{command.ItemId} {e.Message}", e);
             }
             
         });

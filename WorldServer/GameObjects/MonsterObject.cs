@@ -83,7 +83,7 @@ public class MonsterObject : GameObject
         var direction = Vector3.Normalize(diff);
         var newPos = GetPosition() + direction * 0.5f;
         
-        float newRotation = MathF.Atan2(direction.Y, direction.X);
+        float newRotation = MathF.Atan2(direction.Z, direction.X);
         _UpdateChangePositionAndRotation(newPos, newRotation);
     }
 

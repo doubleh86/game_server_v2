@@ -60,9 +60,8 @@ public class PlayerObject : GameObject, IAutoSavable
         
         var delta = GetPosition() - _lastSavedPosition;
         float distanceSquared = delta.LengthSquared();
-        float thresholdSquared = AutoSaveDistanceSq;
-
-        return distanceSquared >= thresholdSquared;
+        
+        return distanceSquared >= AutoSaveDistanceSq;
     }
     
     public PlayerInfoResult GetPlayerInfoWithSave(bool isAutoSave = false)
