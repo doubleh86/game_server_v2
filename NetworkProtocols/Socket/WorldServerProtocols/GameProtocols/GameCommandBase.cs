@@ -7,10 +7,12 @@ public enum GameCommandId
     MoveCommand = 1,
     MonsterUpdateCommand = 2,
     UseItemCommand = 3,
+    ChangeWorldCommand = 4,
     SpawnGameObject,
     
     // Response
     UseItemResponse = 1001,
+    ChangeWorldResponse = 1002,
 }
 
 // 필요 없을 듯

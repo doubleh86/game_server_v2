@@ -1,6 +1,7 @@
+using DbContext.Common;
 using DbContext.GameDbContext.DbResultModel;
 using DbContext.GameDbContext.MySqlContext.QueryCommand;
-using DbContext.SharedContext.MySqlContext;
+using NetworkProtocols.WebApi;
 using ServerFramework.MySqlServices.MySqlDapperUtils;
 using ServerFramework.SqlServerServices.Models;
 
@@ -45,5 +46,40 @@ public class MySqlGameDbContext(SqlServerDbInfo dbInfo) : MySqlDapperServiceBase
             itemId = itemId,
             itemCount = itemCount
         });
+    }
+
+    public async Task<int> AutoSaveInfoAsync(PlayerInfoResult playerInfoResult)
+    {
+        await using var connection = _GetConnection();
+        await connection.OpenAsync();
+        
+        await using var transaction = await connection.BeginTransactionAsync();
+        try
+        {
+            var command = new UpdatePlayerInfoAsync(this, transaction);
+            var result = await command.ExecuteQueryAsync(new UpdatePlayerInfoAsync.InParameters
+                                            {
+                                                lastWorldId = playerInfoResult.last_world_id,
+                                                lastZoneId = playerInfoResult.last_zone_id,
+                                                positionX = playerInfoResult.position_x,
+                                                positionY = playerInfoResult.position_y,
+                                                positionZ = playerInfoResult.position_z,
+                                                accountId = playerInfoResult.account_id
+                                            });
+            
+            await transaction.CommitAsync();
+            return result;
+        }
+        catch (DbContextException)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            throw new DbContextException(DbErrorCode.ProcedureError,
+                                         $"[ErrorMessage : {e.Message}][ResultCode : {e.HResult}]");
+        }
     }
 }

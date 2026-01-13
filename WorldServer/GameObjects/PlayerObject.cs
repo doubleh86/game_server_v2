@@ -22,8 +22,24 @@ public class PlayerObject : GameObject
     public void SetPlayerInfo(PlayerInfoResult playerInfo)
     {
         _playerInfo = playerInfo;
+        
+        var position = new Vector3(_playerInfo.position_x, _playerInfo.position_y, _playerInfo.position_z);
+        UpdatePosition(position, 0f, playerInfo.last_zone_id);
     }
 
+    public PlayerInfoResult GetPlayerInfoWithSave(bool isAutoSave = false)
+    {
+        if(isAutoSave == false)
+            return _playerInfo;
+        
+        // sync 를 맞춘다.
+        _playerInfo.last_zone_id = GetZoneId();
+        _playerInfo.position_x = GetPosition().X;
+        _playerInfo.position_y = GetPosition().Y;
+        _playerInfo.position_z = GetPosition().Z;
+        
+        return _playerInfo;
+    }
 
     public override GameObjectBase ToPacket()
     {

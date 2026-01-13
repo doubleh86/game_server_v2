@@ -23,3 +23,18 @@ public partial class MoveCommand : GameCommandBase
     public Vector3 Position { get; set; }
     public float Rotation { get; set; }
 }
+
+[MemoryPackable]
+public partial class ChangeWorldCommand : GameCommandBase
+{
+    public int WorldId { get; set; }
+}
+
+[MemoryPackable]
+public partial class ChangeWorldCommandResponse : GameCommandBase
+{
+    public int WorldId { get; set; }
+    public GameObjectBase Player { get; set; }
+}
+
+

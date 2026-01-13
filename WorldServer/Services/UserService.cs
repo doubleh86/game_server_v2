@@ -6,14 +6,10 @@ namespace WorldServer.Services;
 
 public class UserService : IDisposable
 {
-    private long _currentUserId;
     private readonly ConcurrentDictionary<long, UserSessionInfo> _sessions = new();
 
     public void AddUser(UserSessionInfo info)
     {
-        Interlocked.Increment(ref _currentUserId);
-        info.SetIdentifier(_currentUserId);
-        
         _sessions.TryAdd(info.Identifier, info);
     }
 

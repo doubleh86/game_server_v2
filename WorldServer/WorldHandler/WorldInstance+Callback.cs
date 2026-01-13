@@ -46,11 +46,6 @@ public partial class WorldInstance
             monsterGroup.UpdateIsAnyMemberInCombat(_worldOwner);
         }
         
-        var notify = new GameCommandResponse
-        {
-            CommandId = (int)GameCommandId.MonsterUpdateCommand,
-        };
-
         for (var i = 0; i < dirtyMonsters.Count; i += _MaxMonsterUpdateCount)
         {
             int count = Math.Min(_MaxMonsterUpdateCount, dirtyMonsters.Count - i);
@@ -60,11 +55,8 @@ public partial class WorldInstance
             {
                 Monsters = batchMonsters.Select(x => x.ToPacket()).ToList()
             };
-            
-            notify.CommandData = MemoryPackHelper.Serialize(gameCommand);
-            var sendPackage = NetworkHelper.CreateSendPacket((int)WorldServerKeys.GameCommandResponse, notify);
-            
-            await _worldOwner.GetSessionInfo().SendAsync(sendPackage.GetSendBuffer());
+           
+            await _SendGameCommandPacket(GameCommandId.MonsterUpdateCommand, MemoryPackHelper.Serialize(gameCommand));
         }
         
     }

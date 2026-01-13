@@ -34,7 +34,7 @@ public abstract class GameObject
         _objectType = objectType;
     }
 
-    public void UpdatePosition(Vector3 position, float rotation, int zoneId)
+    public virtual void UpdatePosition(Vector3 position, float rotation, int zoneId)
     {
         _position = position;
         _rotation = rotation;

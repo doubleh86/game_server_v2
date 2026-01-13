@@ -3,15 +3,20 @@ using System.Numerics;
 using DbContext.GameDbContext;
 using MySqlDataTableLoader.Models;
 using MySqlDataTableLoader.Utils.Helper;
+using NetworkProtocols.Socket.NotifyServerProtocols;
+using NetworkProtocols.Socket.WorldServerProtocols;
 using NetworkProtocols.Socket.WorldServerProtocols.GameProtocols;
+using NotifyServer.Helpers;
 using ServerFramework.CommonUtils.Helper;
+using ServerFramework.SqlServerServices.Models;
 using SuperSocket.Server.Abstractions;
 using WorldServer.GameObjects;
 using WorldServer.JobModels;
 using WorldServer.Network;
 using WorldServer.Services;
+using WorldServer.Utils;
 using WorldServer.WorldHandler.WorldDataModels;
-// ReSharper disable AsyncVoidLambda
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
 
 namespace WorldServer.WorldHandler;
 
@@ -20,8 +25,13 @@ public partial class WorldInstance : IDisposable
     private readonly IGameDbContext _dbContext; // Read 용 dbContext 
     private readonly string _roomId;
     private readonly ConcurrentQueue<Job> _jobQueue = new();
-    private int _isProcessing;
     private bool _isDisposed;
+    private int _exitOnce;
+    
+    // Worker Task
+    private readonly CancellationTokenSource _jobCts = new();
+    private readonly SemaphoreSlim _jobSignal = new(0, int.MaxValue);
+    private Task? _jobWorkerTask;
     
     private readonly LoggerService _loggerService;
     private readonly GlobalDbService _globalDbService;
@@ -32,7 +42,8 @@ public partial class WorldInstance : IDisposable
     public string GetRoomId() => _roomId;
     private UserSessionInfo _GetUserSessionInfo() => _worldOwner.GetSessionInfo();
     private WorldMapInfo _worldMapInfo;
-
+    
+    
     public WorldInstance(string roomId, LoggerService loggerService, GlobalDbService dbService)
     {
         _roomId = roomId;
@@ -41,13 +52,52 @@ public partial class WorldInstance : IDisposable
 
         _dbContext = GameDbContextWrapper.Create();
         _RegisterGameHandler();
-        
+        _StartJobWorker();
     }
-    
-    private void _RegisterGameHandler()
+
+    private void _StartJobWorker()
     {
-        _commandHandlers.Add(GameCommandId.MoveCommand, _HandleMove);
-        _commandHandlers.Add(GameCommandId.UseItemCommand, _HandleItemUse);
+        if (_jobWorkerTask != null)
+            return;
+
+        _jobWorkerTask = Task.Run(async () =>
+        {
+            await _ProcessJob(_jobCts.Token);
+        });
+    }
+
+    private async ValueTask _ProcessJob(CancellationToken token)
+    {
+        try
+        {
+            while (token.IsCancellationRequested == false)
+            {
+                await _jobSignal.WaitAsync(token);
+                while (token.IsCancellationRequested == false && _jobQueue.TryDequeue(out var job) == true)
+                {
+                    try
+                    {
+                        await job.ExecuteAsync();
+                    }
+                    catch (WorldServerException e)
+                    {
+                        _loggerService.Warning($"In Game Error [{e.Message}]", e);
+                    }
+                    catch (Exception e)
+                    {
+                        _loggerService.Error($"Job failed [{e.Message}]", e);
+                    }
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _loggerService.Information("World instance maybe disposed");
+        }
+        catch (Exception e)
+        {
+            _loggerService.Error("World instance job worker error", e);
+        }
     }
     
     public async ValueTask InitializeAsync(UserSessionInfo sessionInfo)
@@ -57,13 +107,13 @@ public partial class WorldInstance : IDisposable
 
     private async ValueTask _InitializeWorldAsync(UserSessionInfo sessionInfo)
     {
-        _worldOwner = new PlayerObject(sessionInfo.Identifier, new Vector3(0, 0, 0), sessionInfo, 0);
-        _worldOwner.UpdatePosition(new Vector3(10, 0, 30), 0f, 101);
+        _worldOwner = new PlayerObject(IdGenerator.NextId(sessionInfo.Identifier), new Vector3(0, 0, 0), sessionInfo, 0);
+        var playerInfo = await _dbContext.GetPlayerInfoAsync(1); // Test 용도
+        if (playerInfo == null)
+            throw new WorldServerException(WorldErrorCode.NotFoundPlayerInfo, $"Session Info {sessionInfo.Identifier}");    
         
-        var playerInfo = await _dbContext.GetPlayerInfoAsync(1);
         _worldOwner.SetPlayerInfo(playerInfo);
-
-        await _RoadCurrentWorldMapAsync(1);
+        await _RoadCurrentWorldMapAsync(playerInfo.last_world_id);
     }
 
     private ValueTask _RoadCurrentWorldMapAsync(int worldId)
@@ -72,34 +122,21 @@ public partial class WorldInstance : IDisposable
         if (worldMapInfo == null)
             return ValueTask.CompletedTask;
 
-        _worldMapInfo = new WorldMapInfo(worldId, _worldOwner.AccountId, _loggerService);
-        _worldMapInfo.Initialize();
+        _worldMapInfo = new WorldMapInfo(_worldOwner.AccountId, _loggerService);
+        _worldMapInfo.Initialize(worldId);
 
         _worldMapInfo.AddObject(_worldOwner);
         
         return ValueTask.CompletedTask;
     }
 
-    public void Tick()
-    {
-        if(IsAliveWorld() == false) 
-            return;
-        
-        var centerCell = _worldMapInfo.GetCell(_worldOwner.GetPosition());
-        if (centerCell == null)
-            return;
-        
-        var nearByCells = _worldMapInfo.GetWorldNearByCells(_worldOwner.GetZoneId(), 
-                                                            _worldOwner.GetPosition(), 
-                                                            range: 2);
-        
-        _Push(new MonsterUpdateJob(_worldOwner.GetPosition(), nearByCells, _OnMonsterUpdate, _loggerService));
-    }
-
     public async ValueTask HandleGameCommand(GameCommandId command, byte[] commandData)
     {
         try
         {
+            if (IsAliveWorld() == false)
+                return;
+            
             if (_commandHandlers.TryGetValue(command, out var handler) == false)
                 return;
             
@@ -117,48 +154,17 @@ public partial class WorldInstance : IDisposable
             return;
         
         _jobQueue.Enqueue(action);
-        _ProcessJobs();
+        _jobSignal.Release();
     }
     
-    private void _ProcessJobs()
-    {
-        if (_isDisposed)
-            return;
-        
-        if (Interlocked.CompareExchange(ref _isProcessing, 1, 0) != 0)
-            return;
-
-        ThreadPool.UnsafeQueueUserWorkItem(async _ =>
-        {
-            try
-            {
-                while (_isDisposed == false && _jobQueue.TryDequeue(out var job))
-                {
-                    try
-                    {
-                        await job.ExecuteAsync();
-                    }
-                    catch (Exception e)
-                    {
-                        _loggerService.Warning($"Job failed [{e.Message}]", e);    
-                    }
-                }
-            }
-            finally
-            {
-                Interlocked.Exchange(ref _isProcessing, 0);
-                
-                if(_isDisposed == false && _jobQueue.IsEmpty == false)
-                    _ProcessJobs();
-            }
-        }, null);
-    }
-
     public bool IsAliveWorld()
     {
         if (_isDisposed == true)
             return false;
         
+        if (_worldMapInfo == null)
+            return false;
+
         if (_worldOwner == null)
             return false;
         
@@ -176,13 +182,57 @@ public partial class WorldInstance : IDisposable
     {
         if (_worldOwner == null)
             return;
+
+        if (Interlocked.Exchange(ref _autoSaving, 1) == 1)
+            return;
         
         _globalDbService.PushJob(_worldOwner.AccountId, async (dbContext) =>
         {
-            // TODO : world state update
+            try
+            {
+                var playerInfoResult = _worldOwner.GetPlayerInfoWithSave(true);
+                await dbContext.AutoSaveInfoAsync(playerInfoResult);
+                // TODO : world state update
+            }
+            catch (DatabaseException ex)
+            {
+                _loggerService.Warning($"AutoSaveInfoAsync failed for Account:{_worldOwner.AccountId}", ex);
+            }
+            catch (Exception e)
+            {
+                _loggerService.Warning($"AutoSaveInfoAsync failed for Account:{_worldOwner.AccountId}", e);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _autoSaving, 0);
+            }
         });
     }
 
+    private async ValueTask _SendGameCommandPacket(GameCommandId commandId, byte[] commandData)
+    {
+        if (_worldOwner == null)
+            return;
+        
+        var packet = new GameCommandResponse
+                     {
+                         CommandId = (int)commandId,
+                         CommandData = commandData
+                     };
+
+        var sendData = NetworkHelper.CreateSendPacket((int)WorldServerKeys.GameCommandResponse, packet);
+        await _worldOwner.GetSessionInfo().SendAsync(sendData.GetSendBuffer());
+    }
+
+    public void ExitWorld(string reason)
+    {
+        if (Interlocked.CompareExchange(ref _exitOnce, 1, 0) == 1)
+            return;
+        
+        _loggerService.Information($"World Exit Reason : {reason} | roomId = {_roomId}");
+        Dispose();
+    }
+    
     public void Dispose()
     {
         if(_isDisposed) 
@@ -191,6 +241,18 @@ public partial class WorldInstance : IDisposable
         _isDisposed = true;
         _AutoSaveWorldState();
         
+        _jobCts.Cancel();
+        _jobSignal.Release();
+
+        try
+        {
+            _jobWorkerTask?.Wait(TimeSpan.FromSeconds(2));
+        }
+        catch
+        {
+            // Nothing
+        }
+        
         _jobQueue.Clear();
         _commandHandlers.Clear();
         
@@ -198,7 +260,9 @@ public partial class WorldInstance : IDisposable
         _worldMapInfo = null;
         _worldOwner = null;
         
-        
         _dbContext?.Dispose();
+        
+        _jobSignal.Dispose();
+        _jobCts.Dispose();
     }
 }

@@ -1,4 +1,5 @@
 using System.Numerics;
+using MySqlDataTableLoader.Models;
 using NetworkProtocols.Shared.Enums;
 using NetworkProtocols.Socket.WorldServerProtocols.GameProtocols;
 using NetworkProtocols.Socket.WorldServerProtocols.Models;
@@ -9,6 +10,8 @@ public class MonsterObject : GameObject
 {
     private readonly MonsterGroup _group;
     private readonly MonsterObjectBase _packet = new();
+    private readonly MonsterInfo _tableData;
+
     private AIState _state;
     private DateTime _nextDecisionTime = DateTime.UtcNow;
     
@@ -16,10 +19,11 @@ public class MonsterObject : GameObject
     public MonsterGroup GetGroup() => _group;
 
     
-    public MonsterObject(long id, Vector3 position, int zoneId, MonsterGroup group)
+    public MonsterObject(long id, Vector3 position, int zoneId, MonsterGroup group, MonsterInfo tableData)
         : base(id, zoneId, position, GameObjectType.Monster)
     {
         _group = group;
+        _tableData = tableData.Clone() as MonsterInfo;
     }
 
     private void _UpdateStateChange(AIState newState)
@@ -85,11 +89,16 @@ public class MonsterObject : GameObject
 
     public void UpdateAI(Vector3 playerPosition)
     {
-        if (DateTime.UtcNow < _nextDecisionTime)
+        UpdateAI(DateTime.UtcNow, playerPosition);
+    }
+
+    public void UpdateAI(DateTime utcNow, Vector3 playerPosition)
+    {
+        if (utcNow < _nextDecisionTime)
             return;
         
         _UpdateState(playerPosition);
-        _nextDecisionTime = DateTime.UtcNow.AddMilliseconds(500);
+        _nextDecisionTime = utcNow.AddMilliseconds(500);
         switch (_state)
         {
             case AIState.Idle: // UserCheck

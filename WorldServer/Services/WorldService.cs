@@ -73,15 +73,17 @@ public class WorldService : IDisposable
         if (_worldInstances.TryRemove(roomId, out var worldInstance) == false)
             return;
 
-        if (_roomShardMap.TryRemove(roomId, out var shardIndex) == false)
-            return;
+        _roomShardMap.TryRemove(roomId, out var shardIndex);
 
-        lock (_shardLocks[shardIndex])
+        if (shardIndex >= 0 && shardIndex < _shardWorldLists.Length)
         {
-            _shardWorldLists[shardIndex].Remove(worldInstance);
+            lock (_shardLocks[shardIndex])
+            {
+                _shardWorldLists[shardIndex].Remove(worldInstance);
+            }
         }
         
-        worldInstance.Dispose();
+        worldInstance.ExitWorld("Disconnect");
     }
 
     public void StartGlobalTicker()

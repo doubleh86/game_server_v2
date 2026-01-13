@@ -18,7 +18,7 @@ public class WorldMapInfo : IDisposable
     private readonly LoggerService _loggerService;
     
     private readonly long _accountId;
-    private readonly int _worldMapId;
+    private int _worldMapId;
     
     private readonly Dictionary<int, MapCell[,]> _zoneCells = new();
     private readonly Dictionary<int, MapInfo> _zoneInfos = new();
@@ -26,16 +26,16 @@ public class WorldMapInfo : IDisposable
     private readonly List<MonsterGroup> _monsterGroups = new();
     private readonly Dictionary<long, List<int>> _worldZoneGrid = new();
     
-    public WorldMapInfo(int worldMapId, long accountId, LoggerService loggerService)
+    public int GetWorldMapId() => _worldMapId;
+    public WorldMapInfo(long accountId, LoggerService loggerService)
     {
-        _worldMapId = worldMapId;
         _accountId = accountId;
-        
         _loggerService = loggerService;
     }
     
-    public void Initialize()
+    public void Initialize(int worldMapId)
     {
+        _worldMapId = worldMapId;
         var worldTableData = MySqlDataTableHelper.GetData<WorldInfo>(_worldMapId);
         if(worldTableData == null)
             throw new Exception("World table data is null");
@@ -45,6 +45,25 @@ public class WorldMapInfo : IDisposable
         _InitializeCells(allZones.ToList());
         _IntializeWorldZoneGrid();
         _InitializeMonsters();
+    }
+    
+    // world 이동 시
+    public void ClearWorld()
+    {
+        foreach (var zone in _zoneCells.Values)
+        {
+            foreach (var cell in zone)
+            {
+                cell.Dispose();
+            }
+        }
+        
+        _monsterGroups.Clear();
+        _zoneInfos.Clear();
+        _zoneCells.Clear();
+        _worldZoneGrid.Clear();
+
+        _worldMapId = 0;
     }
 
     private void _AddZone(MapInfo mapInfo)
@@ -129,11 +148,15 @@ public class WorldMapInfo : IDisposable
             
             foreach (var monsterId in monsterGroup.MonsterList)
             {
+                var tableData = MySqlDataTableHelper.GetData<MonsterInfo>(monsterId);
+                if (tableData == null)
+                    continue;
+                
                 var cell = _GetCell(position);
                 if (cell == null)
                     break;
                 
-                var spawnedMonster = new MonsterObject(monsterId, position, zoneId, registerMonsterGroup);
+                var spawnedMonster = new MonsterObject(IdGenerator.NextId(_accountId), position, zoneId, registerMonsterGroup, tableData);
                 cell.Enter(spawnedMonster);
                 registerMonsterGroup.AddMember(spawnedMonster);
             }
@@ -153,10 +176,12 @@ public class WorldMapInfo : IDisposable
         }
     }
 
-    public void AddObject(GameObject obj)
+    public MapCell AddObject(GameObject obj)
     {
         var cell = GetCell(obj.GetPosition());
         cell?.Enter(obj);
+
+        return cell;
     }
 
     public MapCell GetCell(Vector3 worldPosition, int zoneId = 0)
@@ -281,10 +306,10 @@ public class WorldMapInfo : IDisposable
         return cells[x, z];
     }
 
-    public async ValueTask UpdatePlayerViewAsync(UserSessionInfo sessionInfo, MapCell oldCell, MapCell newCell)
+    public (List<MapCell>, List<MapCell>) UpdatePlayerView(MapCell oldCell, MapCell newCell)
     {
         if (oldCell == null || newCell == null)
-            return ;
+            return ([], []);
         
         var oldNearByCells = GetWorldNearByCells(oldCell.ZoneId, oldCell.WorldPosition, range: 2);
         var nearByCells = GetWorldNearByCells(newCell.ZoneId, newCell.WorldPosition, range: 2);
@@ -292,47 +317,8 @@ public class WorldMapInfo : IDisposable
         var enterCells = nearByCells.Except(oldNearByCells).ToList();
         var leaveCells = oldNearByCells.Except(nearByCells).ToList();
 
-        foreach (var enterCell in enterCells)
-        {
-            var objects = enterCell.GetMapObjects().Values.ToList();
-            if (objects.Count == 0)
-                continue;
-            
-            List<GameObjectBase> updateObjects = objects.Select(x => x.ToPacket()).ToList();
-            var gameCommand = new GameCommandResponse
-            {
-                CommandId = (int)GameCommandId.SpawnGameObject,
-                CommandData = MemoryPackHelper.Serialize<UpdateGameObjects>(new UpdateGameObjects()
-                {
-                    IsSpawn = true,
-                    GameObjects = updateObjects
-                })
-            };
-            
-            var sendPackage = NetworkHelper.CreateSendPacket((int)WorldServerKeys.GameCommandResponse, gameCommand);
-            await sessionInfo.SendAsync(sendPackage.GetSendBuffer());
-        }
-
-        foreach (var leaveCell in leaveCells)
-        {
-            var objects = leaveCell.GetMapObjects().Values.ToList();
-            if (objects.Count == 0)
-                continue;
-            
-            var despawnLists = objects.Select(x => x.ToPacket()).ToList();
-            var gameCommand = new GameCommandResponse
-            {
-                CommandId = (int)GameCommandId.SpawnGameObject,
-                CommandData = MemoryPackHelper.Serialize<UpdateGameObjects>(new UpdateGameObjects()
-                {
-                    IsSpawn = false,
-                    GameObjects = despawnLists
-                })
-            };
-            
-            var sendPackage = NetworkHelper.CreateSendPacket((int)WorldServerKeys.GameCommandResponse, gameCommand);
-            await sessionInfo.SendAsync(sendPackage.GetSendBuffer());
-        }
+        return (enterCells, leaveCells);
+        
     }
 
     public void Dispose()

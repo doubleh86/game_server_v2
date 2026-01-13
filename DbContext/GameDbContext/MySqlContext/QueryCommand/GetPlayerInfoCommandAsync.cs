@@ -11,7 +11,9 @@ namespace DbContext.GameDbContext.MySqlContext.QueryCommand;
 public class GetPlayerInfoCommandAsync (MySqlDapperServiceBase dbContext, MySqlTransaction transaction = null) 
     : QueryCommandBaseAsync<PlayerInfoResult, PlayerInfoResult>(dbContext, transaction)
 {
-    private const string _GetPlayerInfoQuery = "SELECT account_id, player_level, player_exp FROM " +
+    private const string _GetPlayerInfoQuery = "SELECT account_id, player_level, player_exp, " +
+                                               "last_world_id, last_zone_id," +
+                                               "position_x, position_y, position_z FROM " +
                                                "player_info WHERE account_id = @accountId";
     public struct InParameters : IDbInParameters
     {

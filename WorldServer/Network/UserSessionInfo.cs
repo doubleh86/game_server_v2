@@ -1,7 +1,5 @@
-using Microsoft.AspNetCore.Http;
 using SuperSocket.Connection;
 using SuperSocket.Server;
-using SuperSocket.Server.Abstractions.Session;
 using WorldServer.Services;
 using WorldInstance = WorldServer.WorldHandler.WorldInstance;
 
@@ -20,9 +18,10 @@ public class UserSessionInfo : AppSession
         _worldInstance = worldInstance;
     }
     
-    public void SetIdentifier(long identifier)
+    public void RegisterIdentifier(long identifier)
     {
         _identifier = identifier;
+        _serverService.GetUserService().AddUser(this);
     }
 
     public async ValueTask SendAsync(byte[] sendData, CancellationToken cancellationToken = default)
@@ -33,7 +32,7 @@ public class UserSessionInfo : AppSession
     protected override ValueTask OnSessionConnectedAsync()
     {
         _serverService.GetLoggerService().Information("Connected to WorldServer");
-        _serverService.GetUserService().AddUser(this);
+        // _serverService.GetUserService().AddUser(this);
         
         return ValueTask.CompletedTask;
     }

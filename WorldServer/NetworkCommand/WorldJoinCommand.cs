@@ -1,3 +1,4 @@
+using NetworkProtocols.Socket;
 using NetworkProtocols.Socket.CommonCommand;
 using NetworkProtocols.Socket.NotifyServerProtocols;
 using NetworkProtocols.Socket.WorldServerProtocols;
@@ -7,6 +8,7 @@ using SuperSocket.Command;
 using SuperSocket.Server.Abstractions.Session;
 using WorldServer.Network;
 using WorldServer.Services;
+using WorldServer.Utils;
 
 namespace WorldServer.NetworkCommand;
 
@@ -25,7 +27,13 @@ public class WorldJoinCommand(LoggerService loggerService, WorldService worldSer
         {
             throw new Exception("Already joined world");
         }
-
+        
+        var request = MemoryPackHelper.Deserialize<WorldJoinCommandRequest>(package.Body);
+        if(request == null)
+            throw new WorldServerException(WorldErrorCode.WrongPacket, "Invalid world join request");
+        
+        userSessionInfo.RegisterIdentifier(request.Identifier);
+        
         var newWorld = await _worldService.CreateWorldInstance(Guid.NewGuid().ToString(), userSessionInfo);
         userSessionInfo.SetWorldInstance(newWorld);
 
