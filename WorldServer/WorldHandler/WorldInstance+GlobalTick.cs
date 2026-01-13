@@ -4,11 +4,11 @@ namespace WorldServer.WorldHandler;
 
 public partial class WorldInstance
 {
-    private static readonly TimeSpan _AutoSaveInterval = TimeSpan.FromMinutes(5);
-    private static readonly TimeSpan _MonsterUpdateInterval = TimeSpan.FromMilliseconds(100);
+    private static readonly long _AutoSaveIntervalMs = 1000 * 60 * 5;
+    private static readonly long _MonsterUpdateIntervalMs = 100;
     
-    private DateTime _lastCallAutoSaveTime = DateTime.UtcNow;
-    private DateTime _lastCallMonsterUpdateTime = DateTime.UtcNow;
+    private long _lastCallAutoSaveTick = Environment.TickCount64;
+    private long _lastCallMonsterUpdateTick = Environment.TickCount64;
     private int _autoSaving;
     
     public void Tick()
@@ -16,29 +16,29 @@ public partial class WorldInstance
         if(IsAliveWorld() == false) 
             return;
 
-        var currentTime = DateTime.UtcNow;
-        _MonsterUpdateTick(currentTime);
-        _AutoSaveTick(currentTime);
+        var currentTick = Environment.TickCount64;
+        _MonsterUpdateTick(currentTick);
+        _AutoSaveTick(currentTick);
     }
 
-    private void _AutoSaveTick(DateTime currentTime)
+    private void _AutoSaveTick(long currentTick)
     {
-        if (currentTime - _lastCallAutoSaveTime < _AutoSaveInterval)
+        if (currentTick - _lastCallAutoSaveTick < _AutoSaveIntervalMs)
             return;
         
-        _lastCallAutoSaveTime = currentTime;
+        _lastCallAutoSaveTick = currentTick;
         _AutoSaveWorldState();
     }
 
-    private void _MonsterUpdateTick(DateTime currentTime)
+    private void _MonsterUpdateTick(long currentTick)
     {
         if (Volatile.Read(ref _isChangingWorld) == 1)
             return;
         
-        if (currentTime - _lastCallMonsterUpdateTime < _MonsterUpdateInterval)
+        if (currentTick - _lastCallMonsterUpdateTick < _MonsterUpdateIntervalMs)
             return;
         
-        _lastCallMonsterUpdateTime = currentTime;
+        _lastCallMonsterUpdateTick = currentTick;
         var centerCell = _worldMapInfo.GetCell(_worldOwner.GetPosition());
         if (centerCell == null)
             return;
