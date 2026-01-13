@@ -8,12 +8,12 @@ public abstract class GameObject
 {
     protected readonly long _id;
     private readonly GameObjectType _objectType; // 0: Player, 1: Monster, 2: StaticObject, 3: DynamicObject
-    private Vector3 _position;
-    private float _rotation;
+    protected Vector3 _position;
+    protected float _rotation;
     
     private Vector3 _changePosition = Vector3.Zero;
     private float _changeRotation = 0f;
-    private int _zoneId;
+    protected int _zoneId;
     
     protected bool _isChanged = false;
     public bool IsChanged() => _isChanged;
@@ -43,7 +43,7 @@ public abstract class GameObject
         _UpdateChangePositionAndRotation(Vector3.Zero, 0f);
     }
 
-    protected void _UpdateChangePositionAndRotation(Vector3 changePosition, float rotation)
+    protected virtual void _UpdateChangePositionAndRotation(Vector3 changePosition, float rotation)
     {
         _changePosition = changePosition;
         _changeRotation = rotation;

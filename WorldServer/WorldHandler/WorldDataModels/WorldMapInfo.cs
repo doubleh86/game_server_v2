@@ -1,20 +1,24 @@
 using System.Numerics;
 using MySqlDataTableLoader.Models;
 using MySqlDataTableLoader.Utils.Helper;
-using NetworkProtocols.Socket;
-using NetworkProtocols.Socket.NotifyServerProtocols;
-using NetworkProtocols.Socket.WorldServerProtocols;
-using NetworkProtocols.Socket.WorldServerProtocols.GameProtocols;
-using NotifyServer.Helpers;
 using ServerFramework.CommonUtils.Helper;
 using WorldServer.GameObjects;
-using WorldServer.Network;
+using WorldServer.WorldHandler.Utils;
 
 namespace WorldServer.WorldHandler.WorldDataModels;
 
+/// <summary>
+/// chunk_size 1 => 1m
+/// size_x 1000 이면 1km
+/// MaxChunkSize = (size_x / chunk_size) (2000 / 25 => 80)
+/// 예시 ( size_x 2000, chunk_size 25 => MaxChunkSize 80)
+/// Cell Size ( 25, 25 )
+/// Zone Size ( 80, 80 )
+/// Cell total count : 80 * 80 = 6400
+/// 
+/// </summary>
 public class WorldMapInfo : IDisposable
 {
-    private const float WorldGridSize = 100; // 100m 격자 구성
     private readonly LoggerService _loggerService;
     
     private readonly long _accountId;
@@ -24,7 +28,7 @@ public class WorldMapInfo : IDisposable
     private readonly Dictionary<int, MapInfo> _zoneInfos = new();
     
     private readonly List<MonsterGroup> _monsterGroups = new();
-    private readonly Dictionary<long, List<int>> _worldZoneGrid = new();
+    private readonly Dictionary<long, int[]> _worldZoneGrid = new();
     
     public int GetWorldMapId() => _worldMapId;
     public WorldMapInfo(long accountId, LoggerService loggerService)
@@ -35,38 +39,30 @@ public class WorldMapInfo : IDisposable
     
     public void Initialize(int worldMapId)
     {
-        _worldMapId = worldMapId;
-        var worldTableData = MySqlDataTableHelper.GetData<WorldInfo>(_worldMapId);
-        if(worldTableData == null)
-            throw new Exception("World table data is null");
+        if(_zoneCells.Count > 0 || _monsterGroups.Count > 0 || _worldMapId != 0)
+            ClearWorld();
         
-        var allZones = MySqlDataTableHelper.GetDataList<MapInfo>()
-                                                              .Where(x => x.world_id == _worldMapId);
-        _InitializeCells(allZones.ToList());
-        _IntializeWorldZoneGrid();
+        _worldMapId = worldMapId;
+        var mapCache = WorldDefinitionCache.Get(_worldMapId);
+       
+        _ApplyDefinition(mapCache);
+        
+        _InitializeCells(mapCache.Zones.ToList());
         _InitializeMonsters();
     }
-    
-    // world 이동 시
-    public void ClearWorld()
+
+    private void _ApplyDefinition(WorldDefinition definition)
     {
-        foreach (var zone in _zoneCells.Values)
-        {
-            foreach (var cell in zone)
-            {
-                cell.Dispose();
-            }
-        }
+        foreach (var (zoneId, info) in definition.ZoneInfos)
+            _zoneInfos[zoneId] = info;
         
-        _monsterGroups.Clear();
-        _zoneInfos.Clear();
-        _zoneCells.Clear();
-        _worldZoneGrid.Clear();
+        foreach(var (gridKey, zones) in definition.WorldZoneGrid)
+            _worldZoneGrid[gridKey] = zones;
 
-        _worldMapId = 0;
     }
+    
 
-    private void _AddZone(MapInfo mapInfo)
+    private void  _AddZone(MapInfo mapInfo)
     {
         if (mapInfo.world_id != _worldMapId)
             return;
@@ -79,51 +75,10 @@ public class WorldMapInfo : IDisposable
                 cells[x, z] = new MapCell(mapInfo.zone_id, x, z, mapInfo.WorldOffset, mapInfo.chunk_size);    
             }
         }
-        
-        _zoneInfos.Add(mapInfo.zone_id, mapInfo);
-        _zoneCells.Add(mapInfo.zone_id, cells);
+
+        _zoneCells[mapInfo.zone_id] = cells;
     }
-
-    private void _IntializeWorldZoneGrid()
-    {
-        _worldZoneGrid.Clear();
-        foreach (var (zoneId, info) in _zoneInfos)
-        {
-            float minX = info.world_offset_x;
-            float maxX = minX + (info.chunk_size * info.MaxChunkX);
-            float minZ = info.world_offset_z;
-            float maxZ = minZ + (info.chunk_size * info.MaxChunkZ);
-
-            int startX = (int)Math.Floor(minX / WorldGridSize);
-            int endX = (int)Math.Ceiling(maxX / WorldGridSize) - 1;
-            int startZ = (int)Math.Floor(minZ / WorldGridSize);
-            int endZ = (int)Math.Ceiling(maxZ / WorldGridSize) - 1;
-            
-            endX = Math.Max(endX, startX);
-            endZ = Math.Max(endZ, startZ);
-            
-            for (int gx = startX; gx <= endX; gx++)
-            {
-                for (int gz = startZ; gz <= endZ; gz++)
-                {
-                    var gridKey = _GetGridKey(gx, gz);
-                    if (!_worldZoneGrid.TryGetValue(gridKey, out var zones))
-                    {
-                        zones = new List<int>(capacity: 4);
-                        _worldZoneGrid[gridKey] = zones;
-                    }
-
-                    if (zones.Contains(zoneId) == false)
-                        zones.Add(zoneId);
-                }
-            }
-        }
-    }
-
-    private long _GetGridKey(long gridX, long gridZ)
-    {
-        return (gridX << 32) | (gridZ & 0xFFFFFFFFL);
-    }
+    
     
     private void _InitializeMonsters()
     {
@@ -219,9 +174,9 @@ public class WorldMapInfo : IDisposable
 
     private int _FindZoneByWorldPosition(Vector3 worldPosition)
     {
-        var gx = (long)Math.Floor(worldPosition.X / WorldGridSize);
-        var gz = (long)Math.Floor(worldPosition.Z / WorldGridSize);
-        var gridKey = _GetGridKey(gx, gz);
+        var gx = (long)Math.Floor(worldPosition.X / WorldDefinition.ZoneLookupGridSizeMeters);
+        var gz = (long)Math.Floor(worldPosition.Z / WorldDefinition.ZoneLookupGridSizeMeters);
+        var gridKey = WorldDefinition.GetGridKey(gx, gz);
 
         if (_worldZoneGrid.TryGetValue(gridKey, out var candidateZones) == false)
             return -1;
@@ -320,8 +275,9 @@ public class WorldMapInfo : IDisposable
         return (enterCells, leaveCells);
         
     }
-
-    public void Dispose()
+    
+    // world 이동 시
+    public void ClearWorld()
     {
         foreach (var zone in _zoneCells.Values)
         {
@@ -330,10 +286,17 @@ public class WorldMapInfo : IDisposable
                 cell.Dispose();
             }
         }
-
-        // 2. 딕셔너리 메모리 해제
+        
         _monsterGroups.Clear();
-        _zoneCells.Clear();
         _zoneInfos.Clear();
+        _zoneCells.Clear();
+        _worldZoneGrid.Clear();
+
+        _worldMapId = 0;
+    }
+
+    public void Dispose()
+    {
+        ClearWorld();
     }
 }

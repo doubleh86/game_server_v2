@@ -2,14 +2,17 @@ using System.Numerics;
 
 namespace MySqlDataTableLoader.Models;
 
+// size_x / chunk_size = max chunk x <= 이건 딱 떨어지게 설정
+// size_z / chunk_size = max chunk z <= 이것도 딱 떨어지게 설정 
 public class MapInfo : BaseData, ICloneable, IPrepareLoad
 {
     public int zone_id { get; set; }
     public int world_id { get; set; }
     
-    public int size_x { get; set; }
+    // 1000 이면 1km
+    public int size_x { get; set; } 
     public int size_z { get; set; }
-    public int chunk_size {get;set;}
+    public int chunk_size {get;set;} // 1당 1m
     
     public int world_offset_x { get; set; }
     public int world_offset_z { get; set; }

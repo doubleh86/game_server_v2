@@ -185,14 +185,23 @@ public partial class WorldInstance : IDisposable
 
         if (Interlocked.Exchange(ref _autoSaving, 1) == 1)
             return;
-        
+
         _globalDbService.PushJob(_worldOwner.AccountId, async (dbContext) =>
         {
             try
             {
+                if (_worldOwner.IsSaveDirty() == false)
+                    return;
+                
                 var playerInfoResult = _worldOwner.GetPlayerInfoWithSave(true);
                 await dbContext.AutoSaveInfoAsync(playerInfoResult);
+                
                 // TODO : world state update
+                _Push(new GlobalDbResultJob<PlayerObject>(_loggerService, _worldOwner, (owner) =>
+                {
+                    owner.OnAutoSaveSuccess();
+                    return ValueTask.CompletedTask;
+                }));
             }
             catch (DatabaseException ex)
             {

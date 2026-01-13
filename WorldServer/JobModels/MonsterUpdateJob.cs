@@ -54,10 +54,8 @@ public class MonsterUpdateJob : Job
             if (targetMonsters.Count >= ParallelThreshold)
             {
                 var errors = new ConcurrentQueue<Exception>();
-                var options = new ParallelOptions
-                              {
-                                  MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 1)
-                              };
+                var parallelismCount = Math.Max(1, Environment.ProcessorCount - 1);
+                var options = new ParallelOptions { MaxDegreeOfParallelism = parallelismCount };
                 
                 Parallel.ForEach(targetMonsters, options, monster =>
                 {

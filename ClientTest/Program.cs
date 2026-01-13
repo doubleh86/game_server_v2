@@ -19,7 +19,7 @@ switch (command)
     case "2":
     {
         ThreadPool.SetMinThreads(1000, 1000);
-        await RunLoadTest(500);
+        await RunLoadTest(1);
         return;
     }
 }

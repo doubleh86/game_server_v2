@@ -87,11 +87,6 @@ public class MonsterObject : GameObject
         _UpdateChangePositionAndRotation(newPos, newRotation);
     }
 
-    public void UpdateAI(Vector3 playerPosition)
-    {
-        UpdateAI(DateTime.UtcNow, playerPosition);
-    }
-
     public void UpdateAI(DateTime utcNow, Vector3 playerPosition)
     {
         if (utcNow < _nextDecisionTime)

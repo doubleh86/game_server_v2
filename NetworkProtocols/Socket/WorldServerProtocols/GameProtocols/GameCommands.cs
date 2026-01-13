@@ -30,6 +30,7 @@ public partial class ChangeWorldCommand : GameCommandBase
     public int WorldId { get; set; }
 }
 
+// Test 필요
 [MemoryPackable]
 public partial class ChangeWorldCommandResponse : GameCommandBase
 {

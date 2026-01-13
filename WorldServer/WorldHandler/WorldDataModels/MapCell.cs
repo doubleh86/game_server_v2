@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Numerics;
 using WorldServer.GameObjects;
 
@@ -12,10 +11,10 @@ public class MapCell : IDisposable
     
     public Vector3 WorldPosition { get; private set; }
 
-    private readonly ConcurrentDictionary<long, GameObject> _mapObjects = new();
-    private readonly ConcurrentDictionary<long, PlayerObject> _players = new();
+    private readonly Dictionary<long, GameObject> _mapObjects = new();
+    private readonly Dictionary<long, PlayerObject> _players = new();
     
-    public ConcurrentDictionary<long, GameObject> GetMapObjects() => _mapObjects;
+    public Dictionary<long, GameObject> GetMapObjects() => _mapObjects;
     
     
     public MapCell(int zoneId, int x, int z, Vector3 worldOffset, int chunkSize)
@@ -39,8 +38,8 @@ public class MapCell : IDisposable
 
     public void Leave(long objId)
     {
-        _mapObjects.TryRemove(objId, out _);
-        _players.TryRemove(objId, out _);
+        _mapObjects.Remove(objId, out _);
+        _players.Remove(objId, out _);
     }
 
     public void Dispose()
