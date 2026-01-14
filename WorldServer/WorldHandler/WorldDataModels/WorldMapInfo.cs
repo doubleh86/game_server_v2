@@ -151,8 +151,7 @@ public class WorldMapInfo : IDisposable
             if (worldPosition.X >= minX && worldPosition.X < maxX &&
                 worldPosition.Z >= minZ && worldPosition.Z < maxZ)
             {
-                int xIdx = (int)((worldPosition.X - mapInfo.world_offset_x) / mapInfo.chunk_size);
-                int zIdx = (int)((worldPosition.Z - mapInfo.world_offset_z) / mapInfo.chunk_size);
+                var (xIdx, zIdx) = _GetCellIndex(worldPosition, mapInfo);
                 return _GetCellByIndex(zoneId, xIdx, zIdx);
             }
         }
@@ -166,10 +165,16 @@ public class WorldMapInfo : IDisposable
         if(_zoneInfos.TryGetValue(findZoneId, out var mapInfo) == false)
             return null;
         
-        int xIdx = (int)((worldPosition.X - mapInfo.world_offset_x) / mapInfo.chunk_size);
-        int zIdx = (int)((worldPosition.Z - mapInfo.world_offset_z) / mapInfo.chunk_size);
-
+        var (xIdx, zIdx) = _GetCellIndex(worldPosition, mapInfo);
         return _GetCellByIndex(findZoneId, xIdx, zIdx);
+    }
+
+    private (int, int) _GetCellIndex(Vector3 worldPosition, MapInfo mapInfo)
+    {
+        int xIdx = (int)MathF.Floor((worldPosition.X - mapInfo.world_offset_x) / mapInfo.chunk_size);
+        int zIdx = (int)MathF.Floor((worldPosition.Z - mapInfo.world_offset_z) / mapInfo.chunk_size);
+        
+        return (xIdx, zIdx);
     }
 
     private int _FindZoneByWorldPosition(Vector3 worldPosition)
@@ -252,6 +257,7 @@ public class WorldMapInfo : IDisposable
         if (_zoneCells.TryGetValue(zoneId, out var cells) == false)
             return null;
         
+        
         int maxIdxX = cells.GetLength(0);
         int maxIdxZ = cells.GetLength(1);
 
@@ -260,22 +266,36 @@ public class WorldMapInfo : IDisposable
         
         return cells[x, z];
     }
-
-    public (List<MapCell>, List<MapCell>) UpdatePlayerView(MapCell oldCell, MapCell newCell)
+    
+    // Player AOI
+    public (List<MapCell>, List<MapCell>) UpdatePlayerView(int oldZoneId, int newZoneId, Vector3 oldPosition, Vector3 newPosition)
     {
-        if (oldCell == null || newCell == null)
+        if (oldZoneId == -1 || newZoneId == -1)
             return ([], []);
         
-        var oldNearByCells = GetWorldNearByCells(oldCell.ZoneId, oldCell.WorldPosition, range: 2);
-        var nearByCells = GetWorldNearByCells(newCell.ZoneId, newCell.WorldPosition, range: 2);
+        var oldNearByCells = GetWorldNearByCells(oldZoneId, oldPosition, range: 2);
+        var nearByCells = GetWorldNearByCells(newZoneId, newPosition, range: 2);
 
-        var enterCells = nearByCells.Except(oldNearByCells).ToList();
-        var leaveCells = oldNearByCells.Except(nearByCells).ToList();
-
-        return (enterCells, leaveCells);
+        var oldSet = oldNearByCells.ToHashSet();
+        var newSet = nearByCells.ToHashSet();
         
+        var enter = new List<MapCell>();
+        foreach (var cell in newSet)
+        {
+            if(oldSet.Contains(cell) == false)
+                enter.Add(cell);
+        }
+        
+        var leave = new List<MapCell>();
+        foreach (var cell in oldSet)
+        {
+            if(newSet.Contains(cell) == false)
+                leave.Add(cell);
+        }
+        
+        return (enter, leave);
     }
-    
+
     // world 이동 시
     public void ClearWorld()
     {

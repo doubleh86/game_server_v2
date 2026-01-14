@@ -30,7 +30,10 @@ public partial class WorldInstance
             
         oldCell?.Leave(_worldOwner.GetId());
         newCell.Enter(_worldOwner);
-        var (enterCell, leaveCell) = _worldMapInfo.UpdatePlayerView(oldCell, newCell);
+
+        var (enterCell, leaveCell) = _worldMapInfo.UpdatePlayerView(oldCell?.ZoneId ?? -1, 
+                                                                    newCell.ZoneId, 
+                                                                    oldPosition, command.Position);
             
         await _SendViewUpdateBatched(isSpawn: true, cells:enterCell);
         await _SendViewUpdateBatched(isSpawn: false, cells:leaveCell);
