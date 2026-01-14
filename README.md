@@ -5,7 +5,6 @@
 - DataTableLoader : 데이터 테이블 로더
 - NotifyServer : 알림 서버
 - Scheduler : 스케쥴 기반 컨텐츠 관리용 
-- WorldServer : 게임 서버
 
 간단 소개
 - 소켓: SuperSocket
