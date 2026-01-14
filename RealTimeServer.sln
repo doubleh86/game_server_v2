@@ -20,8 +20,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scheduler", "Scheduler\Sche
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerFramework", "..\GSFramework\ServerFramework\ServerFramework.csproj", "{7CD70AA1-33F6-40FD-8AE5-20C581BD8134}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorldServer", "WorldServer\WorldServer.csproj", "{4AEC7BF5-F93A-431E-B32D-5CD244DA63DD}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySqlDataTableLoader", "MySqlDataTableLoader\MySqlDataTableLoader.csproj", "{1E813ED0-CC38-446B-9A9E-B2D45557A44B}"
 EndProject
 Global
@@ -70,10 +68,6 @@ Global
 		{7CD70AA1-33F6-40FD-8AE5-20C581BD8134}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CD70AA1-33F6-40FD-8AE5-20C581BD8134}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CD70AA1-33F6-40FD-8AE5-20C581BD8134}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4AEC7BF5-F93A-431E-B32D-5CD244DA63DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4AEC7BF5-F93A-431E-B32D-5CD244DA63DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4AEC7BF5-F93A-431E-B32D-5CD244DA63DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4AEC7BF5-F93A-431E-B32D-5CD244DA63DD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1E813ED0-CC38-446B-9A9E-B2D45557A44B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1E813ED0-CC38-446B-9A9E-B2D45557A44B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E813ED0-CC38-446B-9A9E-B2D45557A44B}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -16,12 +16,6 @@ switch (command)
         tcpClient.Connect("127.0.0.1", 18080, new NotifyServerHandler(tcpClient));
         return;
     }
-    case "2":
-    {
-        ThreadPool.SetMinThreads(1000, 1000);
-        await RunLoadTest(1);
-        return;
-    }
 }
 
 async Task RunLoadTest(int clientCount)
@@ -36,7 +30,7 @@ async Task RunLoadTest(int clientCount)
                 var tcpClient = new TestSession();
                 // 여기서 스레드가 연결될 때까지 점유(Wait)되지만, 
                 // Task.Run이므로 메인 루프는 멈추지 않고 다음 i로 넘어갑니다.
-                tcpClient.Connect("127.0.0.1", 28080, new WorldServerHandler(tcpClient));
+                tcpClient.Connect("127.0.0.1", 28080, new NotifyServerHandler(tcpClient));
                 
                 // 연결 성공 후 로직 (동기식이라면 이어서 작성)
                 // tcpClient.SendLogin(); 
