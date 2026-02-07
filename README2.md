@@ -18,10 +18,6 @@ ServerFramework를 실제로 적용해보기 위한 **1인 제작 예제용 서�
 - **DataTableLoader**: 게임 데이터 테이블 로딩/가공 도구 예제
 - **ApiServerTest / ClientTest**: REST 및 TCP 통신 시나리오 테스트
 
-## 특징
-- 1인 개발로 설계/구현/테스트까지 일관된 기준으로 구성
-- 공통 모듈(프로토콜/DB/테스트)을 분리해 “확장 가능한 형태”로 예제를 구성
-- 실제 서버처럼 동작하는 구조로 프레임워크의 재사용성과 운영 관점의 유효성을 확인
 
 # 프레임워크 위치 
  - https://github.com/doubleh86/server_framework
