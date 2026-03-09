@@ -39,6 +39,7 @@ public partial class ApiServerService : IDisposable, IAsyncDisposable
         _grpcService = new GRpcService(_loggerService, "apiServer", grpcAddress);
         
         _grpcService.Initialize();
+        _grpcService.Start();
     }
 
     private void _InitializeRedLockManager()
