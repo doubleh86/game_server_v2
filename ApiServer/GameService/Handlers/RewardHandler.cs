@@ -15,20 +15,17 @@ namespace ApiServer.GameService.Handlers;
 
 public class RewardHandler
 {
-    private long _accountId;
     private readonly List<RewardInfo> _receiveRewards;
     private readonly RefreshDataHelper _refreshDataHelper;
     private readonly GameDbModuleManager _moduleManager;
-
-    private readonly Dictionary<string, IGameModule> _modules;
     
     private readonly LoggerService _loggerService;
     
-    public RewardHandler(long accountId, GameDbModuleManager moduleManager,
-                         List<RewardInfo> receiveRewards, RefreshDataHelper refreshDataHelper,
-                         LoggerService loggerService)
+    public RewardHandler(GameDbModuleManager moduleManager,
+        List<RewardInfo> receiveRewards,
+        RefreshDataHelper refreshDataHelper,
+        LoggerService loggerService)
     {
-        _accountId = accountId;
         _moduleManager = moduleManager;
         _receiveRewards = receiveRewards;
         _refreshDataHelper = refreshDataHelper;

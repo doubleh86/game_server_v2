@@ -57,7 +57,7 @@ public class MailHandler(long accountId, ApiServerService serverService) : BaseH
         }
 
         var refreshDataHelper = _GetRefreshDataHelper();
-        var rewardHandler = new RewardHandler(_accountId, _GetModuleManager(), rewards, refreshDataHelper, _loggerService);
+        var rewardHandler = new RewardHandler(_GetModuleManager(), rewards, refreshDataHelper, _loggerService);
         
         await rewardHandler.ReceiveRewardAsync();
         await mailModule.ReceiveMailRewardAsync(receivedMailInfo, refreshDataHelper);

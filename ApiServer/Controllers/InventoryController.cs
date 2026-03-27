@@ -13,10 +13,8 @@ namespace ApiServer.Controllers;
 [Route("[controller]")]
 public class InventoryController : ApiControllerBase
 {
-    private readonly EventService _eventService;
-    public InventoryController(ApiServerService service, EventService eventService) : base(service)
+    public InventoryController(ApiServerService service) : base(service)
     {
-        _eventService = eventService;
     }
 
     [HttpPost]
@@ -27,7 +25,7 @@ public class InventoryController : ApiControllerBase
         try
         {
             var (dbInfo, slaveDbInfo) = await _Initialize(request);
-            using var handler = new InventoryHandler(request.AccountId, _service, _eventService);
+            using var handler = new InventoryHandler(request.AccountId, _service);
             await handler.InitializeModulesAsync(dbInfo, slaveDbInfo, response.IsRefresh);
 
             var inventoryItem = await handler.UseInventoryItemAsync(request.ItemIndex, request.Quantity);

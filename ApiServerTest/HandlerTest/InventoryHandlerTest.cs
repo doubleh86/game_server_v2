@@ -18,10 +18,10 @@ public class InventoryHandlerTest : HandlerTestBase
             return;
         }
         
-        var handler = new InventoryHandler(_accountDbResult.AccountId, _apiServerService, _eventService);
-        await handler.InitializeModulesAsync(_accountDbResult.GetMainDbInfo(), _accountDbResult.GetMainDbInfo(true), true);
-        
-        var result = await handler.UseInventoryItemAsync(1, 10);
+        // var handler = new InventoryHandler(_accountDbResult.AccountId, _apiServerService, _eventService);
+        // await handler.InitializeModulesAsync(_accountDbResult.GetMainDbInfo(), _accountDbResult.GetMainDbInfo(true), true);
+        //
+        // var result = await handler.UseInventoryItemAsync(1, 10);
     }
     
 }

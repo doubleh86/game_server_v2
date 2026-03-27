@@ -15,7 +15,6 @@ public abstract class BaseHandler : IDisposable
 {
     protected readonly long _accountId;
     protected readonly LoggerService _loggerService;
-    protected EventService _eventService;
     private ISharedDbContext _sharedDbContext;
     private RefreshDataHelper _refreshDataHelper;
     
@@ -24,11 +23,10 @@ public abstract class BaseHandler : IDisposable
     
     protected GameDbModuleManager _GetModuleManager() => _moduleManager;
     
-    protected BaseHandler(long accountId, ApiServerService serverService, EventService eventService = null)
+    protected BaseHandler(long accountId, ApiServerService serverService)
     {
         _accountId = accountId;
         _loggerService = serverService.LoggerService;
-        _eventService = eventService;
     }
 
     public async Task InitializeModulesAsync(SqlServerDbInfo masterDbInfo, SqlServerDbInfo slaveDbInfo, bool isRefreshResponse)

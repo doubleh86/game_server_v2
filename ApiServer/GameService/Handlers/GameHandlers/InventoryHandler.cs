@@ -10,7 +10,7 @@ using NetworkProtocols.WebApi.ToClientModels;
 
 namespace ApiServer.GameService.Handlers.GameHandlers;
 
-public class InventoryHandler(long accountId, ApiServerService serverService, EventService eventService) : BaseHandler(accountId, serverService, eventService)
+public class InventoryHandler(long accountId, ApiServerService serverService) : BaseHandler(accountId, serverService)
 {
     public async Task<InventoryItemInfo> UseInventoryItemAsync(int itemIndex, int quantity)
     {
